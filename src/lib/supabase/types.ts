@@ -1009,6 +1009,15 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      mark_student_dropped_out: {
+        Args: { p_reason: string; p_student_id: string }
+        Returns: undefined
+      }
+      mark_student_returned: {
+        Args: { p_student_id: string }
+        Returns: undefined
+      }
+      next_student_code: { Args: never; Returns: string }
       set_current_season: { Args: { p_season_id: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
