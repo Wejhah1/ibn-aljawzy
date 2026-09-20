@@ -27,16 +27,18 @@ export default async function AttendancePage({
 
   const { data: programDays } = await supabase
     .from("program_days")
-    .select("id, day_date")
+    .select("id, day_date, is_holiday, note")
     .eq("season_id", currentSeason.id)
     .order("day_date");
 
   const todayIso = new Date().toISOString().slice(0, 10);
+  const nonHolidayDays = (programDays ?? []).filter((d) => !d.is_holiday);
   let selectedDay = programDays?.find((d) => d.id === day);
   if (!selectedDay) {
     selectedDay =
-      programDays?.find((d) => d.day_date === todayIso) ??
-      [...(programDays ?? [])].reverse().find((d) => d.day_date <= todayIso) ??
+      nonHolidayDays.find((d) => d.day_date === todayIso) ??
+      [...nonHolidayDays].reverse().find((d) => d.day_date <= todayIso) ??
+      nonHolidayDays[0] ??
       programDays?.[0];
   }
 

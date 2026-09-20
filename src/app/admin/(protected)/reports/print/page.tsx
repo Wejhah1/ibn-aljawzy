@@ -32,6 +32,7 @@ export default async function ClassicReportPage({
     .from("program_days")
     .select("id")
     .eq("season_id", currentSeason.id)
+    .eq("is_holiday", false)
     .lte("day_date", new Date().toISOString().slice(0, 10));
   const dayCount = programDays?.length ?? 0;
 

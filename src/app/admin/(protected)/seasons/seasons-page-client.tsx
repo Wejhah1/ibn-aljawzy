@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { SeasonWizard } from "./season-wizard";
+import { HolidayManagerModal } from "./holiday-manager-modal";
 import { setCurrentSeasonAction, archiveSeasonAction, deleteSeasonPermanentlyAction } from "./actions";
-import { Plus, Calendar, Archive, CheckCircle2, Trash2 } from "lucide-react";
+import { Plus, Calendar, Archive, CheckCircle2, Trash2, CalendarOff } from "lucide-react";
 
 interface Season {
   id: string;
@@ -23,6 +24,7 @@ export function SeasonsPageClient({ seasons, dayCounts }: { seasons: Season[]; d
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [deleteSeason, setDeleteSeason] = useState<Season | null>(null);
+  const [holidaySeason, setHolidaySeason] = useState<Season | null>(null);
   const hasCurrentSeason = seasons.some((s) => s.status === "current");
 
   return (
@@ -67,6 +69,9 @@ export function SeasonsPageClient({ seasons, dayCounts }: { seasons: Season[]; d
                 </CardDescription>
               </div>
               <div className="flex items-center gap-(--space-2) shrink-0">
+                <Button size="sm" variant="outline" onClick={() => setHolidaySeason(s)}>
+                  <CalendarOff size={14} /> الأيام والعطل
+                </Button>
                 {s.status !== "current" && (
                   <Button
                     size="sm"
@@ -101,6 +106,15 @@ export function SeasonsPageClient({ seasons, dayCounts }: { seasons: Season[]; d
       </div>
 
       {wizardOpen && <SeasonWizard onClose={() => setWizardOpen(false)} hasCurrentSeason={hasCurrentSeason} />}
+      {holidaySeason && (
+        <HolidayManagerModal
+          seasonId={holidaySeason.id}
+          seasonName={holidaySeason.name}
+          startDate={holidaySeason.start_date}
+          endDate={holidaySeason.end_date}
+          onClose={() => setHolidaySeason(null)}
+        />
+      )}
       {deleteSeason && (
         <DeleteSeasonModal
           season={deleteSeason}

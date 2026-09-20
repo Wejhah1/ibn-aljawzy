@@ -8,7 +8,7 @@ export default async function SeasonsPage() {
     .select("id, name, start_date, end_date, status, carry_over_points, weekly_off_days")
     .order("start_date", { ascending: false });
 
-  const { data: dayCounts } = await supabase.from("program_days").select("season_id");
+  const { data: dayCounts } = await supabase.from("program_days").select("season_id").eq("is_holiday", false);
   const countsBySeason: Record<string, number> = {};
   for (const d of dayCounts ?? []) {
     countsBySeason[d.season_id] = (countsBySeason[d.season_id] ?? 0) + 1;

@@ -63,8 +63,8 @@ export function AttendanceClient({
 }: {
   seasonName: string;
   seasonId: string;
-  programDays: { id: string; day_date: string }[];
-  selectedDay: { id: string; day_date: string } | null;
+  programDays: { id: string; day_date: string; is_holiday: boolean; note: string | null }[];
+  selectedDay: { id: string; day_date: string; is_holiday: boolean; note: string | null } | null;
   circles: { id: string; name: string }[];
   groups: { id: string; name: string }[];
   selectedCircle: string;
@@ -97,7 +97,7 @@ export function AttendanceClient({
   }, [rows]);
 
   const setStatus = (studentId: string, status: Exclude<Status, null>) => {
-    if (!selectedDay) return;
+    if (!selectedDay || selectedDay.is_holiday) return;
     lastLocalChange.current.set(studentId, Date.now());
     setRows((prev) => prev.map((r) => (r.studentId === studentId ? { ...r, status } : r)));
     setSaving((prev) => new Set(prev).add(studentId));
@@ -111,7 +111,7 @@ export function AttendanceClient({
   };
 
   const markAllPresent = () => {
-    if (!selectedDay) return;
+    if (!selectedDay || selectedDay.is_holiday) return;
     const unmarkedIds = rows.filter((r) => !r.status).map((r) => r.studentId);
     if (unmarkedIds.length === 0) return;
     for (const id of unmarkedIds) lastLocalChange.current.set(id, Date.now());
@@ -198,6 +198,7 @@ export function AttendanceClient({
               {programDays.map((d) => (
                 <option key={d.id} value={d.id}>
                   {new Date(d.day_date).toLocaleDateString("ar-SA", { weekday: "short", day: "numeric", month: "short" })}
+                  {d.is_holiday ? " — عطلة" : ""}
                 </option>
               ))}
             </select>
@@ -235,7 +236,7 @@ export function AttendanceClient({
           <Button type="submit" variant="secondary">
             تطبيق
           </Button>
-          <Button type="button" variant="outline" onClick={markAllPresent} disabled={!selectedDay}>
+          <Button type="button" variant="outline" onClick={markAllPresent} disabled={!selectedDay || selectedDay.is_holiday}>
             تعليم الجميع حاضر
           </Button>
         </Card>
@@ -252,6 +253,14 @@ export function AttendanceClient({
       {!selectedDay && (
         <Card className="mb-(--space-4) border-warning bg-warning-soft">
           <CardDescription className="text-warning font-semibold">لا توجد أيام برنامج لهذا الموسم بعد.</CardDescription>
+        </Card>
+      )}
+
+      {selectedDay?.is_holiday && (
+        <Card className="mb-(--space-4) border-danger bg-danger-soft">
+          <CardDescription className="text-danger font-semibold">
+            هذا اليوم عطلة{selectedDay.note ? ` — ${selectedDay.note}` : ""}. لا يمكن تسجيل حضور فيه.
+          </CardDescription>
         </Card>
       )}
 
@@ -289,7 +298,7 @@ export function AttendanceClient({
                       return (
                         <button
                           key={key}
-                          disabled={!selectedDay}
+                          disabled={!selectedDay || selectedDay.is_holiday}
                           onClick={() => setStatus(r.studentId, key)}
                           title={meta.label}
                           className="h-10 w-10 rounded-(--radius-sm) border-bold flex items-center justify-center transition-colors"
@@ -362,7 +371,7 @@ export function AttendanceClient({
                 return (
                   <button
                     key={key}
-                    disabled={!selectedDay}
+                    disabled={!selectedDay || selectedDay.is_holiday}
                     onClick={() => setStatus(r.studentId, key)}
                     className="min-h-[48px] rounded-(--radius-sm) border-bold flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors"
                     style={

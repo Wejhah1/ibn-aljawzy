@@ -18,6 +18,7 @@ export default async function ReportsPage() {
     .from("program_days")
     .select("id, day_date")
     .eq("season_id", currentSeason.id)
+    .eq("is_holiday", false)
     .lte("day_date", new Date().toISOString().slice(0, 10))
     .order("day_date");
 

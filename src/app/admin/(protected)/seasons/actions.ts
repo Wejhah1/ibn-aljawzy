@@ -56,6 +56,60 @@ export async function archiveSeasonAction(seasonId: string) {
   revalidatePath("/admin");
 }
 
+export interface ProgramDay {
+  id: string;
+  day_date: string;
+  is_holiday: boolean;
+  note: string | null;
+}
+
+export async function getProgramDaysAction(seasonId: string): Promise<ProgramDay[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("program_days")
+    .select("id, day_date, is_holiday, note")
+    .eq("season_id", seasonId)
+    .order("day_date");
+  return data ?? [];
+}
+
+export async function toggleHolidayAction(dayId: string, isHoliday: boolean, note?: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("program_days")
+    .update({ is_holiday: isHoliday, note: isHoliday ? note || null : null })
+    .eq("id", dayId);
+  revalidatePath("/admin/seasons");
+  revalidatePath("/admin/attendance");
+  revalidatePath("/admin/reports");
+  return { error: error?.message };
+}
+
+export async function markHolidayRangeAction(
+  seasonId: string,
+  startDate: string,
+  endDate: string,
+  note: string
+): Promise<{ error?: string; count?: number }> {
+  if (!startDate || !endDate || endDate < startDate) return { error: "فترة غير صالحة." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("program_days")
+    .update({ is_holiday: true, note: note || null })
+    .eq("season_id", seasonId)
+    .gte("day_date", startDate)
+    .lte("day_date", endDate)
+    .select("id");
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/seasons");
+  revalidatePath("/admin/attendance");
+  revalidatePath("/admin/reports");
+  return { count: data?.length ?? 0 };
+}
+
 export async function deleteSeasonPermanentlyAction(seasonId: string) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("delete_season_permanently", { p_season_id: seasonId });

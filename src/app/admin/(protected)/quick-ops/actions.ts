@@ -99,6 +99,7 @@ export async function getStudentQuickCardAction(studentId: string): Promise<Quic
       .select("id")
       .eq("season_id", currentSeason.id)
       .eq("day_date", today)
+      .eq("is_holiday", false)
       .maybeSingle();
 
     if (programDay) {
