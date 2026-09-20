@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { LoginForm } from "./login-form";
 
+export const dynamic = "force-dynamic";
+
 export default async function LoginPage() {
   const admin = createAdminClient();
   const { count } = await admin.from("profiles").select("id", { count: "exact", head: true });
