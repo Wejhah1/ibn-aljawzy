@@ -180,27 +180,134 @@ export function StudentsListClient({
         </Card>
       )}
 
-      {/* رأس الجدول — سطح المكتب فقط */}
+      {/* ---------- سطح المكتب: جدول حقيقي يضمن محاذاة الأعمدة عبر كل الصفوف ---------- */}
       {rows.length > 0 && (
-        <div className="hidden md:grid grid-cols-[auto_1.6fr_1fr_1fr_0.7fr_0.6fr_0.6fr_44px_44px_44px] gap-(--space-3) items-center px-(--space-3) pb-(--space-2) text-[11px] font-bold text-ink-faint uppercase tracking-wide">
-          {selectMode && <span />}
-          <span>اسم الطالب</span>
-          <span>الحلقة</span>
-          <span>المجموعة</span>
-          <span>النقاط</span>
-          <span>الحضور</span>
-          <span>الغياب</span>
-          <span />
-          <span />
-          <span />
+        <div className="hidden md:block overflow-x-auto rounded-(--radius-md) border-bold border-line bg-surface-raised">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-line text-[11px] font-bold text-ink-faint uppercase tracking-wide">
+                {selectMode && <th className="w-11 px-(--space-2) py-(--space-3)" />}
+                <th className="text-right px-(--space-3) py-(--space-3) font-bold">اسم الطالب</th>
+                <th className="text-right px-(--space-3) py-(--space-3) font-bold">الحلقة</th>
+                <th className="text-right px-(--space-3) py-(--space-3) font-bold">المجموعة</th>
+                <th className="text-center px-(--space-2) py-(--space-3) font-bold">النقاط</th>
+                <th className="text-center px-(--space-2) py-(--space-3) font-bold">الحضور</th>
+                <th className="text-center px-(--space-2) py-(--space-3) font-bold">الغياب</th>
+                <th className="w-11 px-(--space-1) py-(--space-3)" />
+                <th className="w-11 px-(--space-1) py-(--space-3)" />
+                <th className="w-11 px-(--space-1) py-(--space-3)" />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((s) => {
+                const message = fillTemplate(template, {
+                  name: s.fullName,
+                  barcode: s.code,
+                  program: programInfo.program_name,
+                  mosque: programInfo.mosque_name,
+                });
+                const isSelected = selected.has(s.id);
+                const waLink = buildWaMeLink(s.guardianPhone, message);
+
+                return (
+                  <motion.tr
+                    key={s.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.16 }}
+                    className="border-b border-line last:border-b-0 hover:bg-surface-sunken transition-colors"
+                  >
+                    {selectMode && (
+                      <td className="px-(--space-2) py-(--space-2) text-center">
+                        <button onClick={() => toggle(s.id)} className="text-brand">
+                          {isSelected ? <CheckSquare size={20} /> : <Square size={20} className="text-ink-faint" />}
+                        </button>
+                      </td>
+                    )}
+                    <td className="px-(--space-3) py-(--space-2)">
+                      <div className="flex items-center gap-(--space-2) min-w-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-sm shrink-0">
+                          {s.fullName.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="text-sm font-semibold text-ink truncate">{s.fullName}</p>
+                            <BadgeStrip badges={s.badges} max={2} />
+                            {s.status === "dropped_out" && (
+                              <Badge tone="danger">
+                                <UserX size={11} /> منقطع
+                              </Badge>
+                            )}
+                            {s.hasUnreadNote && (
+                              <Badge tone="warning">
+                                <MessageSquare size={11} />
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-ink-faint truncate">#{s.code}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-(--space-3) py-(--space-2)">
+                      <ColorTag label={s.circleName ?? ""} token={s.circleColor} />
+                    </td>
+                    <td className="px-(--space-3) py-(--space-2)">
+                      <ColorTag label={s.groupName ?? ""} token={s.groupColor} />
+                    </td>
+                    <td className="px-(--space-2) py-(--space-2) text-center whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 text-sm font-bold text-brand">
+                        <Trophy size={13} /> {s.points}
+                      </span>
+                    </td>
+                    <td className="px-(--space-2) py-(--space-2) text-center text-sm font-semibold" style={{ color: "var(--color-success)" }}>
+                      {s.presentCount}
+                    </td>
+                    <td className="px-(--space-2) py-(--space-2) text-center text-sm font-semibold" style={{ color: "var(--color-danger)" }}>
+                      {s.absentCount}
+                    </td>
+                    <td className="px-(--space-1) py-(--space-2) text-center">
+                      <a
+                        href={waLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-(--radius-sm) border border-line text-brand hover:bg-brand-soft transition-colors"
+                        title="تواصل عبر واتساب"
+                      >
+                        <MessageCircle size={16} />
+                      </a>
+                    </td>
+                    <td className="px-(--space-1) py-(--space-2) text-center">
+                      <Link
+                        href={`/admin/students/${s.id}`}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-(--radius-sm) border border-line text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors"
+                        title="عرض الملف"
+                      >
+                        <Eye size={16} />
+                      </Link>
+                    </td>
+                    <td className="px-(--space-1) py-(--space-2) text-center">
+                      <button
+                        onClick={() => setDeleteTarget(s)}
+                        className="inline-flex h-10 w-10 items-center justify-center rounded-(--radius-sm) border border-line text-danger hover:bg-danger-soft transition-colors"
+                        title="حذف"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
+      {/* ---------- الجوال: بطاقة أطول ومريحة ---------- */}
       <motion.div
         initial="hidden"
         animate="show"
         variants={{ hidden: {}, show: { transition: { staggerChildren: 0.02 } } }}
-        className="space-y-(--space-2)"
+        className="md:hidden space-y-(--space-2) mt-(--space-2)"
       >
         {rows.map((s) => {
           const message = fillTemplate(template, {
@@ -218,72 +325,6 @@ export function StudentsListClient({
               variants={{ hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0 } }}
               transition={{ duration: 0.16, ease: [0.2, 0, 0, 1] }}
             >
-              {/* ---------- سطح المكتب: صف واحد ---------- */}
-              <Card className="hidden md:grid grid-cols-[auto_1.6fr_1fr_1fr_0.7fr_0.6fr_0.6fr_44px_44px_44px] gap-(--space-3) items-center !py-(--space-3)">
-                {selectMode && (
-                  <button onClick={() => toggle(s.id)} className="shrink-0 text-brand">
-                    {isSelected ? <CheckSquare size={20} /> : <Square size={20} className="text-ink-faint" />}
-                  </button>
-                )}
-                <div className="flex items-center gap-(--space-2) min-w-0">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-sm shrink-0">
-                    {s.fullName.charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <p className="text-sm font-semibold text-ink truncate">{s.fullName}</p>
-                      <BadgeStrip badges={s.badges} max={2} />
-                      {s.status === "dropped_out" && (
-                        <Badge tone="danger">
-                          <UserX size={11} /> منقطع
-                        </Badge>
-                      )}
-                      {s.hasUnreadNote && (
-                        <Badge tone="warning">
-                          <MessageSquare size={11} />
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-ink-faint truncate">#{s.code}</p>
-                  </div>
-                </div>
-                <ColorTag label={s.circleName ?? ""} token={s.circleColor} />
-                <ColorTag label={s.groupName ?? ""} token={s.groupColor} />
-                <span className="flex items-center gap-1 text-sm font-bold text-brand">
-                  <Trophy size={13} /> {s.points}
-                </span>
-                <span className="text-sm font-semibold" style={{ color: "var(--color-success)" }}>
-                  {s.presentCount}
-                </span>
-                <span className="text-sm font-semibold" style={{ color: "var(--color-danger)" }}>
-                  {s.absentCount}
-                </span>
-                <a
-                  href={waLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-(--radius-sm) border border-line text-brand hover:bg-brand-soft transition-colors"
-                  title="تواصل عبر واتساب"
-                >
-                  <MessageCircle size={16} />
-                </a>
-                <Link
-                  href={`/admin/students/${s.id}`}
-                  className="flex h-10 w-10 items-center justify-center rounded-(--radius-sm) border border-line text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors"
-                  title="عرض الملف"
-                >
-                  <Eye size={16} />
-                </Link>
-                <button
-                  onClick={() => setDeleteTarget(s)}
-                  className="flex h-10 w-10 items-center justify-center rounded-(--radius-sm) border border-line text-danger hover:bg-danger-soft transition-colors"
-                  title="حذف"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </Card>
-
-              {/* ---------- الجوال: بطاقة أطول ومريحة ---------- */}
               <Card
                 className="md:hidden !p-(--space-4)"
                 onClick={selectMode ? () => toggle(s.id) : undefined}
