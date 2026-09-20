@@ -12,9 +12,13 @@ import {
   updateEnrollmentAction,
   dropoutStudentAction,
   returnStudentAction,
+  awardAchievementAction,
+  awardBadgeAction,
+  setStudentFlagAction,
+  resolveStudentFlagAction,
   type FormState,
 } from "../actions";
-import { ArrowRight, Pencil, UserX, UserCheck, Trophy, Award, CalendarCheck, ShieldAlert } from "lucide-react";
+import { ArrowRight, Pencil, UserX, UserCheck, Trophy, Award, CalendarCheck, ShieldAlert, Flag as FlagIcon, CheckCircle2 } from "lucide-react";
 
 interface Student {
   id: string;
@@ -56,6 +60,10 @@ export function StudentProfileClient({
   dropoutPeriods,
   circles,
   currentSeason,
+  allAchievements,
+  allBadges,
+  allFlags,
+  studentFlags,
 }: {
   student: Student;
   enrollments: Enrollment[];
@@ -65,6 +73,17 @@ export function StudentProfileClient({
   dropoutPeriods: { dropped_at: string; returned_at: string | null; reason: string | null }[];
   circles: { id: string; name: string; groups: { id: string; name: string }[] }[];
   currentSeason: { id: string; name: string } | null;
+  allAchievements: { id: string; name: string; points_awarded: number }[];
+  allBadges: { id: string; name: string }[];
+  allFlags: { id: string; name: string; severity: string }[];
+  studentFlags: {
+    id: string;
+    flag_id: string;
+    is_resolved: boolean;
+    note: string | null;
+    set_at: string;
+    flags: { name: string; severity: string } | { name: string; severity: string }[] | null;
+  }[];
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [dropoutOpen, setDropoutOpen] = useState(false);
@@ -129,6 +148,42 @@ export function StudentProfileClient({
             enrollment={currentEnrollment ?? null}
             circles={circles}
           />
+        </Card>
+      )}
+
+      {currentSeason && (
+        <Card className="mb-(--space-6)">
+          <CardTitle className="mb-(--space-3)">منح إنجاز / وسام / علامة</CardTitle>
+          <AwardPanel
+            studentId={student.id}
+            seasonId={currentSeason.id}
+            allAchievements={allAchievements}
+            allBadges={allBadges}
+            allFlags={allFlags}
+          />
+          {studentFlags.length > 0 && (
+            <div className="mt-(--space-4) pt-(--space-4) border-t border-line space-y-(--space-2)">
+              {studentFlags.map((sf) => {
+                const flag = one(sf.flags);
+                return (
+                  <div key={sf.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-(--space-2)">
+                      <FlagIcon size={14} className={sf.is_resolved ? "text-ink-faint" : "text-warning"} />
+                      <span className={`text-sm font-semibold ${sf.is_resolved ? "text-ink-faint line-through" : "text-ink"}`}>
+                        {flag?.name}
+                      </span>
+                      {sf.note && <span className="text-[12px] text-ink-muted">— {sf.note}</span>}
+                    </div>
+                    {!sf.is_resolved && (
+                      <Button size="sm" variant="ghost" onClick={() => resolveStudentFlagAction(sf.id, student.id)}>
+                        <CheckCircle2 size={13} /> إغلاق
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Card>
       )}
 
@@ -400,5 +455,110 @@ function EnrollmentEditor({
       </Button>
       {state?.error && <p className="text-[12px] text-danger">{state.error}</p>}
     </form>
+  );
+}
+
+function AwardPanel({
+  studentId,
+  seasonId,
+  allAchievements,
+  allBadges,
+  allFlags,
+}: {
+  studentId: string;
+  seasonId: string;
+  allAchievements: { id: string; name: string; points_awarded: number }[];
+  allBadges: { id: string; name: string }[];
+  allFlags: { id: string; name: string; severity: string }[];
+}) {
+  const [achievementId, setAchievementId] = useState("");
+  const [badgeId, setBadgeId] = useState("");
+  const [flagId, setFlagId] = useState("");
+  const [pending, setPending] = useState(false);
+
+  return (
+    <div className="grid sm:grid-cols-3 gap-(--space-3)">
+      <div className="flex gap-(--space-2)">
+        <select
+          value={achievementId}
+          onChange={(e) => setAchievementId(e.target.value)}
+          className="h-11 flex-1 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-2) text-[13px] text-ink"
+        >
+          <option value="">اختر إنجازاً</option>
+          {allAchievements.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={!achievementId || pending}
+          onClick={async () => {
+            setPending(true);
+            await awardAchievementAction(studentId, seasonId, achievementId);
+            setAchievementId("");
+            setPending(false);
+          }}
+        >
+          <Award size={14} />
+        </Button>
+      </div>
+      <div className="flex gap-(--space-2)">
+        <select
+          value={badgeId}
+          onChange={(e) => setBadgeId(e.target.value)}
+          className="h-11 flex-1 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-2) text-[13px] text-ink"
+        >
+          <option value="">اختر وساماً</option>
+          {allBadges.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={!badgeId || pending}
+          onClick={async () => {
+            setPending(true);
+            await awardBadgeAction(studentId, seasonId, badgeId);
+            setBadgeId("");
+            setPending(false);
+          }}
+        >
+          <ShieldAlert size={14} />
+        </Button>
+      </div>
+      <div className="flex gap-(--space-2)">
+        <select
+          value={flagId}
+          onChange={(e) => setFlagId(e.target.value)}
+          className="h-11 flex-1 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-2) text-[13px] text-ink"
+        >
+          <option value="">اختر علامة</option>
+          {allFlags.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name}
+            </option>
+          ))}
+        </select>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={!flagId || pending}
+          onClick={async () => {
+            setPending(true);
+            await setStudentFlagAction(studentId, seasonId, flagId);
+            setFlagId("");
+            setPending(false);
+          }}
+        >
+          <FlagIcon size={14} />
+        </Button>
+      </div>
+    </div>
   );
 }

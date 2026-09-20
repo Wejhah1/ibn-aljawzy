@@ -45,6 +45,17 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
   const { data: circles } = await supabase.from("circles").select("id, name, groups(id, name)").eq("is_active", true).order("name");
   const { data: currentSeason } = await supabase.from("seasons").select("id, name").eq("status", "current").maybeSingle();
 
+  const [{ data: allAchievements }, { data: allBadges }, { data: allFlags }, { data: studentFlags }] = await Promise.all([
+    supabase.from("achievements").select("id, name, points_awarded").eq("is_active", true).order("name"),
+    supabase.from("badges").select("id, name").eq("is_active", true).order("name"),
+    supabase.from("flags").select("id, name, severity").eq("is_active", true).order("name"),
+    supabase
+      .from("student_flags")
+      .select("id, flag_id, is_resolved, note, set_at, flags(name, severity)")
+      .eq("student_id", id)
+      .order("set_at", { ascending: false }),
+  ]);
+
   return (
     <StudentProfileClient
       student={student}
@@ -55,6 +66,10 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
       dropoutPeriods={dropoutPeriods ?? []}
       circles={circles ?? []}
       currentSeason={currentSeason}
+      allAchievements={allAchievements ?? []}
+      allBadges={allBadges ?? []}
+      allFlags={allFlags ?? []}
+      studentFlags={studentFlags ?? []}
     />
   );
 }

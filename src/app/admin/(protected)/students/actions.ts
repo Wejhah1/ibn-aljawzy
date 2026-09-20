@@ -154,3 +154,59 @@ export async function returnStudentAction(studentId: string) {
   revalidatePath(`/admin/students/${studentId}`);
   revalidatePath("/admin/students");
 }
+
+export async function awardAchievementAction(studentId: string, seasonId: string, achievementId: string) {
+  const supabase = await createClient();
+  const { data: achievement } = await supabase
+    .from("achievements")
+    .select("points_awarded")
+    .eq("id", achievementId)
+    .single();
+
+  const { error } = await supabase
+    .from("student_achievements")
+    .insert({ student_id: studentId, season_id: seasonId, achievement_id: achievementId });
+  if (error) return { error: error.message };
+
+  if (achievement?.points_awarded) {
+    await supabase.rpc("add_manual_points", {
+      p_student_id: studentId,
+      p_season_id: seasonId,
+      p_points: achievement.points_awarded,
+      p_reason: "إنجاز",
+    });
+  }
+
+  revalidatePath(`/admin/students/${studentId}`);
+  return { success: true };
+}
+
+export async function awardBadgeAction(studentId: string, seasonId: string, badgeId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("student_badges").insert({ student_id: studentId, season_id: seasonId, badge_id: badgeId });
+  revalidatePath(`/admin/students/${studentId}`);
+  return { error: error?.message };
+}
+
+export async function setStudentFlagAction(studentId: string, seasonId: string | null, flagId: string, note?: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("student_flags")
+    .insert({ student_id: studentId, season_id: seasonId, flag_id: flagId, note: note || null });
+  revalidatePath(`/admin/students/${studentId}`);
+  revalidatePath("/admin");
+  return { error: error?.message };
+}
+
+export async function resolveStudentFlagAction(studentFlagId: string, studentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  await supabase
+    .from("student_flags")
+    .update({ is_resolved: true, resolved_at: new Date().toISOString(), resolved_by: user?.id })
+    .eq("id", studentFlagId);
+  revalidatePath(`/admin/students/${studentId}`);
+  revalidatePath("/admin");
+}
