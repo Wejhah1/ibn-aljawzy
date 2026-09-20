@@ -55,15 +55,15 @@ const TONE: Record<string, { fg: string; bg: string }> = {
 };
 
 function ColorTag({ label, token }: { label: string; token: string | null }) {
-  if (!label) return <span className="text-ink-faint">—</span>;
+  if (!label) return <span className="text-ink-faint min-w-0">—</span>;
   const tone = token ? TONE[token] : undefined;
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-(--radius-xs) px-2 py-1 text-[12px] font-semibold truncate max-w-full"
+      className="flex items-center gap-1.5 rounded-(--radius-xs) px-2 py-1 text-[12px] font-semibold min-w-0 w-fit max-w-full"
       style={tone ? { color: tone.fg, backgroundColor: tone.bg } : undefined}
     >
       {tone && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tone.fg }} />}
-      {label}
+      <span className="truncate min-w-0">{label}</span>
     </span>
   );
 }

@@ -191,24 +191,28 @@ function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: Pare
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.15 }}
-              className={`group relative rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
+              className={`rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
                 n.sender === "admin" ? "bg-brand-soft mr-auto" : "bg-surface-sunken ml-auto"
               }`}
             >
               <p className="text-sm text-ink text-right">{n.message}</p>
-              <p className="text-[11px] text-ink-faint mt-1 text-right">
-                {n.sender === "admin" ? "الإدارة" : "أنت"} · {new Date(n.createdAt).toLocaleString("ar-SA")}
-              </p>
-              {n.sender === "parent" && !n.id.startsWith("temp-") && (
-                <button
-                  onClick={() => remove(n.id)}
-                  disabled={deletingId === n.id}
-                  title="حذف الرسالة"
-                  className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-raised border border-line-strong text-danger opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                >
-                  <Trash2 size={11} />
-                </button>
-              )}
+              <div className="flex items-center justify-between gap-(--space-2) mt-1">
+                {n.sender === "parent" && !n.id.startsWith("temp-") ? (
+                  <button
+                    onClick={() => remove(n.id)}
+                    disabled={deletingId === n.id}
+                    title="حذف الرسالة"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-raised border border-danger text-danger shrink-0 active:scale-95 transition-transform disabled:opacity-50"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                ) : (
+                  <span />
+                )}
+                <p className="text-[11px] text-ink-faint text-right">
+                  {n.sender === "admin" ? "الإدارة" : "أنت"} · {new Date(n.createdAt).toLocaleString("ar-SA")}
+                </p>
+              </div>
             </motion.div>
           ))}
         </div>

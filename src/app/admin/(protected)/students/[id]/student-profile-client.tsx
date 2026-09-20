@@ -367,24 +367,26 @@ function ParentNotesThread({ studentId, notes: initialNotes }: { studentId: stri
         {notes.map((n) => (
           <div
             key={n.id}
-            className={`group relative rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
+            className={`rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
               n.sender === "admin" ? "bg-brand-soft mr-auto text-right" : "bg-surface-sunken ml-auto text-right"
             }`}
           >
             <p className="text-sm text-ink">{n.message}</p>
-            <p className="text-[11px] text-ink-faint mt-1">
-              {n.sender === "admin" ? "الإدارة" : "ولي الأمر"} · {new Date(n.created_at).toLocaleString("ar-SA")}
-            </p>
-            {n.sender === "admin" && (
-              <button
-                onClick={() => deleteNote(n.id)}
-                disabled={deletingId === n.id}
-                title="حذف الرسالة"
-                className="absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-raised border border-line-strong text-danger opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-              >
-                <Trash2 size={11} />
-              </button>
-            )}
+            <div className="flex items-center justify-between gap-(--space-2) mt-1">
+              <p className="text-[11px] text-ink-faint">
+                {n.sender === "admin" ? "الإدارة" : "ولي الأمر"} · {new Date(n.created_at).toLocaleString("ar-SA")}
+              </p>
+              {n.sender === "admin" && (
+                <button
+                  onClick={() => deleteNote(n.id)}
+                  disabled={deletingId === n.id}
+                  title="حذف الرسالة"
+                  className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-raised border border-danger text-danger shrink-0 active:scale-95 transition-transform disabled:opacity-50"
+                >
+                  <Trash2 size={12} />
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
