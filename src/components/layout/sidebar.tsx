@@ -1,0 +1,91 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { PRIMARY_NAV, STUDENTS_NAV, REPORTS_NAV, ADMIN_NAV, type NavItem } from "@/lib/nav";
+import { logoutAction } from "@/app/admin/login/actions";
+import { LogOut } from "lucide-react";
+
+function NavGroup({ title, items, pathname }: { title: string; items: NavItem[]; pathname: string }) {
+  return (
+    <div className="mb-(--space-6)">
+      <p className="px-(--space-3) mb-(--space-2) text-[12px] leading-[16px] font-semibold tracking-[0.01em] text-ink-faint">
+        {title}
+      </p>
+      <div className="space-y-1">
+        {items.map((item) => {
+          const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-(--space-3) rounded-(--radius-sm) px-(--space-3) h-11 text-sm font-semibold transition-colors",
+                active
+                  ? "bg-brand text-on-brand shadow-brutal-sm border-bold border-line-strong"
+                  : "text-ink-muted hover:bg-surface-sunken hover:text-ink"
+              )}
+            >
+              <Icon size={18} strokeWidth={2.25} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export function Sidebar({ userName, userRole }: { userName: string; userRole: string }) {
+  const pathname = usePathname();
+
+  return (
+    <aside className="hidden md:flex w-[264px] shrink-0 flex-col border-l border-line bg-surface-raised h-screen sticky top-0 overflow-y-auto">
+      <div className="flex items-center gap-(--space-3) px-(--space-4) h-16 border-b border-line shrink-0">
+        <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-brand text-on-brand border-bold border-line-strong font-bold">
+          ا
+        </div>
+        <div className="min-w-0">
+          <p className="text-[13px] font-bold text-ink truncate">حلقات ابن الجوزي</p>
+          <p className="text-[11px] text-ink-muted truncate">مسجد الطرباق</p>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-(--space-3) py-(--space-4)">
+        <NavGroup title="العمل اليومي" items={PRIMARY_NAV} pathname={pathname} />
+        <NavGroup title="الطلاب والتنظيم" items={STUDENTS_NAV} pathname={pathname} />
+        <NavGroup title="الطباعة والتقارير" items={REPORTS_NAV} pathname={pathname} />
+        <NavGroup title="الإدارة" items={ADMIN_NAV} pathname={pathname} />
+      </nav>
+
+      <div className="border-t border-line p-(--space-3) shrink-0">
+        <div className="flex items-center gap-(--space-3) rounded-(--radius-sm) px-(--space-2) py-(--space-2)">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-sm shrink-0">
+            {userName.charAt(0)}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold text-ink truncate">{userName}</p>
+            <p className="text-[11px] text-ink-muted truncate">{roleLabel(userRole)}</p>
+          </div>
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-danger-soft hover:text-danger transition-colors"
+              title="تسجيل الخروج"
+            >
+              <LogOut size={16} />
+            </button>
+          </form>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function roleLabel(role: string) {
+  if (role === "admin") return "مدير";
+  if (role === "supervisor") return "مشرف";
+  return "إدخال بيانات";
+}
