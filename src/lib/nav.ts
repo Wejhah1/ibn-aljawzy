@@ -13,6 +13,7 @@ import {
   Settings,
   CalendarRange,
   UploadCloud,
+  ClipboardCheck,
 } from "lucide-react";
 
 export interface NavItem {
@@ -38,6 +39,7 @@ export const STUDENTS_NAV: NavItem[] = [
 export const REPORTS_NAV: NavItem[] = [
   { href: "/admin/printing", label: "الطباعة والشهادات", icon: Printer },
   { href: "/admin/reports", label: "التقارير", icon: BarChart3 },
+  { href: "/admin/monthly-results", label: "النتائج الشهرية", icon: ClipboardCheck },
 ];
 
 export const ADMIN_NAV: NavItem[] = [

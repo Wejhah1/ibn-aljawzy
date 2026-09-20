@@ -5,10 +5,10 @@ import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { setAttendanceAction, bulkMarkPresentAction } from "./actions";
+import { setAttendanceAction, bulkMarkPresentAction, bulkSendWhatsappAction } from "./actions";
 import { fillTemplate, buildWaMeLink, type WhatsappVariables } from "@/lib/whatsapp";
 import type { ProgramInfo } from "@/lib/settings";
-import { CheckCircle2, XCircle, Clock, FileWarning, Circle, MessageCircle, ListChecks } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, FileWarning, Circle, MessageCircle, ListChecks, Send, Loader2 } from "lucide-react";
 
 type Status = "present" | "absent" | "late" | "excused" | null;
 
@@ -327,6 +327,8 @@ function EndDayModal({
   const absentRows = rows.filter((r) => r.status === "absent");
   const lateRows = rows.filter((r) => r.status === "late");
   const [sent, setSent] = useState<Set<string>>(new Set());
+  const [autoSendState, setAutoSendState] = useState<"idle" | "sending" | "fallback" | "done">("idle");
+  const [autoFailed, setAutoFailed] = useState<{ studentId: string; error: string }[]>([]);
 
   const buildMessage = (r: Row, template: string) =>
     fillTemplate(template, {
@@ -337,6 +339,25 @@ function EndDayModal({
       day: dayLabel,
       circle: r.circleName ?? "",
     } as WhatsappVariables);
+
+  const targets = [...absentRows, ...lateRows];
+
+  const handleAutoSend = async () => {
+    setAutoSendState("sending");
+    const items = targets.map((r) => ({
+      studentId: r.studentId,
+      phone: r.guardianPhone,
+      message: buildMessage(r, r.status === "absent" ? absentTemplate : lateTemplate),
+    }));
+    const result = await bulkSendWhatsappAction(items);
+    if (result.fallback) {
+      setAutoSendState("fallback");
+      return;
+    }
+    setSent(new Set(result.sent));
+    setAutoFailed(result.failed);
+    setAutoSendState("done");
+  };
 
   return (
     <Modal title="ملخص إنهاء اليوم" onClose={onClose} maxWidth="600px">
@@ -352,15 +373,36 @@ function EndDayModal({
           </div>
         </div>
 
-        {absentRows.length + lateRows.length === 0 ? (
+        {targets.length === 0 ? (
           <CardDescription>لا يوجد غياب أو تأخر لإرسال إشعارات بشأنه اليوم.</CardDescription>
         ) : (
           <div>
+            {autoSendState === "idle" && (
+              <Button size="sm" className="w-full mb-(--space-3)" onClick={handleAutoSend}>
+                <Send size={14} /> محاولة الإرسال التلقائي عبر WhatsApp Cloud API
+              </Button>
+            )}
+            {autoSendState === "sending" && (
+              <div className="flex items-center justify-center gap-2 mb-(--space-3) text-sm font-semibold text-ink-muted">
+                <Loader2 size={16} className="animate-spin" /> جارِ الإرسال...
+              </div>
+            )}
+            {autoSendState === "fallback" && (
+              <p className="text-[12px] text-warning font-semibold mb-(--space-3) bg-warning-soft rounded-(--radius-sm) px-(--space-3) py-(--space-2)">
+                Cloud API غير مفعّل أو غير مهيّأ — استخدم الروابط اليدوية أدناه (واحداً تلو الآخر).
+              </p>
+            )}
+            {autoSendState === "done" && (
+              <p className="text-[12px] text-brand font-semibold mb-(--space-3) bg-brand-soft rounded-(--radius-sm) px-(--space-3) py-(--space-2)">
+                تم إرسال {sent.size} رسالة تلقائياً{autoFailed.length > 0 ? ` — فشل ${autoFailed.length}` : ""}.
+              </p>
+            )}
+
             <p className="text-[13px] font-bold text-ink mb-(--space-2)">
-              إرسال إشعار واتساب (يُفتح رابط لكل ولي أمر يدوياً — واحد تلو الآخر)
+              إرسال يدوي (يُفتح رابط لكل ولي أمر — واحد تلو الآخر)
             </p>
             <div className="space-y-(--space-2) max-h-[300px] overflow-y-auto">
-              {[...absentRows, ...lateRows].map((r) => {
+              {targets.map((r) => {
                 const template = r.status === "absent" ? absentTemplate : lateTemplate;
                 const isSent = sent.has(r.studentId);
                 return (
