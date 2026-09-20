@@ -1036,6 +1036,7 @@ export type Database = {
         Returns: undefined
       }
       next_student_code: { Args: never; Returns: string }
+      public_stats: { Args: never; Returns: Json }
       set_current_season: { Args: { p_season_id: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
