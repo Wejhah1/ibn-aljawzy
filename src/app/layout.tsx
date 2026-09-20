@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 
 const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   variable: "--font-ibm-plex-sans-arabic",
@@ -20,6 +21,15 @@ const yearOfHandicrafts = localFont({
 export const metadata: Metadata = {
   title: "حلقات ابن الجوزي الصيفي",
   description: "نظام إدارة برنامج حلقات ابن الجوزي الصيفي — مسجد الطرباق",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0e6b4f",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -29,7 +39,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       dir="rtl"
       className={`${ibmPlexSansArabic.variable} ${yearOfHandicrafts.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <ServiceWorkerRegistration />
+      </body>
     </html>
   );
 }
