@@ -995,8 +995,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_season: { Args: { p_season_id: string }; Returns: undefined }
+      create_season: {
+        Args: {
+          p_carry_over_points: boolean
+          p_end_date: string
+          p_name: string
+          p_set_as_current: boolean
+          p_start_date: string
+          p_weekly_off_days: number[]
+        }
+        Returns: string
+      }
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      set_current_season: { Args: { p_season_id: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
