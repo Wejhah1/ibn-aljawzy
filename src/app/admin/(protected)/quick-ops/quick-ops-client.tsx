@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -113,7 +113,6 @@ export function QuickOpsClient() {
 
 function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: () => void }) {
   const [data, setData] = useState<QuickCardData | null>(null);
-  const [pending, startTransition] = useTransition();
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
   const reload = async () => {
@@ -133,19 +132,19 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
 
   const markAttendance = (status: "present" | "late" | "excused" | "absent") => {
     if (!data?.programDayId) return;
-    startTransition(async () => {
-      const res = await quickMarkAttendanceAction(studentId, data.programDayId!, status);
+    setData((prev) => (prev ? { ...prev, todayStatus: status } : prev));
+    flash("تم تسجيل الحضور");
+    quickMarkAttendanceAction(studentId, data.programDayId, status).then((res) => {
       if (res.data) setData(res.data);
-      flash("تم تسجيل الحضور");
     });
   };
 
   const addPoints = (amount: number) => {
     if (!data?.seasonId) return;
-    startTransition(async () => {
-      const res = await quickAddPointsAction(studentId, data.seasonId!, amount);
+    setData((prev) => (prev ? { ...prev, totalPoints: prev.totalPoints + amount } : prev));
+    flash(amount > 0 ? `+${amount} نقطة` : `${amount} نقطة`);
+    quickAddPointsAction(studentId, data.seasonId, amount).then((res) => {
       if (res.data) setData(res.data);
-      flash(amount > 0 ? `+${amount} نقطة` : `${amount} نقطة`);
     });
   };
 
@@ -200,7 +199,7 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
               return (
                 <button
                   key={opt.value}
-                  disabled={pending}
+                  
                   onClick={() => markAttendance(opt.value)}
                   className={`min-h-[56px] rounded-(--radius-sm) border-bold flex items-center justify-center gap-2 font-bold text-sm transition-all ${
                     active
@@ -231,7 +230,7 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
             {POINT_AMOUNTS.map((amt) => (
               <button
                 key={`add-${amt}`}
-                disabled={pending}
+                
                 onClick={() => addPoints(amt)}
                 className="min-h-[52px] rounded-(--radius-sm) border-bold border-line-strong bg-brand-soft text-brand-hover font-bold text-base flex items-center justify-center gap-1 hover:bg-brand hover:text-on-brand transition-colors"
               >
@@ -243,7 +242,7 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
             {POINT_AMOUNTS.map((amt) => (
               <button
                 key={`sub-${amt}`}
-                disabled={pending}
+                
                 onClick={() => addPoints(-amt)}
                 className="min-h-[52px] rounded-(--radius-sm) border-bold border-line-strong bg-danger-soft text-danger font-bold text-base flex items-center justify-center gap-1 hover:bg-danger hover:text-on-danger transition-colors"
               >

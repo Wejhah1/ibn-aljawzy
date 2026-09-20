@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   type AttendanceHistoryEntry,
 } from "./actions";
 import { fillTemplate, buildWaMeLink, type WhatsappVariables } from "@/lib/whatsapp";
+import { createClient } from "@/lib/supabase/client";
 import type { ProgramInfo } from "@/lib/settings";
 import {
   CheckCircle2,
@@ -74,9 +75,17 @@ export function AttendanceClient({
   lateTemplate: string;
 }) {
   const [rows, setRows] = useState(initialRows);
+  // مفاتيح الطلاب الذين لهم طلب حفظ لم ينتهِ بعد — تُستخدم فقط لمؤشر بصري خفيف،
+  // ولا تعطّل أي زر أبداً حتى لا يشعر المشرف بتعليق أثناء الضغط المتكرر السريع.
+  const [saving, setSaving] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [historyFor, setHistoryFor] = useState<Row | null>(null);
+  const lastLocalChange = useRef<Map<string, number>>(new Map());
+
+  useEffect(() => {
+    setRows(initialRows);
+  }, [initialRows]);
 
   const stats = useMemo(() => {
     const s = { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 };
@@ -89,9 +98,15 @@ export function AttendanceClient({
 
   const setStatus = (studentId: string, status: Exclude<Status, null>) => {
     if (!selectedDay) return;
+    lastLocalChange.current.set(studentId, Date.now());
     setRows((prev) => prev.map((r) => (r.studentId === studentId ? { ...r, status } : r)));
-    startTransition(async () => {
-      await setAttendanceAction(studentId, selectedDay.id, status);
+    setSaving((prev) => new Set(prev).add(studentId));
+    setAttendanceAction(studentId, selectedDay.id, status).finally(() => {
+      setSaving((prev) => {
+        const next = new Set(prev);
+        next.delete(studentId);
+        return next;
+      });
     });
   };
 
@@ -99,11 +114,59 @@ export function AttendanceClient({
     if (!selectedDay) return;
     const unmarkedIds = rows.filter((r) => !r.status).map((r) => r.studentId);
     if (unmarkedIds.length === 0) return;
+    for (const id of unmarkedIds) lastLocalChange.current.set(id, Date.now());
     setRows((prev) => prev.map((r) => (r.status ? r : { ...r, status: "present" })));
     startTransition(async () => {
       await bulkMarkPresentAction(unmarkedIds, selectedDay.id);
     });
   };
+
+  // مزامنة فورية بين الأجهزة: أي تعليم حضور يسجّله مشرف آخر على نفس اليوم يظهر هنا مباشرة
+  // بدون تحديث الصفحة، عبر Supabase Realtime على جدول attendance_records.
+  useEffect(() => {
+    if (!selectedDay) return;
+    const supabase = createClient();
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    (async () => {
+      // يجب تمرير جلسة المستخدم إلى عميل Realtime صراحةً قبل الاشتراك، وإلا فسيتم تقييم
+      // سياسات RLS كزائر مجهول (anon) وترفض بث تغييرات attendance_records.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (session) supabase.realtime.setAuth(session.access_token);
+
+      channel = supabase
+        .channel(`attendance-day-${selectedDay.id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "attendance_records", filter: `program_day_id=eq.${selectedDay.id}` },
+          (payload) => {
+            const record = (payload.new ?? payload.old) as { student_id?: string; status?: Status } | null;
+            if (!record?.student_id) return;
+            // تجاهل الصدى القادم من تعديلنا المحلي نفسه خلال آخر 4 ثوانٍ لتفادي أي وميض
+            const justChangedLocally = Date.now() - (lastLocalChange.current.get(record.student_id) ?? 0) < 4000;
+            if (justChangedLocally) return;
+            setRows((prev) =>
+              prev.map((r) => (r.studentId === record.student_id ? { ...r, status: record.status ?? r.status } : r))
+            );
+          }
+        )
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            // eslint-disable-next-line no-console
+            console.error("[attendance realtime] فشل الاشتراك:", status);
+          }
+        });
+    })();
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [selectedDay]);
 
   const dayLabel = selectedDay
     ? new Date(selectedDay.day_date).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" })
@@ -210,6 +273,9 @@ export function AttendanceClient({
               <tr key={r.studentId} className="border-t border-line bg-surface-raised">
                 <td className="p-(--space-3)">
                   <span className="font-semibold text-ink">{r.fullName}</span> <Badge tone="neutral">#{r.code}</Badge>
+                  {saving.has(r.studentId) && (
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand animate-pulse mr-1" title="جارِ الحفظ" />
+                  )}
                 </td>
                 <td className="p-(--space-3) text-ink-muted">
                   {r.circleName ?? "—"} {r.groupName ? `· ${r.groupName}` : ""}
@@ -223,7 +289,7 @@ export function AttendanceClient({
                       return (
                         <button
                           key={key}
-                          disabled={pending || !selectedDay}
+                          disabled={!selectedDay}
                           onClick={() => setStatus(r.studentId, key)}
                           title={meta.label}
                           className="h-10 w-10 rounded-(--radius-sm) border-bold flex items-center justify-center transition-colors"
@@ -296,7 +362,7 @@ export function AttendanceClient({
                 return (
                   <button
                     key={key}
-                    disabled={pending || !selectedDay}
+                    disabled={!selectedDay}
                     onClick={() => setStatus(r.studentId, key)}
                     className="min-h-[48px] rounded-(--radius-sm) border-bold flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors"
                     style={
