@@ -1,0 +1,404 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import { Card, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { setAttendanceAction, bulkMarkPresentAction } from "./actions";
+import { fillTemplate, buildWaMeLink, type WhatsappVariables } from "@/lib/whatsapp";
+import type { ProgramInfo } from "@/lib/settings";
+import { CheckCircle2, XCircle, Clock, FileWarning, Circle, MessageCircle, ListChecks } from "lucide-react";
+
+type Status = "present" | "absent" | "late" | "excused" | null;
+
+interface Row {
+  studentId: string;
+  code: string;
+  fullName: string;
+  guardianPhone: string;
+  circleName: string | null;
+  groupName: string | null;
+  status: Status;
+}
+
+const STATUS_META: Record<Exclude<Status, null>, { label: string; icon: typeof CheckCircle2; tone: string }> = {
+  present: { label: "حاضر", icon: CheckCircle2, tone: "success" },
+  late: { label: "متأخر", icon: Clock, tone: "warning" },
+  excused: { label: "بعذر", icon: FileWarning, tone: "info" },
+  absent: { label: "غائب", icon: XCircle, tone: "danger" },
+};
+
+export function AttendanceClient({
+  seasonName,
+  programDays,
+  selectedDay,
+  circles,
+  selectedCircle,
+  selectedGroup,
+  rows: initialRows,
+  programInfo,
+  absentTemplate,
+  lateTemplate,
+}: {
+  seasonName: string;
+  programDays: { id: string; day_date: string }[];
+  selectedDay: { id: string; day_date: string } | null;
+  circles: { id: string; name: string; groups: { id: string; name: string }[] }[];
+  selectedCircle: string;
+  selectedGroup: string;
+  rows: Row[];
+  programInfo: ProgramInfo;
+  absentTemplate: string;
+  lateTemplate: string;
+}) {
+  const [rows, setRows] = useState(initialRows);
+  const [pending, startTransition] = useTransition();
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
+  const stats = useMemo(() => {
+    const s = { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 };
+    for (const r of rows) {
+      if (r.status) s[r.status]++;
+      else s.unmarked++;
+    }
+    return s;
+  }, [rows]);
+
+  const setStatus = (studentId: string, status: Exclude<Status, null>) => {
+    if (!selectedDay) return;
+    setRows((prev) => prev.map((r) => (r.studentId === studentId ? { ...r, status } : r)));
+    startTransition(async () => {
+      await setAttendanceAction(studentId, selectedDay.id, status);
+    });
+  };
+
+  const markAllPresent = () => {
+    if (!selectedDay) return;
+    const unmarkedIds = rows.filter((r) => !r.status).map((r) => r.studentId);
+    if (unmarkedIds.length === 0) return;
+    setRows((prev) => prev.map((r) => (r.status ? r : { ...r, status: "present" })));
+    startTransition(async () => {
+      await bulkMarkPresentAction(unmarkedIds, selectedDay.id);
+    });
+  };
+
+  const dayLabel = selectedDay
+    ? new Date(selectedDay.day_date).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" })
+    : "—";
+
+  const groups = circles.find((c) => c.id === selectedCircle)?.groups ?? [];
+
+  return (
+    <main className="p-(--space-4) md:p-(--space-8) max-w-[1100px] mx-auto pb-24">
+      <div className="flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
+        <div>
+          <h1 className="text-[22px] leading-[30px] font-bold text-ink">كشف الحضور</h1>
+          <p className="text-sm text-ink-muted mt-1">
+            {seasonName} · {dayLabel}
+          </p>
+        </div>
+        <Button onClick={() => setSummaryOpen(true)}>
+          <ListChecks size={16} /> إنهاء اليوم
+        </Button>
+      </div>
+
+      <form method="get" className="mb-(--space-4)">
+        <Card className="flex flex-wrap gap-(--space-3) items-end">
+          <div>
+            <label className="block text-[12px] font-semibold text-ink-muted mb-1">اليوم</label>
+            <select
+              name="day"
+              defaultValue={selectedDay?.id}
+              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+            >
+              {programDays.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {new Date(d.day_date).toLocaleDateString("ar-SA", { weekday: "short", day: "numeric", month: "short" })}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[12px] font-semibold text-ink-muted mb-1">الحلقة</label>
+            <select
+              name="circle"
+              defaultValue={selectedCircle}
+              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+            >
+              <option value="">كل الحلقات</option>
+              {circles.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[12px] font-semibold text-ink-muted mb-1">المجموعة</label>
+            <select
+              name="group"
+              defaultValue={selectedGroup}
+              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+            >
+              <option value="">كل المجموعات</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Button type="submit" variant="secondary">
+            تطبيق
+          </Button>
+          <Button type="button" variant="outline" onClick={markAllPresent} disabled={!selectedDay}>
+            تعليم الجميع حاضر
+          </Button>
+        </Card>
+      </form>
+
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-(--space-2) mb-(--space-4)">
+        <StatChip label="حاضر" count={stats.present} tone="success" />
+        <StatChip label="متأخر" count={stats.late} tone="warning" />
+        <StatChip label="بعذر" count={stats.excused} tone="info" />
+        <StatChip label="غائب" count={stats.absent} tone="danger" />
+        <StatChip label="غير مسجّل" count={stats.unmarked} tone="neutral" />
+      </div>
+
+      {!selectedDay && (
+        <Card className="mb-(--space-4) border-warning bg-warning-soft">
+          <CardDescription className="text-warning font-semibold">لا توجد أيام برنامج لهذا الموسم بعد.</CardDescription>
+        </Card>
+      )}
+
+      {/* جدول للشاشات الكبيرة */}
+      <div className="hidden md:block rounded-(--radius-md) border border-line overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-surface-sunken">
+            <tr>
+              <th className="p-(--space-3) text-right font-semibold text-ink-muted">الطالب</th>
+              <th className="p-(--space-3) text-right font-semibold text-ink-muted">الحلقة</th>
+              <th className="p-(--space-3) text-center font-semibold text-ink-muted" colSpan={4}>
+                الحالة
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.studentId} className="border-t border-line bg-surface-raised">
+                <td className="p-(--space-3)">
+                  <span className="font-semibold text-ink">{r.fullName}</span> <Badge tone="neutral">#{r.code}</Badge>
+                </td>
+                <td className="p-(--space-3) text-ink-muted">
+                  {r.circleName ?? "—"} {r.groupName ? `· ${r.groupName}` : ""}
+                </td>
+                <td className="p-(--space-2)" colSpan={4}>
+                  <div className="flex items-center justify-center gap-(--space-2)">
+                    {(Object.keys(STATUS_META) as Exclude<Status, null>[]).map((key) => {
+                      const meta = STATUS_META[key];
+                      const Icon = meta.icon;
+                      const active = r.status === key;
+                      return (
+                        <button
+                          key={key}
+                          disabled={pending || !selectedDay}
+                          onClick={() => setStatus(r.studentId, key)}
+                          title={meta.label}
+                          className="h-10 w-10 rounded-(--radius-sm) border-bold flex items-center justify-center transition-colors"
+                          style={
+                            active
+                              ? {
+                                  backgroundColor: `var(--color-${meta.tone})`,
+                                  color: `var(--color-on-${meta.tone})`,
+                                  borderColor: "var(--color-line-strong)",
+                                }
+                              : { borderColor: "var(--color-line)", color: "var(--color-ink-faint)" }
+                          }
+                        >
+                          <Icon size={17} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* بطاقات للجوال */}
+      <div className="md:hidden space-y-(--space-3)">
+        {rows.map((r) => (
+          <Card key={r.studentId}>
+            <div className="flex items-center justify-between mb-(--space-3)">
+              <div>
+                <div className="flex items-center gap-(--space-2)">
+                  <span className="font-semibold text-ink text-sm">{r.fullName}</span>
+                  <Badge tone="neutral">#{r.code}</Badge>
+                </div>
+                <p className="text-[12px] text-ink-muted mt-0.5">
+                  {r.circleName ?? "—"} {r.groupName ? `· ${r.groupName}` : ""}
+                </p>
+              </div>
+              {r.status ? (
+                <Badge tone={STATUS_META[r.status].tone as never}>{STATUS_META[r.status].label}</Badge>
+              ) : (
+                <Badge tone="neutral">
+                  <Circle size={10} /> غير مسجّل
+                </Badge>
+              )}
+            </div>
+            <div className="grid grid-cols-4 gap-(--space-2)">
+              {(Object.keys(STATUS_META) as Exclude<Status, null>[]).map((key) => {
+                const meta = STATUS_META[key];
+                const Icon = meta.icon;
+                const active = r.status === key;
+                return (
+                  <button
+                    key={key}
+                    disabled={pending || !selectedDay}
+                    onClick={() => setStatus(r.studentId, key)}
+                    className="min-h-[48px] rounded-(--radius-sm) border-bold flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors"
+                    style={
+                      active
+                        ? {
+                            backgroundColor: `var(--color-${meta.tone})`,
+                            color: `var(--color-on-${meta.tone})`,
+                            borderColor: "var(--color-line-strong)",
+                          }
+                        : { borderColor: "var(--color-line-strong)", color: "var(--color-ink)" }
+                    }
+                  >
+                    <Icon size={16} />
+                    {meta.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {summaryOpen && (
+        <EndDayModal
+          rows={rows}
+          onClose={() => setSummaryOpen(false)}
+          programInfo={programInfo}
+          absentTemplate={absentTemplate}
+          lateTemplate={lateTemplate}
+          dayLabel={dayLabel}
+        />
+      )}
+    </main>
+  );
+}
+
+function StatChip({ label, count, tone }: { label: string; count: number; tone: string }) {
+  return (
+    <div
+      className="rounded-(--radius-sm) border-bold border-line-strong px-(--space-3) py-(--space-2) text-center"
+      style={{ backgroundColor: tone === "neutral" ? "var(--color-neutral-soft)" : `var(--color-${tone}-soft)` }}
+    >
+      <p className="text-[20px] font-bold" style={{ color: tone === "neutral" ? "var(--color-ink-muted)" : `var(--color-${tone})` }}>
+        {count}
+      </p>
+      <p className="text-[11px] font-semibold text-ink-muted">{label}</p>
+    </div>
+  );
+}
+
+function EndDayModal({
+  rows,
+  onClose,
+  programInfo,
+  absentTemplate,
+  lateTemplate,
+  dayLabel,
+}: {
+  rows: Row[];
+  onClose: () => void;
+  programInfo: ProgramInfo;
+  absentTemplate: string;
+  lateTemplate: string;
+  dayLabel: string;
+}) {
+  const absentRows = rows.filter((r) => r.status === "absent");
+  const lateRows = rows.filter((r) => r.status === "late");
+  const [sent, setSent] = useState<Set<string>>(new Set());
+
+  const buildMessage = (r: Row, template: string) =>
+    fillTemplate(template, {
+      name: r.fullName,
+      program: programInfo.program_name,
+      mosque: programInfo.mosque_name,
+      date: new Date().toLocaleDateString("ar-SA"),
+      day: dayLabel,
+      circle: r.circleName ?? "",
+    } as WhatsappVariables);
+
+  return (
+    <Modal title="ملخص إنهاء اليوم" onClose={onClose} maxWidth="600px">
+      <div className="space-y-(--space-4)">
+        <div className="grid grid-cols-2 gap-(--space-3)">
+          <div className="rounded-(--radius-sm) bg-danger-soft p-(--space-3) text-center">
+            <p className="text-[24px] font-bold text-danger">{absentRows.length}</p>
+            <p className="text-[12px] font-semibold text-danger">غائب</p>
+          </div>
+          <div className="rounded-(--radius-sm) bg-warning-soft p-(--space-3) text-center">
+            <p className="text-[24px] font-bold text-warning">{lateRows.length}</p>
+            <p className="text-[12px] font-semibold text-warning">متأخر</p>
+          </div>
+        </div>
+
+        {absentRows.length + lateRows.length === 0 ? (
+          <CardDescription>لا يوجد غياب أو تأخر لإرسال إشعارات بشأنه اليوم.</CardDescription>
+        ) : (
+          <div>
+            <p className="text-[13px] font-bold text-ink mb-(--space-2)">
+              إرسال إشعار واتساب (يُفتح رابط لكل ولي أمر يدوياً — واحد تلو الآخر)
+            </p>
+            <div className="space-y-(--space-2) max-h-[300px] overflow-y-auto">
+              {[...absentRows, ...lateRows].map((r) => {
+                const template = r.status === "absent" ? absentTemplate : lateTemplate;
+                const isSent = sent.has(r.studentId);
+                return (
+                  <div
+                    key={r.studentId}
+                    className="flex items-center justify-between rounded-(--radius-sm) border border-line px-(--space-3) py-(--space-2)"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-ink">{r.fullName}</p>
+                      <Badge tone={r.status === "absent" ? "danger" : "warning"}>
+                        {r.status === "absent" ? "غائب" : "متأخر"}
+                      </Badge>
+                    </div>
+                    <a
+                      href={buildWaMeLink(r.guardianPhone, buildMessage(r, template))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setSent((prev) => new Set(prev).add(r.studentId))}
+                      className="flex items-center gap-1 h-9 px-3 rounded-(--radius-sm) border-bold border-line-strong text-sm font-semibold"
+                      style={
+                        isSent
+                          ? { backgroundColor: "var(--color-brand-soft)", color: "var(--color-brand-hover)" }
+                          : { color: "var(--color-brand)" }
+                      }
+                    >
+                      <MessageCircle size={14} /> {isSent ? "أُرسل" : "إرسال"}
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-end pt-(--space-2)">
+          <Button onClick={onClose}>تم</Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
