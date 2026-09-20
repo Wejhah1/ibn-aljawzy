@@ -63,17 +63,15 @@ export async function updateCircleAction(_prev: FormState, formData: FormData): 
 }
 
 export async function createGroupAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const circleId = String(formData.get("circle_id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const leaderName = String(formData.get("leader_name") ?? "").trim();
   const leaderPhone = String(formData.get("leader_phone") ?? "").trim();
   const colorToken = String(formData.get("color_token") ?? "group-1");
 
-  if (!circleId || !name) return { error: "اسم المجموعة مطلوب." };
+  if (!name) return { error: "اسم المجموعة مطلوب." };
 
   const supabase = await createClient();
   const { error } = await supabase.from("groups").insert({
-    circle_id: circleId,
     name,
     leader_name: leaderName || null,
     leader_phone: leaderPhone || null,
@@ -110,4 +108,18 @@ export async function toggleCircleActiveAction(id: string, isActive: boolean) {
   const supabase = await createClient();
   await supabase.from("circles").update({ is_active: isActive }).eq("id", id);
   revalidatePath("/admin/circles");
+}
+
+export async function deleteCircleAction(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("circles").delete().eq("id", id);
+  revalidatePath("/admin/circles");
+  return { error: error?.message };
+}
+
+export async function deleteGroupAction(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("groups").delete().eq("id", id);
+  revalidatePath("/admin/circles");
+  return { error: error?.message };
 }

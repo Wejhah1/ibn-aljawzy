@@ -13,22 +13,46 @@ interface PublicStats {
   total_circles: number;
 }
 
+interface HomepageContent {
+  hero_title: string | null;
+  hero_subtitle: string | null;
+  logo_url: string | null;
+}
+
+interface NewsPost {
+  id: string;
+  title: string;
+  body: string | null;
+  image_url: string | null;
+  published_at: string;
+}
+
 const FEATURES = [
   { icon: BookOpen, title: "حفظ وتلاوة", desc: "برنامج يومي منظم لحفظ القرآن الكريم ومراجعته بإشراف معلمين مؤهلين." },
   { icon: Trophy, title: "نظام نقاط وحوافز", desc: "تحفيز مستمر للطلاب عبر النقاط، الإنجازات، والأوسمة على مدار الموسم." },
   { icon: ShieldCheck, title: "متابعة أولياء الأمور", desc: "بوابة خاصة لولي الأمر لمتابعة حضور ونتائج ابنه أولاً بأول." },
 ];
 
-export function HomeClient({ stats }: { stats: PublicStats }) {
+export function HomeClient({ stats, content, news }: { stats: PublicStats; content: HomepageContent; news: NewsPost[] }) {
+  const title = content.hero_title?.trim() || "حلقات ابن الجوزي الصيفي";
+  const subtitle =
+    content.hero_subtitle?.trim() ||
+    "برنامج تحفيظ صيفي بمسجد الطرباق — يجمع بين حفظ القرآن الكريم، التحفيز بنظام النقاط، ومتابعة دقيقة لأولياء الأمور طوال الموسم.";
+
   return (
     <main className="min-h-screen bg-surface overflow-x-hidden">
       <header className="border-b border-line">
         <div className="max-w-[1100px] mx-auto px-(--space-4) h-16 flex items-center justify-between">
           <div className="flex items-center gap-(--space-2)">
-            <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-brand text-on-brand border-bold border-line-strong font-bold">
-              ا
-            </div>
-            <p className="text-sm font-bold text-ink hidden sm:block">حلقات ابن الجوزي الصيفي</p>
+            {content.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={content.logo_url} alt={title} className="h-9 w-9 rounded-(--radius-sm) object-cover border-bold border-line-strong" />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-brand text-on-brand border-bold border-line-strong font-bold">
+                ا
+              </div>
+            )}
+            <p className="text-sm font-bold text-ink hidden sm:block">{title}</p>
           </div>
           <div className="flex items-center gap-(--space-2)">
             <Link href="/portal/login">
@@ -77,7 +101,7 @@ export function HomeClient({ stats }: { stats: PublicStats }) {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-[32px] md:text-[48px] leading-[1.2] font-bold text-ink mb-(--space-4)"
           >
-            حلقات ابن الجوزي الصيفي
+            {title}
           </motion.h1>
 
           <motion.p
@@ -86,8 +110,7 @@ export function HomeClient({ stats }: { stats: PublicStats }) {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-base md:text-lg text-ink-muted mb-(--space-8) max-w-[560px] mx-auto"
           >
-            برنامج تحفيظ صيفي بمسجد الطرباق — يجمع بين حفظ القرآن الكريم، التحفيز بنظام النقاط، ومتابعة دقيقة لأولياء
-            الأمور طوال الموسم.
+            {subtitle}
           </motion.p>
 
           <motion.div
@@ -164,6 +187,45 @@ export function HomeClient({ stats }: { stats: PublicStats }) {
           </div>
         </div>
       </section>
+
+      {news.length > 0 && (
+        <section className="px-(--space-4) pb-20">
+          <div className="max-w-[1000px] mx-auto">
+            <motion.h2
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-[22px] font-bold text-ink text-center mb-(--space-8)"
+            >
+              آخر الأخبار
+            </motion.h2>
+            <div className="grid md:grid-cols-3 gap-(--space-4)">
+              {news.map((n, i) => (
+                <motion.div
+                  key={n.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="rounded-(--radius-lg) border-bold border-line-strong bg-surface-raised overflow-hidden"
+                >
+                  {n.image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={n.image_url} alt={n.title} className="w-full h-40 object-cover border-b border-line" />
+                  )}
+                  <div className="p-(--space-4)">
+                    <h3 className="text-[15px] font-bold text-ink mb-(--space-2)">{n.title}</h3>
+                    {n.body && <p className="text-sm text-ink-muted leading-relaxed line-clamp-3">{n.body}</p>}
+                    <p className="text-[11px] text-ink-faint mt-(--space-3)">
+                      {new Date(n.published_at).toLocaleDateString("ar-SA")}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <footer className="border-t border-line py-(--space-8) px-(--space-4)">
         <div className="max-w-[1100px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-(--space-3) text-[13px] text-ink-muted">

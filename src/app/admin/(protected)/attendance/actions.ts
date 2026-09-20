@@ -33,6 +33,37 @@ export async function bulkMarkPresentAction(studentIds: string[], programDayId: 
   revalidatePath("/admin");
 }
 
+export interface AttendanceHistoryEntry {
+  dayDate: string;
+  status: "present" | "absent" | "late" | "excused" | null;
+}
+
+export async function getStudentAttendanceHistoryAction(
+  studentId: string,
+  seasonId: string
+): Promise<AttendanceHistoryEntry[]> {
+  const supabase = await createClient();
+  const { data: days } = await supabase
+    .from("program_days")
+    .select("id, day_date")
+    .eq("season_id", seasonId)
+    .lte("day_date", new Date().toISOString().slice(0, 10))
+    .order("day_date", { ascending: false });
+
+  const { data: records } = await supabase
+    .from("attendance_records")
+    .select("program_day_id, status")
+    .eq("student_id", studentId)
+    .eq("season_id", seasonId);
+
+  const statusByDay = Object.fromEntries((records ?? []).map((r) => [r.program_day_id, r.status]));
+
+  return (days ?? []).map((d) => ({
+    dayDate: d.day_date,
+    status: (statusByDay[d.id] ?? null) as AttendanceHistoryEntry["status"],
+  }));
+}
+
 export interface BulkWhatsappItem {
   studentId: string;
   phone: string;

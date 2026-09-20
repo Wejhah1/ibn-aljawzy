@@ -6,9 +6,14 @@ import { CommandPalette } from "@/components/search/command-palette";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
+  // proxy.ts already verified the session with the Supabase Auth server (network call) for
+  // this request. Re-checking here with getUser() would add a second network round-trip on
+  // every single admin navigation, which is the main cause of perceived lag. getSession() reads
+  // the already-verified JWT from cookies locally, no network call.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
 
   if (!user) redirect("/admin/login");
 
@@ -20,10 +25,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen bg-surface">
-      <Sidebar userName={profile?.full_name ?? user.email ?? "مستخدم"} userRole={profile?.role ?? "data_entry"} />
-      <div className="flex-1 min-w-0 pb-20 md:pb-0">{children}</div>
-      <BottomNav />
-      <CommandPalette />
+      <div className="print:hidden contents">
+        <Sidebar userName={profile?.full_name ?? user.email ?? "مستخدم"} userRole={profile?.role ?? "data_entry"} />
+      </div>
+      <div className="flex-1 min-w-0 pb-20 md:pb-0 print:pb-0">{children}</div>
+      <div className="print:hidden contents">
+        <BottomNav />
+        <CommandPalette />
+      </div>
     </div>
   );
 }

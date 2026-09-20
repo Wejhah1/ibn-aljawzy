@@ -373,7 +373,7 @@ export type Database = {
       }
       groups: {
         Row: {
-          circle_id: string
+          circle_id: string | null
           color_token: string
           created_at: string
           id: string
@@ -383,7 +383,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          circle_id: string
+          circle_id?: string | null
           color_token?: string
           created_at?: string
           id?: string
@@ -393,7 +393,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          circle_id?: string
+          circle_id?: string | null
           color_token?: string
           created_at?: string
           id?: string
@@ -463,6 +463,95 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_posts: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          published_at: string
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          published_at?: string
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          published_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_notes: {
+        Row: {
+          created_at: string
+          id: string
+          is_read_by_admin: boolean
+          is_read_by_parent: boolean
+          message: string
+          sender: string
+          sender_profile_id: string | null
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read_by_admin?: boolean
+          is_read_by_parent?: boolean
+          message: string
+          sender: string
+          sender_profile_id?: string | null
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read_by_admin?: boolean
+          is_read_by_parent?: boolean
+          message?: string
+          sender?: string
+          sender_profile_id?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_notes_sender_profile_id_fkey"
+            columns: ["sender_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_notes_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
             referencedColumns: ["id"]
           },
         ]
@@ -915,8 +1004,11 @@ export type Database = {
           guardian_phone: string
           guardian_relation: string | null
           id: string
+          id_type: Database["public"]["Enums"]["id_document_type"]
           national_id: string | null
+          nationality: string | null
           notes: string | null
+          personal_number: string | null
           photo_url: string | null
           status: Database["public"]["Enums"]["student_status"]
           updated_at: string
@@ -931,8 +1023,11 @@ export type Database = {
           guardian_phone: string
           guardian_relation?: string | null
           id?: string
+          id_type?: Database["public"]["Enums"]["id_document_type"]
           national_id?: string | null
+          nationality?: string | null
           notes?: string | null
+          personal_number?: string | null
           photo_url?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           updated_at?: string
@@ -947,8 +1042,11 @@ export type Database = {
           guardian_phone?: string
           guardian_relation?: string | null
           id?: string
+          id_type?: Database["public"]["Enums"]["id_document_type"]
           national_id?: string | null
+          nationality?: string | null
           notes?: string | null
+          personal_number?: string | null
           photo_url?: string | null
           status?: Database["public"]["Enums"]["student_status"]
           updated_at?: string
@@ -1016,6 +1114,14 @@ export type Database = {
         }
         Returns: string
       }
+      delete_season_permanently: {
+        Args: { p_season_id: string }
+        Returns: undefined
+      }
+      delete_student_permanently: {
+        Args: { p_student_id: string }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       mark_attendance: {
@@ -1036,15 +1142,15 @@ export type Database = {
         Returns: undefined
       }
       next_student_code: { Args: never; Returns: string }
+      public_homepage_content: { Args: never; Returns: Json }
       public_stats: { Args: never; Returns: Json }
       set_current_season: { Args: { p_season_id: string }; Returns: undefined }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       attendance_status: "present" | "absent" | "late" | "excused"
       enrollment_status: "active" | "dropped_out" | "transferred"
       flag_severity: "info" | "warning" | "critical"
+      id_document_type: "national_id" | "iqama" | "passport"
       point_source: "manual" | "auto_attendance" | "achievement" | "adjustment"
       season_status: "current" | "archived"
       student_status: "active" | "dropped_out"

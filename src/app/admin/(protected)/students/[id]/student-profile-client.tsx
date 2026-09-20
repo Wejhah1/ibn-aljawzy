@@ -16,9 +16,32 @@ import {
   awardBadgeAction,
   setStudentFlagAction,
   resolveStudentFlagAction,
+  sendParentNoteAdminAction,
+  deleteStudentAction,
   type FormState,
 } from "../actions";
-import { ArrowRight, Pencil, UserX, UserCheck, Trophy, Award, CalendarCheck, ShieldAlert, Flag as FlagIcon, CheckCircle2 } from "lucide-react";
+import {
+  ArrowRight,
+  Pencil,
+  UserX,
+  UserCheck,
+  Trophy,
+  Award,
+  CalendarCheck,
+  ShieldAlert,
+  Flag as FlagIcon,
+  CheckCircle2,
+  MessageSquare,
+  Send,
+  Trash2,
+} from "lucide-react";
+
+const ID_TYPE_OPTIONS: { value: string; label: string }[] = [
+  { value: "national_id", label: "هوية وطنية" },
+  { value: "iqama", label: "إقامة" },
+  { value: "passport", label: "جواز سفر" },
+];
+const ID_TYPE_LABEL: Record<string, string> = Object.fromEntries(ID_TYPE_OPTIONS.map((o) => [o.value, o.label]));
 
 interface Student {
   id: string;
@@ -26,6 +49,9 @@ interface Student {
   full_name: string;
   birth_date: string | null;
   national_id: string | null;
+  id_type: string;
+  nationality: string | null;
+  personal_number: string | null;
   guardian_name: string | null;
   guardian_phone: string;
   guardian_relation: string | null;
@@ -46,6 +72,14 @@ interface Enrollment {
   groups: { name: string } | { name: string }[] | null;
 }
 
+interface ParentNote {
+  id: string;
+  sender: string;
+  message: string;
+  created_at: string;
+  is_read_by_admin: boolean;
+}
+
 function one<T>(v: T | T[] | null): T | null {
   if (!v) return null;
   return Array.isArray(v) ? v[0] ?? null : v;
@@ -59,11 +93,13 @@ export function StudentProfileClient({
   badges,
   dropoutPeriods,
   circles,
+  groups,
   currentSeason,
   allAchievements,
   allBadges,
   allFlags,
   studentFlags,
+  parentNotes,
 }: {
   student: Student;
   enrollments: Enrollment[];
@@ -71,7 +107,8 @@ export function StudentProfileClient({
   achievements: { season_id: string; achievements: { name: string; icon: string | null } | { name: string; icon: string | null }[] | null }[];
   badges: { season_id: string; badges: { name: string; icon: string | null } | { name: string; icon: string | null }[] | null }[];
   dropoutPeriods: { dropped_at: string; returned_at: string | null; reason: string | null }[];
-  circles: { id: string; name: string; groups: { id: string; name: string }[] }[];
+  circles: { id: string; name: string }[];
+  groups: { id: string; name: string }[];
   currentSeason: { id: string; name: string } | null;
   allAchievements: { id: string; name: string; points_awarded: number }[];
   allBadges: { id: string; name: string }[];
@@ -84,11 +121,14 @@ export function StudentProfileClient({
     set_at: string;
     flags: { name: string; severity: string } | { name: string; severity: string }[] | null;
   }[];
+  parentNotes: ParentNote[];
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [dropoutOpen, setDropoutOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const currentEnrollment = enrollments.find((e) => e.season_id === currentSeason?.id);
+  const hasUnreadParentNote = parentNotes.some((n) => n.sender === "parent");
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[900px] mx-auto">
@@ -111,9 +151,19 @@ export function StudentProfileClient({
                 ) : (
                   <Badge tone="success">نشط</Badge>
                 )}
+                {hasUnreadParentNote && (
+                  <Badge tone="warning">
+                    <MessageSquare size={11} /> ملاحظة من ولي الأمر
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-ink-muted mt-1">
                 ولي الأمر: {student.guardian_name ?? "—"} ({student.guardian_relation ?? "—"}) · {student.guardian_phone}
+              </p>
+              <p className="text-[12px] text-ink-faint mt-1">
+                {ID_TYPE_LABEL[student.id_type] ?? "هوية"}: {student.national_id ?? "—"}
+                {student.nationality ? ` · ${student.nationality}` : ""}
+                {student.personal_number ? ` · رقم شخصي: ${student.personal_number}` : ""}
               </p>
             </div>
           </div>
@@ -128,6 +178,13 @@ export function StudentProfileClient({
             ) : (
               <ReturnButton studentId={student.id} />
             )}
+            <button
+              onClick={() => setDeleteOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-danger hover:bg-danger-soft"
+              title="حذف الطالب نهائياً"
+            >
+              <Trash2 size={15} />
+            </button>
           </div>
         </div>
 
@@ -147,6 +204,7 @@ export function StudentProfileClient({
             seasonId={currentSeason.id}
             enrollment={currentEnrollment ?? null}
             circles={circles}
+            groups={groups}
           />
         </Card>
       )}
@@ -186,6 +244,13 @@ export function StudentProfileClient({
           )}
         </Card>
       )}
+
+      <Card className="mb-(--space-6)">
+        <CardTitle className="mb-(--space-3) flex items-center gap-2">
+          <MessageSquare size={16} className="text-brand" /> التواصل مع ولي الأمر
+        </CardTitle>
+        <ParentNotesThread studentId={student.id} notes={parentNotes} />
+      </Card>
 
       <div>
         <h2 className="text-[16px] font-bold text-ink mb-(--space-3)">الخط الزمني للمواسم</h2>
@@ -274,12 +339,59 @@ export function StudentProfileClient({
 
       {editOpen && <EditStudentModal student={student} onClose={() => setEditOpen(false)} />}
       {dropoutOpen && <DropoutModal studentId={student.id} onClose={() => setDropoutOpen(false)} />}
+      {deleteOpen && <DeleteStudentModal studentId={student.id} studentName={student.full_name} onClose={() => setDeleteOpen(false)} />}
     </main>
+  );
+}
+
+function ParentNotesThread({ studentId, notes }: { studentId: string; notes: ParentNote[] }) {
+  const [message, setMessage] = useState("");
+  const [pending, setPending] = useState(false);
+
+  return (
+    <div>
+      <div className="space-y-(--space-2) max-h-[320px] overflow-y-auto mb-(--space-4)">
+        {notes.length === 0 && <CardDescription>لا توجد رسائل بعد.</CardDescription>}
+        {notes.map((n) => (
+          <div
+            key={n.id}
+            className={`rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
+              n.sender === "admin" ? "bg-brand-soft mr-auto text-right" : "bg-surface-sunken ml-auto text-right"
+            }`}
+          >
+            <p className="text-sm text-ink">{n.message}</p>
+            <p className="text-[11px] text-ink-faint mt-1">
+              {n.sender === "admin" ? "الإدارة" : "ولي الأمر"} · {new Date(n.created_at).toLocaleString("ar-SA")}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-(--space-2)">
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="اكتب رداً لولي الأمر..."
+          className="flex-1"
+        />
+        <Button
+          disabled={!message.trim() || pending}
+          onClick={async () => {
+            setPending(true);
+            await sendParentNoteAdminAction(studentId, message.trim());
+            setMessage("");
+            setPending(false);
+          }}
+        >
+          <Send size={14} /> إرسال
+        </Button>
+      </div>
+    </div>
   );
 }
 
 function EditStudentModal({ student, onClose }: { student: Student; onClose: () => void }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(updateStudentAction, null);
+  const [idType, setIdType] = useState(student.id_type);
 
   if (state?.success) onClose();
 
@@ -297,8 +409,41 @@ function EditStudentModal({ student, onClose }: { student: Student; onClose: () 
             <Input id="birth_date" name="birth_date" type="date" defaultValue={student.birth_date ?? ""} />
           </div>
           <div>
-            <Label htmlFor="national_id">رقم الهوية</Label>
-            <Input id="national_id" name="national_id" defaultValue={student.national_id ?? ""} />
+            <Label htmlFor="personal_number">الرقم الشخصي للطالب</Label>
+            <Input id="personal_number" name="personal_number" defaultValue={student.personal_number ?? ""} />
+          </div>
+        </div>
+        <div>
+          <Label>نوع الهوية</Label>
+          <div className="flex gap-(--space-2) mt-1">
+            {ID_TYPE_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex-1 h-11 flex items-center justify-center rounded-(--radius-sm) border text-[13px] font-semibold cursor-pointer transition-colors ${
+                  idType === opt.value ? "border-brand bg-brand-soft text-brand-hover" : "border-line text-ink-muted"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="id_type"
+                  value={opt.value}
+                  checked={idType === opt.value}
+                  onChange={() => setIdType(opt.value)}
+                  className="sr-only"
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-(--space-3)">
+          <div>
+            <Label htmlFor="national_id">رقم الهوية / الإقامة / الجواز</Label>
+            <Input id="national_id" name="national_id" dir="ltr" defaultValue={student.national_id ?? ""} />
+          </div>
+          <div>
+            <Label htmlFor="nationality">الجنسية</Label>
+            <Input id="nationality" name="nationality" defaultValue={student.nationality ?? ""} />
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-(--space-3)">
@@ -378,6 +523,43 @@ function DropoutModal({ studentId, onClose }: { studentId: string; onClose: () =
   );
 }
 
+function DeleteStudentModal({ studentId, studentName, onClose }: { studentId: string; studentName: string; onClose: () => void }) {
+  const [confirmed, setConfirmed] = useState(false);
+  const [pending, setPending] = useState(false);
+
+  return (
+    <Modal title="حذف الطالب نهائياً" onClose={onClose}>
+      <div className="space-y-(--space-4)">
+        <div className="rounded-(--radius-sm) bg-danger-soft border border-danger px-(--space-3) py-(--space-3) text-[13px] font-semibold text-danger">
+          سيتم حذف بيانات &quot;{studentName}&quot; بالكامل — الحضور، النقاط، الإنجازات، والسجلات — نهائياً ولا يمكن التراجع عن هذا
+          الإجراء.
+        </div>
+        <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="h-5 w-5" />
+          أفهم أن هذا الإجراء نهائي ولا يمكن التراجع عنه
+        </label>
+        <div className="flex justify-end gap-(--space-2) pt-(--space-2)">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            إلغاء
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            disabled={!confirmed || pending}
+            onClick={async () => {
+              setPending(true);
+              await deleteStudentAction(studentId);
+              window.location.href = "/admin/students";
+            }}
+          >
+            {pending ? "جارِ الحذف..." : "حذف نهائياً"}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 function ReturnButton({ studentId }: { studentId: string }) {
   const [pending, setPending] = useState(false);
   return (
@@ -401,15 +583,15 @@ function EnrollmentEditor({
   seasonId,
   enrollment,
   circles,
+  groups,
 }: {
   studentId: string;
   seasonId: string;
   enrollment: Enrollment | null;
-  circles: { id: string; name: string; groups: { id: string; name: string }[] }[];
+  circles: { id: string; name: string }[];
+  groups: { id: string; name: string }[];
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(updateEnrollmentAction, null);
-  const [circleId, setCircleId] = useState(enrollment?.circle_id ?? "");
-  const groups = circles.find((c) => c.id === circleId)?.groups ?? [];
 
   return (
     <form action={formAction} className="flex flex-col sm:flex-row gap-(--space-3) items-end">
@@ -421,8 +603,7 @@ function EnrollmentEditor({
         <select
           id="circle_id"
           name="circle_id"
-          value={circleId}
-          onChange={(e) => setCircleId(e.target.value)}
+          defaultValue={enrollment?.circle_id ?? ""}
           className="h-11 w-full rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
         >
           <option value="">بدون حلقة</option>
@@ -439,8 +620,7 @@ function EnrollmentEditor({
           id="group_id"
           name="group_id"
           defaultValue={enrollment?.group_id ?? ""}
-          disabled={!circleId}
-          className="h-11 w-full rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink disabled:opacity-(--opacity-disabled)"
+          className="h-11 w-full rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
         >
           <option value="">بدون مجموعة</option>
           {groups.map((g) => (

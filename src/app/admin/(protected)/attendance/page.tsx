@@ -40,7 +40,8 @@ export default async function AttendancePage({
       programDays?.[0];
   }
 
-  const { data: circles } = await supabase.from("circles").select("id, name, groups(id, name)").order("name");
+  const { data: circles } = await supabase.from("circles").select("id, name").order("name");
+  const { data: groups } = await supabase.from("groups").select("id, name").order("name");
 
   const { data: enrollments } = await supabase
     .from("student_season_enrollments")
@@ -72,7 +73,7 @@ export default async function AttendancePage({
     .map((e) => {
       const s = Array.isArray(e.students) ? e.students[0] : e.students;
       const c = circles?.find((c) => c.id === e.circle_id);
-      const g = c?.groups.find((g) => g.id === e.group_id);
+      const g = groups?.find((g) => g.id === e.group_id);
       return {
         studentId: s!.id,
         code: s!.code,
@@ -88,9 +89,11 @@ export default async function AttendancePage({
   return (
     <AttendanceClient
       seasonName={currentSeason.name}
+      seasonId={currentSeason.id}
       programDays={programDays ?? []}
       selectedDay={selectedDay ?? null}
       circles={circles ?? []}
+      groups={groups ?? []}
       selectedCircle={circle}
       selectedGroup={group}
       rows={rows}

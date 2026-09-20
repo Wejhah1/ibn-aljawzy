@@ -13,19 +13,25 @@ interface Group {
 interface Circle {
   id: string;
   name: string;
-  groups: Group[];
 }
+
+const ID_TYPE_OPTIONS: { value: string; label: string }[] = [
+  { value: "national_id", label: "هوية وطنية" },
+  { value: "iqama", label: "إقامة" },
+  { value: "passport", label: "جواز سفر" },
+];
 
 export function NewStudentForm({
   currentSeason,
   circles,
+  groups,
 }: {
   currentSeason: { id: string; name: string } | null;
   circles: Circle[];
+  groups: Group[];
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(createStudentAction, null);
-  const [circleId, setCircleId] = useState("");
-  const groups = circles.find((c) => c.id === circleId)?.groups ?? [];
+  const [idType, setIdType] = useState("national_id");
 
   return (
     <Card>
@@ -40,8 +46,44 @@ export function NewStudentForm({
             <Input id="birth_date" name="birth_date" type="date" />
           </div>
           <div>
-            <Label htmlFor="national_id">رقم الهوية</Label>
-            <Input id="national_id" name="national_id" />
+            <Label htmlFor="personal_number">الرقم الشخصي للطالب</Label>
+            <Input id="personal_number" name="personal_number" />
+          </div>
+        </div>
+
+        <div>
+          <Label>نوع الهوية</Label>
+          <div className="flex gap-(--space-2) mt-1">
+            {ID_TYPE_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex-1 h-11 flex items-center justify-center rounded-(--radius-sm) border text-[13px] font-semibold cursor-pointer transition-colors ${
+                  idType === opt.value
+                    ? "border-brand bg-brand-soft text-brand-hover"
+                    : "border-line text-ink-muted"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="id_type"
+                  value={opt.value}
+                  checked={idType === opt.value}
+                  onChange={() => setIdType(opt.value)}
+                  className="sr-only"
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-(--space-3)">
+          <div>
+            <Label htmlFor="national_id">رقم الهوية / الإقامة / الجواز</Label>
+            <Input id="national_id" name="national_id" dir="ltr" />
+          </div>
+          <div>
+            <Label htmlFor="nationality">الجنسية</Label>
+            <Input id="nationality" name="nationality" placeholder="سعودي" />
           </div>
         </div>
 
@@ -73,8 +115,6 @@ export function NewStudentForm({
                 <select
                   id="circle_id"
                   name="circle_id"
-                  value={circleId}
-                  onChange={(e) => setCircleId(e.target.value)}
                   className="h-11 w-full rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
                 >
                   <option value="">بدون حلقة</option>
@@ -90,8 +130,7 @@ export function NewStudentForm({
                 <select
                   id="group_id"
                   name="group_id"
-                  disabled={!circleId}
-                  className="h-11 w-full rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink disabled:opacity-(--opacity-disabled)"
+                  className="h-11 w-full rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
                 >
                   <option value="">بدون مجموعة</option>
                   {groups.map((g) => (

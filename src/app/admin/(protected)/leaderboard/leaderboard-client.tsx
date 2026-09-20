@@ -65,6 +65,8 @@ export function LeaderboardClient({
 
   const sorted = sortEntries(entries, tab);
   const top10 = sorted.slice(0, 10);
+  const podium = top10.slice(0, 3);
+  const rest = top10.slice(3);
 
   const handleExport = async () => {
     if (!exportRef.current) return;
@@ -128,9 +130,11 @@ export function LeaderboardClient({
           ))}
         </div>
 
+        {podium.length > 0 && <Podium entries={podium} tab={tab} large={fullscreen} />}
+
         <div className="space-y-(--space-2)">
-          {top10.map((e, i) => (
-            <LeaderRow key={e.studentId} rank={i + 1} entry={e} value={valueFor(e, tab)} large={fullscreen} />
+          {rest.map((e, i) => (
+            <LeaderRow key={e.studentId} rank={i + 4} entry={e} value={valueFor(e, tab)} large={fullscreen} />
           ))}
           {top10.length === 0 && <p className="text-center text-ink-muted text-sm">لا توجد بيانات بعد.</p>}
         </div>
@@ -181,6 +185,46 @@ export function LeaderboardClient({
   );
 
   return content;
+}
+
+function Podium({ entries, tab, large }: { entries: Entry[]; tab: TabKey; large: boolean }) {
+  const [first, second, third] = entries;
+  const heights = large ? [220, 170, 130] : [160, 120, 90];
+
+  const slot = (entry: Entry | undefined, rank: 1 | 2 | 3, height: number) => {
+    if (!entry) return <div className="flex-1" />;
+    const medalColor = rank === 1 ? "#e6b400" : rank === 2 ? "#9aa0a6" : "#b3742e";
+    return (
+      <div key={entry.studentId} className="flex-1 flex flex-col items-center">
+        <div
+          className={`flex items-center justify-center rounded-full font-bold shrink-0 mb-(--space-2) ${
+            large ? "h-16 w-16 text-2xl" : "h-11 w-11 text-base"
+          }`}
+          style={{ backgroundColor: medalColor, color: "#171b18", border: "2.5px solid var(--color-line-strong)" }}
+        >
+          {rank}
+        </div>
+        <p className={`font-bold text-ink text-center leading-tight mb-1 ${large ? "text-lg" : "text-[12px]"}`}>
+          {entry.fullName}
+        </p>
+        <p className={`font-bold text-brand mb-(--space-2) ${large ? "text-base" : "text-[11px]"}`}>{valueFor(entry, tab)}</p>
+        <div
+          className="w-full rounded-t-(--radius-md) border-bold border-line-strong border-b-0 flex items-start justify-center pt-(--space-2)"
+          style={{ height, backgroundColor: "var(--color-accent-soft)", boxShadow: "var(--shadow-brutal-sm)" }}
+        >
+          <Trophy size={large ? 26 : 18} className="text-accent" />
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex items-end gap-(--space-2) mb-(--space-6) max-w-[560px] mx-auto">
+      {slot(second, 2, heights[1])}
+      {slot(first, 1, heights[0])}
+      {slot(third, 3, heights[2])}
+    </div>
+  );
 }
 
 function LeaderRow({ rank, entry, value, large }: { rank: number; entry: Entry; value: string; large: boolean }) {

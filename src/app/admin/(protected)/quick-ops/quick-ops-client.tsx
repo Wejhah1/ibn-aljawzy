@@ -134,18 +134,18 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
   const markAttendance = (status: "present" | "late" | "excused" | "absent") => {
     if (!data?.programDayId) return;
     startTransition(async () => {
-      await quickMarkAttendanceAction(studentId, data.programDayId!, status);
+      const res = await quickMarkAttendanceAction(studentId, data.programDayId!, status);
+      if (res.data) setData(res.data);
       flash("تم تسجيل الحضور");
-      await reload();
     });
   };
 
   const addPoints = (amount: number) => {
     if (!data?.seasonId) return;
     startTransition(async () => {
-      await quickAddPointsAction(studentId, data.seasonId!, amount);
+      const res = await quickAddPointsAction(studentId, data.seasonId!, amount);
+      if (res.data) setData(res.data);
       flash(amount > 0 ? `+${amount} نقطة` : `${amount} نقطة`);
-      await reload();
     });
   };
 

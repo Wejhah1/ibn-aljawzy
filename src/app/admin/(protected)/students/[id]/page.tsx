@@ -42,8 +42,18 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
     .eq("student_id", id)
     .order("dropped_at", { ascending: false });
 
-  const { data: circles } = await supabase.from("circles").select("id, name, groups(id, name)").eq("is_active", true).order("name");
+  const { data: circles } = await supabase.from("circles").select("id, name").eq("is_active", true).order("name");
+  const { data: groups } = await supabase.from("groups").select("id, name").order("name");
   const { data: currentSeason } = await supabase.from("seasons").select("id, name").eq("status", "current").maybeSingle();
+  const { data: parentNotes } = await supabase
+    .from("parent_notes")
+    .select("id, sender, message, created_at, is_read_by_admin")
+    .eq("student_id", id)
+    .order("created_at", { ascending: true });
+
+  if (parentNotes?.some((n) => n.sender === "parent" && !n.is_read_by_admin)) {
+    await supabase.from("parent_notes").update({ is_read_by_admin: true }).eq("student_id", id).eq("sender", "parent");
+  }
 
   const [{ data: allAchievements }, { data: allBadges }, { data: allFlags }, { data: studentFlags }] = await Promise.all([
     supabase.from("achievements").select("id, name, points_awarded").eq("is_active", true).order("name"),
@@ -65,11 +75,13 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
       badges={badges ?? []}
       dropoutPeriods={dropoutPeriods ?? []}
       circles={circles ?? []}
+      groups={groups ?? []}
       currentSeason={currentSeason}
       allAchievements={allAchievements ?? []}
       allBadges={allBadges ?? []}
       allFlags={allFlags ?? []}
       studentFlags={studentFlags ?? []}
+      parentNotes={parentNotes ?? []}
     />
   );
 }

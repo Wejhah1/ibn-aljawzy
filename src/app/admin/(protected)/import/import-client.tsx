@@ -6,7 +6,9 @@ import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { importStudentsAction, type ImportRow, type ImportResult } from "./actions";
-import { UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Download } from "lucide-react";
+import { UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Download, UserPlus, RefreshCw } from "lucide-react";
+
+type Mode = "new" | "update";
 
 const COLUMN_MAP: Record<string, keyof ImportRow> = {
   "كود": "code",
@@ -20,8 +22,22 @@ const COLUMN_MAP: Record<string, keyof ImportRow> = {
   "صلة القرابة": "guardian_relation",
   "تاريخ الميلاد": "birth_date",
   "رقم الهوية": "national_id",
+  "نوع الهوية": "id_type",
+  "الجنسية": "nationality",
+  "الرقم الشخصي": "personal_number",
   "العنوان": "address",
   "ملاحظات": "notes",
+  "الحلقة": "circle_name",
+  "المجموعة": "group_name",
+};
+
+const ID_TYPE_MAP: Record<string, string> = {
+  "هوية": "national_id",
+  "هوية وطنية": "national_id",
+  "اقامة": "iqama",
+  "إقامة": "iqama",
+  "جواز": "passport",
+  "جواز سفر": "passport",
 };
 
 function excelDateToIso(value: unknown): string | undefined {
@@ -35,10 +51,18 @@ function excelDateToIso(value: unknown): string | undefined {
 }
 
 export function ImportClient({ currentSeason }: { currentSeason: { id: string; name: string } | null }) {
+  const [mode, setMode] = useState<Mode>("new");
   const [rows, setRows] = useState<ImportRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
+
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setRows([]);
+    setFileName("");
+    setResult(null);
+  };
 
   const handleFile = async (file: File) => {
     setFileName(file.name);
@@ -48,44 +72,106 @@ export function ImportClient({ currentSeason }: { currentSeason: { id: string; n
     const sheet = wb.Sheets[wb.SheetNames[0]];
     const raw: Record<string, unknown>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-    const parsed: ImportRow[] = raw.map((r) => {
-      const row: Partial<ImportRow> = {};
-      for (const [header, value] of Object.entries(r)) {
-        const key = COLUMN_MAP[header.trim()];
-        if (!key) continue;
-        if (key === "birth_date") {
-          row[key] = excelDateToIso(value);
-        } else {
-          const str = String(value ?? "").trim();
-          if (str) (row as Record<string, string>)[key] = str;
+    const parsed: ImportRow[] = raw
+      .map((r) => {
+        const row: Partial<ImportRow> = {};
+        for (const [header, value] of Object.entries(r)) {
+          const key = COLUMN_MAP[header.trim()];
+          if (!key) continue;
+          if (key === "birth_date") {
+            row[key] = excelDateToIso(value);
+          } else if (key === "id_type") {
+            const raw = String(value ?? "").trim();
+            row.id_type = ID_TYPE_MAP[raw] ?? (raw ? "national_id" : undefined);
+          } else {
+            const str = String(value ?? "").trim();
+            if (str) (row as Record<string, string>)[key] = str;
+          }
         }
-      }
-      return row as ImportRow;
-    }).filter((r) => r.full_name || r.guardian_phone);
+        if (mode === "new") delete row.code;
+        return row as ImportRow;
+      })
+      .filter((r) => r.full_name || r.guardian_phone);
 
     setRows(parsed);
   };
 
   const runImport = async () => {
     setImporting(true);
-    const res = await importStudentsAction(rows, currentSeason?.id ?? null);
+    const res = await importStudentsAction(rows, currentSeason?.id ?? null, mode);
     setResult(res);
     setImporting(false);
   };
 
   const downloadTemplate = () => {
-    const wsData = [
-      ["كود", "الاسم", "جوال ولي الأمر", "اسم ولي الأمر", "صلة القرابة", "تاريخ الميلاد", "رقم الهوية", "العنوان", "ملاحظات"],
-      ["", "أحمد محمد السيد", "0512345678", "محمد السيد", "الأب", "2014-05-10", "", "", ""],
+    const header = [
+      ...(mode === "update" ? ["كود"] : []),
+      "الاسم",
+      "جوال ولي الأمر",
+      "اسم ولي الأمر",
+      "صلة القرابة",
+      "تاريخ الميلاد",
+      "نوع الهوية",
+      "رقم الهوية",
+      "الجنسية",
+      "الرقم الشخصي",
+      "الحلقة",
+      "المجموعة",
+      "العنوان",
+      "ملاحظات",
     ];
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const sample = [
+      ...(mode === "update" ? ["012"] : []),
+      "أحمد محمد السيد",
+      "0512345678",
+      "محمد السيد",
+      "الأب",
+      "2014-05-10",
+      "هوية",
+      "",
+      "سعودي",
+      "",
+      "حلقة عبدالعزيز بن باز",
+      "النقاء",
+      "",
+      "",
+    ];
+    const ws = XLSX.utils.aoa_to_sheet([header, sample]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "الطلاب");
-    XLSX.writeFile(wb, "قالب_استيراد_الطلاب.xlsx");
+    XLSX.writeFile(wb, mode === "new" ? "قالب_استيراد_طلاب_جدد.xlsx" : "قالب_تحديث_طلاب.xlsx");
   };
 
   return (
     <div className="space-y-(--space-6)">
+      <div className="flex items-center gap-(--space-2)">
+        <button
+          onClick={() => switchMode("new")}
+          className={`flex-1 h-14 rounded-(--radius-sm) border-bold text-sm font-bold flex items-center justify-center gap-2 ${
+            mode === "new" ? "bg-brand text-on-brand border-line-strong shadow-brutal-sm" : "bg-surface-raised text-ink-muted border-line-strong"
+          }`}
+        >
+          <UserPlus size={16} /> استيراد طلاب جدد
+        </button>
+        <button
+          onClick={() => switchMode("update")}
+          className={`flex-1 h-14 rounded-(--radius-sm) border-bold text-sm font-bold flex items-center justify-center gap-2 ${
+            mode === "update" ? "bg-brand text-on-brand border-line-strong shadow-brutal-sm" : "bg-surface-raised text-ink-muted border-line-strong"
+          }`}
+        >
+          <RefreshCw size={16} /> تحديث طلاب حاليين
+        </button>
+      </div>
+
+      <Card className={mode === "new" ? "border-brand" : "border-info"}>
+        <CardDescription>
+          {mode === "new"
+            ? "استيراد بدون كود — سيُنشئ الموقع كوداً جديداً لكل طالب تلقائياً. أي عمود \"كود\" في الملف يُتجاهل."
+            : "استيراد بكود — يجب أن يحتوي الملف على عمود \"كود\" مطابق لكود الطالب الحالي في الموقع، وسيتم تحديث بياناته."}
+          {" "}إن وضعت اسم حلقة أو مجموعة غير موجودة سيتم إنشاؤها تلقائياً وربط الطالب بها.
+        </CardDescription>
+      </Card>
+
       <Card>
         <div className="flex items-center justify-between mb-(--space-4)">
           <CardTitle>1. رفع الملف</CardTitle>
@@ -117,21 +203,25 @@ export function ImportClient({ currentSeason }: { currentSeason: { id: string; n
             <table className="w-full text-[13px]">
               <thead className="bg-surface-sunken">
                 <tr>
-                  <th className="p-(--space-2) text-right font-semibold">كود</th>
+                  {mode === "update" && <th className="p-(--space-2) text-right font-semibold">كود</th>}
                   <th className="p-(--space-2) text-right font-semibold">الاسم</th>
                   <th className="p-(--space-2) text-right font-semibold">جوال ولي الأمر</th>
-                  <th className="p-(--space-2) text-right font-semibold">ولي الأمر</th>
+                  <th className="p-(--space-2) text-right font-semibold">الحلقة</th>
+                  <th className="p-(--space-2) text-right font-semibold">المجموعة</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.slice(0, 50).map((r, i) => (
                   <tr key={i} className="border-t border-line">
-                    <td className="p-(--space-2)">{r.code || <Badge tone="brand">جديد</Badge>}</td>
+                    {mode === "update" && (
+                      <td className="p-(--space-2)">{r.code || <Badge tone="danger">بلا كود</Badge>}</td>
+                    )}
                     <td className="p-(--space-2) font-semibold">{r.full_name}</td>
                     <td className="p-(--space-2)" dir="ltr">
                       {r.guardian_phone}
                     </td>
-                    <td className="p-(--space-2)">{r.guardian_name}</td>
+                    <td className="p-(--space-2)">{r.circle_name || "—"}</td>
+                    <td className="p-(--space-2)">{r.group_name || "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -142,14 +232,14 @@ export function ImportClient({ currentSeason }: { currentSeason: { id: string; n
               يُعرض أول 50 صف فقط للمعاينة، سيتم استيراد جميع الصفوف الـ {rows.length}.
             </CardDescription>
           )}
-          {currentSeason && (
+          {currentSeason && mode === "new" && (
             <CardDescription className="mt-(--space-2)">
               سيتم تسجيل الطلاب الجدد تلقائياً في الموسم الحالي: {currentSeason.name}
             </CardDescription>
           )}
           <div className="flex justify-end mt-(--space-4)">
             <Button onClick={runImport} disabled={importing}>
-              {importing ? "جارِ الاستيراد..." : `استيراد ${rows.length} طالب`}
+              {importing ? "جارِ الاستيراد..." : mode === "new" ? `استيراد ${rows.length} طالب جديد` : `تحديث ${rows.length} طالب`}
             </Button>
           </div>
         </Card>
@@ -161,9 +251,11 @@ export function ImportClient({ currentSeason }: { currentSeason: { id: string; n
             <CheckCircle2 size={18} className="text-brand" />
             <CardTitle>نتيجة الاستيراد</CardTitle>
           </div>
-          <div className="flex items-center gap-(--space-4) mb-(--space-3)">
+          <div className="flex items-center gap-(--space-2) flex-wrap mb-(--space-3)">
             <Badge tone="success">{result.created} طالب جديد</Badge>
             <Badge tone="info">{result.updated} تحديث</Badge>
+            {result.circlesCreated > 0 && <Badge tone="brand">{result.circlesCreated} حلقة أُنشئت</Badge>}
+            {result.groupsCreated > 0 && <Badge tone="brand">{result.groupsCreated} مجموعة أُنشئت</Badge>}
             {result.errors.length > 0 && <Badge tone="danger">{result.errors.length} خطأ</Badge>}
           </div>
           {result.errors.length > 0 && (

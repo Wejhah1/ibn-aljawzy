@@ -17,6 +17,9 @@ export async function createStudentAction(_prev: FormState, formData: FormData):
   const guardianRelation = String(formData.get("guardian_relation") ?? "").trim();
   const birthDate = String(formData.get("birth_date") ?? "");
   const nationalId = String(formData.get("national_id") ?? "").trim();
+  const idType = String(formData.get("id_type") ?? "national_id") as "national_id" | "iqama" | "passport";
+  const nationality = String(formData.get("nationality") ?? "").trim();
+  const personalNumber = String(formData.get("personal_number") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
   const circleId = String(formData.get("circle_id") ?? "");
@@ -43,6 +46,9 @@ export async function createStudentAction(_prev: FormState, formData: FormData):
       guardian_relation: guardianRelation || null,
       birth_date: birthDate || null,
       national_id: nationalId || null,
+      id_type: idType,
+      nationality: nationality || null,
+      personal_number: personalNumber || null,
       address: address || null,
       notes: notes || null,
     })
@@ -83,6 +89,9 @@ export async function updateStudentAction(_prev: FormState, formData: FormData):
   const guardianRelation = String(formData.get("guardian_relation") ?? "").trim();
   const birthDate = String(formData.get("birth_date") ?? "");
   const nationalId = String(formData.get("national_id") ?? "").trim();
+  const idType = String(formData.get("id_type") ?? "national_id") as "national_id" | "iqama" | "passport";
+  const nationality = String(formData.get("nationality") ?? "").trim();
+  const personalNumber = String(formData.get("personal_number") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
@@ -100,6 +109,9 @@ export async function updateStudentAction(_prev: FormState, formData: FormData):
       guardian_relation: guardianRelation || null,
       birth_date: birthDate || null,
       national_id: nationalId || null,
+      id_type: idType,
+      nationality: nationality || null,
+      personal_number: personalNumber || null,
       address: address || null,
       notes: notes || null,
     })
@@ -196,6 +208,44 @@ export async function setStudentFlagAction(studentId: string, seasonId: string |
   revalidatePath(`/admin/students/${studentId}`);
   revalidatePath("/admin");
   return { error: error?.message };
+}
+
+export async function sendParentNoteAdminAction(studentId: string, message: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from("parent_notes")
+    .insert({ student_id: studentId, sender: "admin", sender_profile_id: user?.id, message, is_read_by_admin: true });
+  revalidatePath(`/admin/students/${studentId}`);
+  return { error: error?.message };
+}
+
+export async function deleteStudentAction(studentId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_student_permanently", { p_student_id: studentId });
+  revalidatePath("/admin/students");
+  return { error: error?.message };
+}
+
+export async function bulkDropoutAction(studentIds: string[], reason: string) {
+  const supabase = await createClient();
+  for (const id of studentIds) {
+    await supabase.rpc("mark_student_dropped_out", { p_student_id: id, p_reason: reason });
+  }
+  revalidatePath("/admin/students");
+}
+
+export async function bulkDeleteStudentsAction(studentIds: string[]) {
+  const supabase = await createClient();
+  const errors: string[] = [];
+  for (const id of studentIds) {
+    const { error } = await supabase.rpc("delete_student_permanently", { p_student_id: id });
+    if (error) errors.push(error.message);
+  }
+  revalidatePath("/admin/students");
+  return { errors };
 }
 
 export async function resolveStudentFlagAction(studentFlagId: string, studentId: string) {

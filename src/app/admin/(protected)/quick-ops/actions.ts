@@ -138,7 +138,8 @@ export async function quickMarkAttendanceAction(
   });
   revalidatePath("/admin/quick-ops");
   revalidatePath("/admin");
-  return { error: error?.message };
+  if (error) return { error: error.message, data: null };
+  return { error: undefined, data: await getStudentQuickCardAction(studentId) };
 }
 
 export async function quickAddPointsAction(studentId: string, seasonId: string, points: number, reason?: string) {
@@ -150,5 +151,6 @@ export async function quickAddPointsAction(studentId: string, seasonId: string, 
     p_reason: reason,
   });
   revalidatePath("/admin/quick-ops");
-  return { error: error?.message };
+  if (error) return { error: error.message, data: null };
+  return { error: undefined, data: await getStudentQuickCardAction(studentId) };
 }

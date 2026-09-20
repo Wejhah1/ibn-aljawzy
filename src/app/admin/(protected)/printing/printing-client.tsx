@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { buildCertificateHtml, buildStudentCardHtml } from "@/lib/print/templates";
 import type { CertificateConfig, StudentCardConfig } from "@/lib/print/types";
 import type { ProgramInfo } from "@/lib/settings";
+import Link from "next/link";
 import { saveCertificateConfigAction, saveCardConfigAction, searchStudentsForPrintAction } from "./actions";
-import { Save, Download, Search, Award, IdCard } from "lucide-react";
+import { Save, Download, Search, Award, IdCard, LayoutGrid } from "lucide-react";
 
 const SCRIPT_FONT_PREVIEW_SRC = "/fonts/TheYearOfHandicrafts-Regular.otf";
 
@@ -27,7 +28,14 @@ export function PrintingClient({
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[1200px] mx-auto">
-      <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">الطباعة والشهادات</h1>
+      <div className="flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
+        <h1 className="text-[22px] leading-[30px] font-bold text-ink">الطباعة والشهادات</h1>
+        <Link href="/admin/printing/cards">
+          <Button size="sm" variant="secondary">
+            <LayoutGrid size={15} /> طباعة بطاقات الطلاب (8 في الورقة)
+          </Button>
+        </Link>
+      </div>
 
       <div className="flex items-center gap-(--space-2) mb-(--space-6)">
         <button

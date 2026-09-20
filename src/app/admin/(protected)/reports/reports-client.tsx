@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Card, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -41,9 +44,16 @@ export function ReportsClient({
 }) {
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[1100px] mx-auto">
-      <div className="mb-(--space-6)">
-        <h1 className="text-[22px] leading-[30px] font-bold text-ink">التقارير</h1>
-        <p className="text-sm text-ink-muted mt-1">{seasonName}</p>
+      <div className="flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
+        <div>
+          <h1 className="text-[22px] leading-[30px] font-bold text-ink">التقارير</h1>
+          <p className="text-sm text-ink-muted mt-1">{seasonName}</p>
+        </div>
+        <Link href="/admin/reports/print">
+          <Button variant="secondary">
+            <Printer size={16} /> التقرير الكلاسيكي القابل للطباعة
+          </Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 gap-(--space-4) mb-(--space-6)">

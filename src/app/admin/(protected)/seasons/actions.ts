@@ -55,3 +55,11 @@ export async function archiveSeasonAction(seasonId: string) {
   revalidatePath("/admin/seasons");
   revalidatePath("/admin");
 }
+
+export async function deleteSeasonPermanentlyAction(seasonId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_season_permanently", { p_season_id: seasonId });
+  revalidatePath("/admin/seasons");
+  revalidatePath("/admin");
+  return { error: error?.message };
+}

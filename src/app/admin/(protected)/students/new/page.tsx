@@ -12,14 +12,16 @@ export default async function NewStudentPage() {
 
   const { data: circles } = await supabase
     .from("circles")
-    .select("id, name, groups(id, name)")
+    .select("id, name")
     .eq("is_active", true)
     .order("name");
+
+  const { data: groups } = await supabase.from("groups").select("id, name").order("name");
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[640px] mx-auto">
       <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">طالب جديد</h1>
-      <NewStudentForm currentSeason={currentSeason} circles={circles ?? []} />
+      <NewStudentForm currentSeason={currentSeason} circles={circles ?? []} groups={groups ?? []} />
     </main>
   );
 }

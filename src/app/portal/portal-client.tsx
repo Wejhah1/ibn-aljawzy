@@ -3,8 +3,17 @@
 import { useState } from "react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { parentLogoutAction } from "./actions";
-import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { parentLogoutAction, sendParentNoteAction } from "./actions";
+import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList, MessageSquare, Send } from "lucide-react";
+
+interface ParentNote {
+  id: string;
+  sender: string;
+  message: string;
+  createdAt: string;
+}
 
 interface StudentData {
   id: string;
@@ -18,6 +27,7 @@ interface StudentData {
   achievements: { name: string }[];
   badges: { name: string }[];
   monthlyResults: { periodLabel: string; percentage: number }[];
+  notes: ParentNote[];
 }
 
 export function PortalClient({ students, seasonName }: { students: StudentData[]; seasonName: string | null }) {
@@ -118,7 +128,7 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
             )}
 
             {selected.monthlyResults.length > 0 && (
-              <Card>
+              <Card className="mb-(--space-6)">
                 <CardTitle className="mb-(--space-3) flex items-center gap-2">
                   <ClipboardList size={18} className="text-info" /> النتائج الشهرية
                 </CardTitle>
@@ -132,10 +142,67 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
                 </div>
               </Card>
             )}
+
+            <Card>
+              <CardTitle className="mb-(--space-3) flex items-center gap-2">
+                <MessageSquare size={18} className="text-brand" /> ملاحظة للإدارة
+              </CardTitle>
+              <ParentNotesPanel studentId={selected.id} notes={selected.notes} />
+            </Card>
           </>
         )}
       </div>
     </main>
+  );
+}
+
+function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: ParentNote[] }) {
+  const [message, setMessage] = useState("");
+  const [pending, setPending] = useState(false);
+  const [localNotes, setLocalNotes] = useState(notes);
+
+  const send = async () => {
+    const trimmed = message.trim();
+    if (!trimmed) return;
+    setPending(true);
+    setLocalNotes((prev) => [...prev, { id: `temp-${Date.now()}`, sender: "parent", message: trimmed, createdAt: new Date().toISOString() }]);
+    setMessage("");
+    await sendParentNoteAction(studentId, trimmed);
+    setPending(false);
+  };
+
+  return (
+    <div>
+      {localNotes.length > 0 && (
+        <div className="space-y-(--space-2) mb-(--space-4) max-h-[280px] overflow-y-auto">
+          {localNotes.map((n) => (
+            <div
+              key={n.id}
+              className={`rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
+                n.sender === "admin" ? "bg-brand-soft mr-auto" : "bg-surface-sunken ml-auto"
+              }`}
+            >
+              <p className="text-sm text-ink text-right">{n.message}</p>
+              <p className="text-[11px] text-ink-faint mt-1 text-right">
+                {n.sender === "admin" ? "الإدارة" : "أنت"} · {new Date(n.createdAt).toLocaleString("ar-SA")}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-(--space-2)">
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="اكتب ملاحظتك هنا..."
+          className="flex-1"
+          onKeyDown={(e) => e.key === "Enter" && send()}
+        />
+        <Button disabled={!message.trim() || pending} onClick={send}>
+          <Send size={14} /> إرسال
+        </Button>
+      </div>
+    </div>
   );
 }
 

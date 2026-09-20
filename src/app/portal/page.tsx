@@ -22,7 +22,7 @@ export default async function ParentPortalPage() {
 
   const studentIds = students.map((s) => s.id);
 
-  const [{ data: enrollments }, { data: attendance }, { data: achievements }, { data: badges }, { data: monthlyResults }] =
+  const [{ data: enrollments }, { data: attendance }, { data: achievements }, { data: badges }, { data: monthlyResults }, { data: parentNotes }] =
     await Promise.all([
       currentSeason
         ? admin
@@ -56,7 +56,21 @@ export default async function ParentPortalPage() {
             .eq("season_id", currentSeason.id)
             .eq("is_published", true)
         : Promise.resolve({ data: [] }),
+      admin
+        .from("parent_notes")
+        .select("id, student_id, sender, message, created_at")
+        .in("student_id", studentIds)
+        .order("created_at", { ascending: true }),
     ]);
+
+  if (parentNotes?.length) {
+    await admin
+      .from("parent_notes")
+      .update({ is_read_by_parent: true })
+      .in("student_id", studentIds)
+      .eq("sender", "admin")
+      .eq("is_read_by_parent", false);
+  }
 
   const studentsData = students.map((s) => {
     const enrollment = enrollments?.find((e) => e.student_id === s.id);
@@ -93,6 +107,9 @@ export default async function ParentPortalPage() {
       monthlyResults: (monthlyResults ?? [])
         .filter((m) => m.student_id === s.id)
         .map((m) => ({ periodLabel: m.period_label, percentage: m.percentage })),
+      notes: (parentNotes ?? [])
+        .filter((n) => n.student_id === s.id)
+        .map((n) => ({ id: n.id, sender: n.sender, message: n.message, createdAt: n.created_at })),
     };
   });
 

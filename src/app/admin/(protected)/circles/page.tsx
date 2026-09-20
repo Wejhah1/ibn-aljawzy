@@ -12,7 +12,12 @@ export default async function CirclesPage() {
 
   const { data: circles } = await supabase
     .from("circles")
-    .select("id, name, leader_name, leader_phone, is_active, groups(id, name, leader_name, leader_phone, color_token)")
+    .select("id, name, leader_name, leader_phone, is_active")
+    .order("created_at", { ascending: true });
+
+  const { data: groups } = await supabase
+    .from("groups")
+    .select("id, name, leader_name, leader_phone, color_token")
     .order("created_at", { ascending: true });
 
   const { data: enrollmentCounts } = await supabase
@@ -30,6 +35,7 @@ export default async function CirclesPage() {
   return (
     <CirclesPageClient
       circles={circles ?? []}
+      groups={groups ?? []}
       currentSeasonId={currentSeason?.id ?? null}
       circleCounts={circleCounts}
       groupCounts={groupCounts}

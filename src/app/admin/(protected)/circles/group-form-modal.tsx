@@ -17,12 +17,10 @@ const GROUP_COLOR_OPTIONS = [1, 2, 3, 4, 5, 6];
 
 export function GroupFormModal({
   group,
-  circleId,
   existingCount = 0,
   onClose,
 }: {
   group?: Group;
-  circleId?: string;
   existingCount?: number;
   onClose: () => void;
 }) {
@@ -39,12 +37,7 @@ export function GroupFormModal({
     <Modal title={isEdit ? "تعديل المجموعة" : "مجموعة جديدة"} onClose={onClose}>
       <form action={formAction} className="space-y-(--space-4)">
         {isEdit && <input type="hidden" name="id" value={group!.id} />}
-        {!isEdit && (
-          <>
-            <input type="hidden" name="circle_id" value={circleId} />
-            <input type="hidden" name="color_token" value={defaultColor} />
-          </>
-        )}
+        {!isEdit && <input type="hidden" name="color_token" value={defaultColor} />}
         <div>
           <Label htmlFor="name">اسم المجموعة</Label>
           <Input id="name" name="name" required defaultValue={group?.name} placeholder="مثال: المجموعة الأولى" />

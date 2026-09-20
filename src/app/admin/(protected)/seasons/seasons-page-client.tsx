@@ -4,9 +4,10 @@ import { useState, useTransition } from "react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { SeasonWizard } from "./season-wizard";
-import { setCurrentSeasonAction, archiveSeasonAction } from "./actions";
-import { Plus, Calendar, Archive, CheckCircle2 } from "lucide-react";
+import { setCurrentSeasonAction, archiveSeasonAction, deleteSeasonPermanentlyAction } from "./actions";
+import { Plus, Calendar, Archive, CheckCircle2, Trash2 } from "lucide-react";
 
 interface Season {
   id: string;
@@ -21,6 +22,7 @@ interface Season {
 export function SeasonsPageClient({ seasons, dayCounts }: { seasons: Season[]; dayCounts: Record<string, number> }) {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [deleteSeason, setDeleteSeason] = useState<Season | null>(null);
   const hasCurrentSeason = seasons.some((s) => s.status === "current");
 
   return (
@@ -85,6 +87,13 @@ export function SeasonsPageClient({ seasons, dayCounts }: { seasons: Season[]; d
                     <Archive size={14} /> أرشفة
                   </Button>
                 )}
+                <button
+                  onClick={() => setDeleteSeason(s)}
+                  className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-danger hover:bg-danger-soft"
+                  title="حذف الموسم نهائياً"
+                >
+                  <Trash2 size={15} />
+                </button>
               </div>
             </div>
           </Card>
@@ -92,6 +101,60 @@ export function SeasonsPageClient({ seasons, dayCounts }: { seasons: Season[]; d
       </div>
 
       {wizardOpen && <SeasonWizard onClose={() => setWizardOpen(false)} hasCurrentSeason={hasCurrentSeason} />}
+      {deleteSeason && (
+        <DeleteSeasonModal
+          season={deleteSeason}
+          onCancel={() => setDeleteSeason(null)}
+          onConfirm={async () => {
+            await deleteSeasonPermanentlyAction(deleteSeason.id);
+            setDeleteSeason(null);
+          }}
+        />
+      )}
     </main>
+  );
+}
+
+function DeleteSeasonModal({
+  season,
+  onCancel,
+  onConfirm,
+}: {
+  season: Season;
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const [confirmed, setConfirmed] = useState(false);
+  const [pending, setPending] = useState(false);
+
+  return (
+    <Modal title="حذف الموسم نهائياً" onClose={onCancel}>
+      <div className="space-y-(--space-4)">
+        <div className="rounded-(--radius-sm) bg-danger-soft border border-danger px-(--space-3) py-(--space-3) text-[13px] font-semibold text-danger">
+          سيتم حذف موسم &quot;{season.name}&quot; وكل ما يخصه — أيام البرنامج، الحضور، النقاط، التسجيلات، الحلقات المرتبطة به —
+          نهائياً من قاعدة البيانات. هذا الإجراء لا يمكن التراجع عنه (بخلاف الأرشفة).
+        </div>
+        <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
+          <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="h-5 w-5" />
+          أفهم أن هذا الحذف نهائي ولا يمكن التراجع عنه
+        </label>
+        <div className="flex justify-end gap-(--space-2)">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            إلغاء
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            disabled={!confirmed || pending}
+            onClick={async () => {
+              setPending(true);
+              await onConfirm();
+            }}
+          >
+            {pending ? "جارِ الحذف..." : "حذف نهائياً"}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }

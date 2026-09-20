@@ -1,14 +1,31 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { setAttendanceAction, bulkMarkPresentAction, bulkSendWhatsappAction } from "./actions";
+import {
+  setAttendanceAction,
+  bulkMarkPresentAction,
+  bulkSendWhatsappAction,
+  getStudentAttendanceHistoryAction,
+  type AttendanceHistoryEntry,
+} from "./actions";
 import { fillTemplate, buildWaMeLink, type WhatsappVariables } from "@/lib/whatsapp";
 import type { ProgramInfo } from "@/lib/settings";
-import { CheckCircle2, XCircle, Clock, FileWarning, Circle, MessageCircle, ListChecks, Send, Loader2 } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Clock,
+  FileWarning,
+  Circle,
+  MessageCircle,
+  ListChecks,
+  Send,
+  Loader2,
+  History,
+} from "lucide-react";
 
 type Status = "present" | "absent" | "late" | "excused" | null;
 
@@ -31,9 +48,11 @@ const STATUS_META: Record<Exclude<Status, null>, { label: string; icon: typeof C
 
 export function AttendanceClient({
   seasonName,
+  seasonId,
   programDays,
   selectedDay,
   circles,
+  groups,
   selectedCircle,
   selectedGroup,
   rows: initialRows,
@@ -42,9 +61,11 @@ export function AttendanceClient({
   lateTemplate,
 }: {
   seasonName: string;
+  seasonId: string;
   programDays: { id: string; day_date: string }[];
   selectedDay: { id: string; day_date: string } | null;
-  circles: { id: string; name: string; groups: { id: string; name: string }[] }[];
+  circles: { id: string; name: string }[];
+  groups: { id: string; name: string }[];
   selectedCircle: string;
   selectedGroup: string;
   rows: Row[];
@@ -55,6 +76,7 @@ export function AttendanceClient({
   const [rows, setRows] = useState(initialRows);
   const [pending, startTransition] = useTransition();
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [historyFor, setHistoryFor] = useState<Row | null>(null);
 
   const stats = useMemo(() => {
     const s = { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 };
@@ -86,8 +108,6 @@ export function AttendanceClient({
   const dayLabel = selectedDay
     ? new Date(selectedDay.day_date).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" })
     : "—";
-
-  const groups = circles.find((c) => c.id === selectedCircle)?.groups ?? [];
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[1100px] mx-auto pb-24">
@@ -182,6 +202,7 @@ export function AttendanceClient({
               <th className="p-(--space-3) text-center font-semibold text-ink-muted" colSpan={4}>
                 الحالة
               </th>
+              <th className="p-(--space-3)"></th>
             </tr>
           </thead>
           <tbody>
@@ -222,6 +243,15 @@ export function AttendanceClient({
                     })}
                   </div>
                 </td>
+                <td className="p-(--space-2)">
+                  <button
+                    onClick={() => setHistoryFor(r)}
+                    title="مسيرة الحضور هذا الموسم"
+                    className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-surface-sunken hover:text-brand"
+                  >
+                    <History size={16} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -242,13 +272,21 @@ export function AttendanceClient({
                   {r.circleName ?? "—"} {r.groupName ? `· ${r.groupName}` : ""}
                 </p>
               </div>
-              {r.status ? (
-                <Badge tone={STATUS_META[r.status].tone as never}>{STATUS_META[r.status].label}</Badge>
-              ) : (
-                <Badge tone="neutral">
-                  <Circle size={10} /> غير مسجّل
-                </Badge>
-              )}
+              <div className="flex items-center gap-(--space-2)">
+                {r.status ? (
+                  <Badge tone={STATUS_META[r.status].tone as never}>{STATUS_META[r.status].label}</Badge>
+                ) : (
+                  <Badge tone="neutral">
+                    <Circle size={10} /> غير مسجّل
+                  </Badge>
+                )}
+                <button
+                  onClick={() => setHistoryFor(r)}
+                  className="flex h-8 w-8 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-surface-sunken hover:text-brand"
+                >
+                  <History size={15} />
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-4 gap-(--space-2)">
               {(Object.keys(STATUS_META) as Exclude<Status, null>[]).map((key) => {
@@ -291,7 +329,61 @@ export function AttendanceClient({
           dayLabel={dayLabel}
         />
       )}
+
+      {historyFor && (
+        <AttendanceHistoryModal seasonId={seasonId} row={historyFor} onClose={() => setHistoryFor(null)} />
+      )}
     </main>
+  );
+}
+
+function AttendanceHistoryModal({
+  seasonId,
+  row,
+  onClose,
+}: {
+  seasonId: string;
+  row: Row;
+  onClose: () => void;
+}) {
+  const [entries, setEntries] = useState<AttendanceHistoryEntry[] | null>(null);
+
+  useEffect(() => {
+    getStudentAttendanceHistoryAction(row.studentId, seasonId).then(setEntries);
+  }, [row.studentId, seasonId]);
+
+  return (
+    <Modal title={`مسيرة الحضور — ${row.fullName}`} onClose={onClose} maxWidth="480px">
+      {!entries ? (
+        <p className="text-sm text-ink-muted">جارِ التحميل...</p>
+      ) : entries.length === 0 ? (
+        <p className="text-sm text-ink-muted">لا توجد أيام برنامج بعد هذا الموسم.</p>
+      ) : (
+        <div className="space-y-(--space-2) max-h-[420px] overflow-y-auto">
+          {entries.map((e) => {
+            const meta = e.status ? STATUS_META[e.status] : null;
+            const Icon = meta?.icon ?? Circle;
+            return (
+              <div
+                key={e.dayDate}
+                className="flex items-center justify-between rounded-(--radius-sm) border border-line px-(--space-3) py-(--space-2)"
+              >
+                <span className="text-sm font-semibold text-ink">
+                  {new Date(e.dayDate).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" })}
+                </span>
+                {meta ? (
+                  <Badge tone={meta.tone as never}>
+                    <Icon size={11} /> {meta.label}
+                  </Badge>
+                ) : (
+                  <Badge tone="neutral">لم يُسجَّل</Badge>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Modal>
   );
 }
 
