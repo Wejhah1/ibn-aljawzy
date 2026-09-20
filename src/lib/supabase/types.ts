@@ -995,6 +995,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_manual_points: {
+        Args: {
+          p_points: number
+          p_reason?: string
+          p_season_id: string
+          p_student_id: string
+        }
+        Returns: string
+      }
       archive_season: { Args: { p_season_id: string }; Returns: undefined }
       create_season: {
         Args: {
@@ -1009,6 +1018,15 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      mark_attendance: {
+        Args: {
+          p_note?: string
+          p_program_day_id: string
+          p_status: Database["public"]["Enums"]["attendance_status"]
+          p_student_id: string
+        }
+        Returns: string
+      }
       mark_student_dropped_out: {
         Args: { p_reason: string; p_student_id: string }
         Returns: undefined
