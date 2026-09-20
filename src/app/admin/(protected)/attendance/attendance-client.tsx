@@ -10,11 +10,15 @@ import {
   bulkMarkPresentAction,
   bulkSendWhatsappAction,
   getStudentAttendanceHistoryAction,
+  getAutoPointsSettingsAction,
+  saveAutoPointsSettingsAction,
   type AttendanceHistoryEntry,
+  type AutoPointsSettings,
 } from "./actions";
 import { fillTemplate, buildWaMeLink, type WhatsappVariables } from "@/lib/whatsapp";
 import { createClient } from "@/lib/supabase/client";
 import type { ProgramInfo } from "@/lib/settings";
+import { Input, Label } from "@/components/ui/input";
 import {
   CheckCircle2,
   XCircle,
@@ -27,6 +31,9 @@ import {
   Loader2,
   History,
   Search,
+  Trophy,
+  Settings2,
+  Info,
 } from "lucide-react";
 
 type Status = "present" | "absent" | "late" | "excused" | null;
@@ -81,6 +88,7 @@ export function AttendanceClient({
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [pointsSettingsOpen, setPointsSettingsOpen] = useState(false);
   const [historyFor, setHistoryFor] = useState<Row | null>(null);
   const [nameQuery, setNameQuery] = useState("");
   const lastLocalChange = useRef<Map<string, number>>(new Map());
@@ -191,9 +199,14 @@ export function AttendanceClient({
             {seasonName} · {dayLabel}
           </p>
         </div>
-        <Button onClick={() => setSummaryOpen(true)}>
-          <ListChecks size={16} /> إنهاء اليوم
-        </Button>
+        <div className="flex items-center gap-(--space-2)">
+          <Button variant="outline" onClick={() => setPointsSettingsOpen(true)}>
+            <Settings2 size={16} /> النقاط التلقائية
+          </Button>
+          <Button onClick={() => setSummaryOpen(true)}>
+            <ListChecks size={16} /> إنهاء اليوم
+          </Button>
+        </div>
       </div>
 
       <form method="get" className="mb-(--space-4)">
@@ -309,7 +322,10 @@ export function AttendanceClient({
                 <td className="p-(--space-3)">
                   <span className="font-semibold text-ink">{r.fullName}</span> <Badge tone="neutral">#{r.code}</Badge>
                   {saving.has(r.studentId) && (
-                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand animate-pulse mr-1" title="جارِ الحفظ" />
+                    <span
+                      className="inline-block h-3 w-3 rounded-full border-2 border-brand-soft border-t-brand animate-spin mr-1 align-middle"
+                      title="جارِ الحفظ"
+                    />
                   )}
                 </td>
                 <td className="p-(--space-3) text-ink-muted">
@@ -368,6 +384,12 @@ export function AttendanceClient({
                 <div className="flex items-center gap-(--space-2)">
                   <span className="font-semibold text-ink text-sm">{r.fullName}</span>
                   <Badge tone="neutral">#{r.code}</Badge>
+                  {saving.has(r.studentId) && (
+                    <span
+                      className="inline-block h-3 w-3 rounded-full border-2 border-brand-soft border-t-brand animate-spin"
+                      title="جارِ الحفظ"
+                    />
+                  )}
                 </div>
                 <p className="text-[12px] text-ink-muted mt-0.5">
                   {r.circleName ?? "—"} {r.groupName ? `· ${r.groupName}` : ""}
@@ -434,7 +456,113 @@ export function AttendanceClient({
       {historyFor && (
         <AttendanceHistoryModal seasonId={seasonId} row={historyFor} onClose={() => setHistoryFor(null)} />
       )}
+
+      {pointsSettingsOpen && <AutoPointsSettingsModal seasonId={seasonId} onClose={() => setPointsSettingsOpen(false)} />}
     </main>
+  );
+}
+
+function AutoPointsSettingsModal({ seasonId, onClose }: { seasonId: string; onClose: () => void }) {
+  const [settings, setSettings] = useState<AutoPointsSettings | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    getAutoPointsSettingsAction(seasonId).then(setSettings);
+  }, [seasonId]);
+
+  const save = async () => {
+    if (!settings) return;
+    setSaving(true);
+    setSaved(false);
+    await saveAutoPointsSettingsAction(seasonId, settings);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1800);
+  };
+
+  return (
+    <Modal title="النقاط التلقائية للحضور" onClose={onClose} maxWidth="480px">
+      {!settings ? (
+        <div className="flex items-center justify-center py-(--space-8)">
+          <span className="h-8 w-8 rounded-full border-[3px] border-brand-soft border-t-brand animate-spin" />
+        </div>
+      ) : (
+        <div className="space-y-(--space-4)">
+          <label className="flex items-center justify-between rounded-(--radius-sm) border-bold border-line-strong px-(--space-4) py-(--space-3) cursor-pointer">
+            <span className="text-sm font-bold text-ink">تفعيل منح النقاط تلقائياً عند تسجيل الحضور</span>
+            <input
+              type="checkbox"
+              checked={settings.isEnabled}
+              onChange={(e) => setSettings({ ...settings, isEnabled: e.target.checked })}
+              className="h-6 w-6 accent-[var(--color-brand)]"
+            />
+          </label>
+
+          <div
+            className={`grid grid-cols-2 gap-(--space-3) transition-opacity ${
+              settings.isEnabled ? "opacity-100" : "opacity-40 pointer-events-none"
+            }`}
+          >
+            <div>
+              <Label htmlFor="pts_present">حاضر</Label>
+              <Input
+                id="pts_present"
+                type="number"
+                value={settings.pointsPresent}
+                onChange={(e) => setSettings({ ...settings, pointsPresent: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="pts_late">متأخر</Label>
+              <Input
+                id="pts_late"
+                type="number"
+                value={settings.pointsLate}
+                onChange={(e) => setSettings({ ...settings, pointsLate: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="pts_excused">بعذر</Label>
+              <Input
+                id="pts_excused"
+                type="number"
+                value={settings.pointsExcused}
+                onChange={(e) => setSettings({ ...settings, pointsExcused: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="pts_absent">غائب</Label>
+              <Input
+                id="pts_absent"
+                type="number"
+                value={settings.pointsAbsent}
+                onChange={(e) => setSettings({ ...settings, pointsAbsent: Number(e.target.value) })}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-2 rounded-(--radius-sm) bg-info-soft px-(--space-3) py-(--space-3) text-[12px] text-ink-muted leading-relaxed">
+            <Info size={14} className="text-info shrink-0 mt-0.5" />
+            <p>
+              يمكنك استخدام أرقام سالبة (مثل -5) للخصم عند الغياب. النظام آمن تماماً: تغيير حالة الطالب لأي وقت (مثلاً من
+              حاضر إلى غائب) يستبدل نقاط الحضور التلقائية بالكامل بدل أن يضيف أو يطرح فوقها، فلا يمكن أن يتكرر أو يتراكم
+              الاحتساب مهما بدّلت الحالة. تغيير القيم هنا يُطبَّق على أي تسجيل جديد أو تعديل لاحق فقط، ولا يُعيد حساب
+              الأيام السابقة تلقائياً.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-(--space-2)">
+            <Button type="button" variant="ghost" onClick={onClose}>
+              إغلاق
+            </Button>
+            <Button type="button" onClick={save} disabled={saving}>
+              <Trophy size={14} /> {saving ? "جارِ الحفظ..." : saved ? "تم الحفظ ✓" : "حفظ"}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
   );
 }
 

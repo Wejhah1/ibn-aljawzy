@@ -4,6 +4,48 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendCloudApiTextMessage } from "@/lib/whatsapp-cloud-api";
 
+export interface AutoPointsSettings {
+  isEnabled: boolean;
+  pointsPresent: number;
+  pointsLate: number;
+  pointsExcused: number;
+  pointsAbsent: number;
+}
+
+export async function getAutoPointsSettingsAction(seasonId: string): Promise<AutoPointsSettings> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("attendance_auto_points_settings")
+    .select("is_enabled, points_present, points_late, points_excused, points_absent")
+    .eq("season_id", seasonId)
+    .maybeSingle();
+
+  return {
+    isEnabled: data?.is_enabled ?? false,
+    pointsPresent: data?.points_present ?? 0,
+    pointsLate: data?.points_late ?? 0,
+    pointsExcused: data?.points_excused ?? 0,
+    pointsAbsent: data?.points_absent ?? 0,
+  };
+}
+
+export async function saveAutoPointsSettingsAction(seasonId: string, settings: AutoPointsSettings) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("attendance_auto_points_settings").upsert(
+    {
+      season_id: seasonId,
+      is_enabled: settings.isEnabled,
+      points_present: settings.pointsPresent,
+      points_late: settings.pointsLate,
+      points_excused: settings.pointsExcused,
+      points_absent: settings.pointsAbsent,
+    },
+    { onConflict: "season_id" }
+  );
+  revalidatePath("/admin/attendance");
+  return { error: error?.message };
+}
+
 export async function setAttendanceAction(
   studentId: string,
   programDayId: string,
