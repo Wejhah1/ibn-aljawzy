@@ -34,6 +34,7 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={cn(
                   "flex flex-1 flex-col items-center justify-center gap-1 min-w-[44px] min-h-[44px] transition-colors",
                   active ? "text-brand" : "text-ink-muted"
@@ -82,6 +83,7 @@ export function BottomNav() {
                         <Link
                           key={item.href}
                           href={item.href}
+                          prefetch={false}
                           onClick={() => setMoreOpen(false)}
                           className={cn(
                             "flex flex-col items-center justify-center gap-1.5 rounded-(--radius-sm) border-bold px-(--space-2) py-(--space-3) text-center min-h-[76px]",

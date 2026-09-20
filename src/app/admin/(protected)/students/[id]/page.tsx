@@ -9,53 +9,34 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
   const { data: student } = await supabase.from("students").select("*").eq("id", id).single();
   if (!student) notFound();
 
-  const { data: enrollments } = await supabase
-    .from("student_season_enrollments")
-    .select("id, season_id, circle_id, group_id, status, total_points, seasons(name, status, start_date), circles(name), groups(name)")
-    .eq("student_id", id)
-    .order("created_at", { ascending: false });
-
-  const { data: attendanceCounts } = await supabase
-    .from("attendance_records")
-    .select("season_id, status")
-    .eq("student_id", id);
-
-  const attendanceBySeasonStatus: Record<string, Record<string, number>> = {};
-  for (const a of attendanceCounts ?? []) {
-    attendanceBySeasonStatus[a.season_id] ??= {};
-    attendanceBySeasonStatus[a.season_id][a.status] = (attendanceBySeasonStatus[a.season_id][a.status] ?? 0) + 1;
-  }
-
-  const { data: achievements } = await supabase
-    .from("student_achievements")
-    .select("season_id, achievements(name, icon)")
-    .eq("student_id", id);
-
-  const { data: badges } = await supabase
-    .from("student_badges")
-    .select("season_id, badges(name, icon, color_token)")
-    .eq("student_id", id);
-
-  const { data: dropoutPeriods } = await supabase
-    .from("dropout_periods")
-    .select("dropped_at, returned_at, reason")
-    .eq("student_id", id)
-    .order("dropped_at", { ascending: false });
-
-  const { data: circles } = await supabase.from("circles").select("id, name").eq("is_active", true).order("name");
-  const { data: groups } = await supabase.from("groups").select("id, name").order("name");
-  const { data: currentSeason } = await supabase.from("seasons").select("id, name").eq("status", "current").maybeSingle();
-  const { data: parentNotes } = await supabase
-    .from("parent_notes")
-    .select("id, sender, message, created_at, is_read_by_admin")
-    .eq("student_id", id)
-    .order("created_at", { ascending: true });
-
-  if (parentNotes?.some((n) => n.sender === "parent" && !n.is_read_by_admin)) {
-    await supabase.from("parent_notes").update({ is_read_by_admin: true }).eq("student_id", id).eq("sender", "parent");
-  }
-
-  const [{ data: allAchievements }, { data: allBadges }, { data: allFlags }, { data: studentFlags }] = await Promise.all([
+  const [
+    { data: enrollments },
+    { data: attendanceCounts },
+    { data: achievements },
+    { data: badges },
+    { data: dropoutPeriods },
+    { data: circles },
+    { data: groups },
+    { data: currentSeason },
+    { data: parentNotes },
+    { data: allAchievements },
+    { data: allBadges },
+    { data: allFlags },
+    { data: studentFlags },
+  ] = await Promise.all([
+    supabase
+      .from("student_season_enrollments")
+      .select("id, season_id, circle_id, group_id, status, total_points, seasons(name, status, start_date), circles(name), groups(name)")
+      .eq("student_id", id)
+      .order("created_at", { ascending: false }),
+    supabase.from("attendance_records").select("season_id, status").eq("student_id", id),
+    supabase.from("student_achievements").select("season_id, achievements(name, icon)").eq("student_id", id),
+    supabase.from("student_badges").select("season_id, badges(name, icon, color_token)").eq("student_id", id),
+    supabase.from("dropout_periods").select("dropped_at, returned_at, reason").eq("student_id", id).order("dropped_at", { ascending: false }),
+    supabase.from("circles").select("id, name").eq("is_active", true).order("name"),
+    supabase.from("groups").select("id, name").order("name"),
+    supabase.from("seasons").select("id, name").eq("status", "current").maybeSingle(),
+    supabase.from("parent_notes").select("id, sender, message, created_at, is_read_by_admin").eq("student_id", id).order("created_at", { ascending: true }),
     supabase.from("achievements").select("id, name, points_awarded").eq("is_active", true).order("name"),
     supabase.from("badges").select("id, name").eq("is_active", true).order("name"),
     supabase.from("flags").select("id, name, severity").eq("is_active", true).order("name"),
@@ -65,6 +46,16 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
       .eq("student_id", id)
       .order("set_at", { ascending: false }),
   ]);
+
+  const attendanceBySeasonStatus: Record<string, Record<string, number>> = {};
+  for (const a of attendanceCounts ?? []) {
+    attendanceBySeasonStatus[a.season_id] ??= {};
+    attendanceBySeasonStatus[a.season_id][a.status] = (attendanceBySeasonStatus[a.season_id][a.status] ?? 0) + 1;
+  }
+
+  if (parentNotes?.some((n) => n.sender === "parent" && !n.is_read_by_admin)) {
+    await supabase.from("parent_notes").update({ is_read_by_admin: true }).eq("student_id", id).eq("sender", "parent");
+  }
 
   return (
     <StudentProfileClient

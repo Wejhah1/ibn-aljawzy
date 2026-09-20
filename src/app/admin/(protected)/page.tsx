@@ -7,13 +7,12 @@ import Link from "next/link";
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const { data: currentSeason } = await supabase
-    .from("seasons")
-    .select("id, name, end_date, start_date")
-    .eq("status", "current")
-    .maybeSingle();
+  const [{ data: currentSeason }, { count: totalStudents }] = await Promise.all([
+    supabase.from("seasons").select("id, name, end_date, start_date").eq("status", "current").maybeSingle(),
+    supabase.from("students").select("id", { count: "exact", head: true }).eq("status", "active"),
+  ]);
 
-  let stats = { totalStudents: 0, activeEnrollments: 0, unresolvedFlags: 0, presentToday: 0 };
+  const stats = { totalStudents: totalStudents ?? 0, activeEnrollments: 0, unresolvedFlags: 0, presentToday: 0 };
   let topStudents: { full_name: string; total_points: number; code: string }[] = [];
   let recentAudit: { action: string; created_at: string; entity_type: string }[] = [];
 
@@ -46,12 +45,6 @@ export default async function DashboardPage() {
     });
     recentAudit = audit ?? [];
   }
-
-  const { count: totalStudents } = await supabase
-    .from("students")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "active");
-  stats.totalStudents = totalStudents ?? 0;
 
   const daysLeft = currentSeason
     ? Math.ceil((new Date(currentSeason.end_date).getTime() - Date.now()) / 86400000)

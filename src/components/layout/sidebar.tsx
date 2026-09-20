@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { PRIMARY_NAV, STUDENTS_NAV, REPORTS_NAV, ADMIN_NAV, type NavItem } from "@/lib/nav";
 import { logoutAction } from "@/app/admin/login/actions";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { LogOut } from "lucide-react";
 
 function NavGroup({ title, items, pathname }: { title: string; items: NavItem[]; pathname: string }) {
@@ -21,6 +22,7 @@ function NavGroup({ title, items, pathname }: { title: string; items: NavItem[];
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={cn(
                 "flex items-center gap-(--space-3) rounded-(--radius-sm) px-(--space-3) h-11 text-sm font-semibold transition-colors",
                 active
@@ -47,10 +49,11 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
         <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-brand text-on-brand border-bold border-line-strong font-bold">
           ا
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-[13px] font-bold text-ink truncate">حلقات ابن الجوزي</p>
           <p className="text-[11px] text-ink-muted truncate">مسجد الطرباق</p>
         </div>
+        <NotificationBell />
       </div>
 
       <nav className="flex-1 px-(--space-3) py-(--space-4)">

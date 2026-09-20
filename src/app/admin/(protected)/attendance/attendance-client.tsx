@@ -139,7 +139,9 @@ export function AttendanceClient({
       if (session) supabase.realtime.setAuth(session.access_token);
 
       channel = supabase
-        .channel(`attendance-day-${selectedDay.id}`)
+        // اسم فريد لكل تشغيل لهذا الـ effect: تفادي تعارض React StrictMode الذي يعيد
+        // استخدام قناة سابقة لم يكتمل إلغاء اشتراكها بعد ويرفض إضافة مستمع جديد إليها.
+        .channel(`attendance-day-${selectedDay.id}-${crypto.randomUUID()}`)
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "attendance_records", filter: `program_day_id=eq.${selectedDay.id}` },

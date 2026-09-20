@@ -2,10 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { getProgramInfo } from "@/lib/settings";
 import { ClassicReportClient } from "./classic-report-client";
 
+export type SortKey = "name" | "circle" | "points" | "attendance";
+
 export default async function ClassicReportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ circle?: string; group?: string }>;
+  searchParams: Promise<{ circle?: string; group?: string; from?: string; to?: string; sort?: string }>;
 }) {
   const { circle = "", group = "" } = await searchParams;
   const supabase = await createClient();
@@ -24,6 +26,14 @@ export default async function ClassicReportPage({
     );
   }
 
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const { from, to, sort: sortParam } = await searchParams;
+  const fromDate = from && from >= currentSeason.start_date ? from : currentSeason.start_date;
+  const toDate = to && to <= todayIso ? to : todayIso > currentSeason.end_date ? currentSeason.end_date : todayIso;
+  const sort: SortKey = (["name", "circle", "points", "attendance"] as const).includes(sortParam as SortKey)
+    ? (sortParam as SortKey)
+    : "name";
+
   const { data: circles } = await supabase.from("circles").select("id, name").order("name");
   const { data: groups } = await supabase.from("groups").select("id, name").order("name");
   const programInfo = await getProgramInfo(supabase);
@@ -33,8 +43,10 @@ export default async function ClassicReportPage({
     .select("id")
     .eq("season_id", currentSeason.id)
     .eq("is_holiday", false)
-    .lte("day_date", new Date().toISOString().slice(0, 10));
+    .gte("day_date", fromDate)
+    .lte("day_date", toDate);
   const dayCount = programDays?.length ?? 0;
+  const dayIds = new Set((programDays ?? []).map((d) => d.id));
 
   let enrollmentQuery = supabase
     .from("student_season_enrollments")
@@ -48,7 +60,11 @@ export default async function ClassicReportPage({
   const studentIds = (enrollments ?? []).map((e) => e.student_id);
 
   const { data: attendance } = studentIds.length
-    ? await supabase.from("attendance_records").select("student_id, status").eq("season_id", currentSeason.id).in("student_id", studentIds)
+    ? await supabase
+        .from("attendance_records")
+        .select("student_id, status, program_day_id")
+        .eq("season_id", currentSeason.id)
+        .in("student_id", studentIds)
     : { data: [] };
 
   const { data: flags } = studentIds.length
@@ -65,7 +81,7 @@ export default async function ClassicReportPage({
       const c = Array.isArray(e.circles) ? e.circles[0] : e.circles;
       const g = Array.isArray(e.groups) ? e.groups[0] : e.groups;
       if (!s || s.status !== "active") return null;
-      const att = (attendance ?? []).filter((a) => a.student_id === e.student_id);
+      const att = (attendance ?? []).filter((a) => a.student_id === e.student_id && dayIds.has(a.program_day_id));
       const present = att.filter((a) => a.status === "present").length;
       const late = att.filter((a) => a.status === "late").length;
       const excused = att.filter((a) => a.status === "excused").length;
@@ -90,8 +106,14 @@ export default async function ClassicReportPage({
         flags: studentFlags,
       };
     })
-    .filter((r): r is NonNullable<typeof r> => !!r)
-    .sort((a, b) => a.fullName.localeCompare(b.fullName, "ar"));
+    .filter((r): r is NonNullable<typeof r> => !!r);
+
+  const sorted = [...rows].sort((a, b) => {
+    if (sort === "points") return b.points - a.points;
+    if (sort === "attendance") return b.attendanceRate - a.attendanceRate;
+    if (sort === "circle") return (a.circleName ?? "").localeCompare(b.circleName ?? "", "ar") || a.fullName.localeCompare(b.fullName, "ar");
+    return a.fullName.localeCompare(b.fullName, "ar");
+  });
 
   const summary = {
     totalPoints: rows.reduce((sum, r) => sum + r.points, 0),
@@ -103,19 +125,44 @@ export default async function ClassicReportPage({
     studentCount: rows.length,
   };
 
+  const circleMap = new Map<string, { name: string; points: number; attendanceSum: number; count: number }>();
+  for (const r of rows) {
+    const key = r.circleName ?? "بلا حلقة";
+    if (!circleMap.has(key)) circleMap.set(key, { name: key, points: 0, attendanceSum: 0, count: 0 });
+    const entry = circleMap.get(key)!;
+    entry.points += r.points;
+    entry.attendanceSum += r.attendanceRate;
+    entry.count++;
+  }
+  const circleStats = Array.from(circleMap.values())
+    .map((c) => ({ name: c.name, avgPoints: c.count ? Math.round(c.points / c.count) : 0, avgAttendance: c.count ? Math.round(c.attendanceSum / c.count) : 0, count: c.count }))
+    .sort((a, b) => b.avgPoints - a.avgPoints);
+
+  const attendanceBuckets = [
+    { label: "0-25%", min: 0, max: 25 },
+    { label: "26-50%", min: 26, max: 50 },
+    { label: "51-75%", min: 51, max: 75 },
+    { label: "76-100%", min: 76, max: 100 },
+  ].map((b) => ({ label: b.label, count: rows.filter((r) => r.attendanceRate >= b.min && r.attendanceRate <= b.max).length }));
+
   return (
     <ClassicReportClient
       programInfo={programInfo}
       seasonName={currentSeason.name}
-      startDate={currentSeason.start_date}
-      endDate={currentSeason.end_date}
+      startDate={fromDate}
+      endDate={toDate}
+      seasonStart={currentSeason.start_date}
+      seasonEnd={currentSeason.end_date}
       dayCount={dayCount}
       circles={circles ?? []}
       groups={groups ?? []}
       selectedCircle={circle}
       selectedGroup={group}
-      rows={rows}
+      sort={sort}
+      rows={sorted}
       summary={summary}
+      circleStats={circleStats}
+      attendanceBuckets={attendanceBuckets}
     />
   );
 }

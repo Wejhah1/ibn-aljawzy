@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import type { ProgramInfo } from "@/lib/settings";
+import type { SortKey } from "./page";
 import { Printer } from "lucide-react";
 
 interface ReportRow {
@@ -29,30 +30,59 @@ interface Summary {
   studentCount: number;
 }
 
+interface CircleStat {
+  name: string;
+  avgPoints: number;
+  avgAttendance: number;
+  count: number;
+}
+
+interface AttendanceBucket {
+  label: string;
+  count: number;
+}
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: "name", label: "أبجدي (الاسم)" },
+  { value: "circle", label: "حسب الحلقة" },
+  { value: "points", label: "الأعلى نقاطاً" },
+  { value: "attendance", label: "الأعلى حضوراً" },
+];
+
 export function ClassicReportClient({
   programInfo,
   seasonName,
   startDate,
   endDate,
+  seasonStart,
+  seasonEnd,
   dayCount,
   circles,
   groups,
   selectedCircle,
   selectedGroup,
+  sort,
   rows,
   summary,
+  circleStats,
+  attendanceBuckets,
 }: {
   programInfo: ProgramInfo;
   seasonName: string;
   startDate: string;
   endDate: string;
+  seasonStart: string;
+  seasonEnd: string;
   dayCount: number;
   circles: { id: string; name: string }[];
   groups: { id: string; name: string }[];
   selectedCircle: string;
   selectedGroup: string;
+  sort: SortKey;
   rows: ReportRow[];
   summary: Summary;
+  circleStats: CircleStat[];
+  attendanceBuckets: AttendanceBucket[];
 }) {
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "numeric", year: "numeric" });
@@ -72,6 +102,28 @@ export function ClassicReportClient({
           </Button>
         </div>
         <form method="get" className="flex flex-wrap gap-(--space-3) rounded-(--radius-md) border border-line bg-surface-raised p-(--space-4)">
+          <div>
+            <label className="block text-[12px] font-semibold text-ink-muted mb-1">من تاريخ</label>
+            <input
+              type="date"
+              name="from"
+              min={seasonStart}
+              max={seasonEnd}
+              defaultValue={startDate}
+              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+            />
+          </div>
+          <div>
+            <label className="block text-[12px] font-semibold text-ink-muted mb-1">إلى تاريخ</label>
+            <input
+              type="date"
+              name="to"
+              min={seasonStart}
+              max={seasonEnd}
+              defaultValue={endDate}
+              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+            />
+          </div>
           <div>
             <label className="block text-[12px] font-semibold text-ink-muted mb-1">الحلقة</label>
             <select
@@ -102,8 +154,22 @@ export function ClassicReportClient({
               ))}
             </select>
           </div>
+          <div>
+            <label className="block text-[12px] font-semibold text-ink-muted mb-1">الترتيب</label>
+            <select
+              name="sort"
+              defaultValue={sort}
+              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <Button type="submit" variant="secondary" className="self-end">
-            تصفية
+            تطبيق
           </Button>
         </form>
       </div>
@@ -118,7 +184,7 @@ export function ClassicReportClient({
           <p className="text-[12px] text-ink-muted">{programInfo.mosque_name}</p>
           <p className="text-[15px] font-bold text-ink mt-(--space-2)">تقرير الحضور والنقاط</p>
           <p className="text-[11px] text-ink-muted mt-1">
-            من {fmt(startDate)} إلى {fmt(endDate)} · عدد أيام الدوام: {dayCount}
+            {seasonName} · من {fmt(startDate)} إلى {fmt(endDate)} · عدد أيام الدوام: {dayCount}
           </p>
         </div>
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-2xl border-2 border-ink shrink-0">
@@ -135,6 +201,13 @@ export function ClassicReportClient({
         <StatBox label="حضور" value={summary.present} tone="success" />
         <StatBox label="عدد الطلاب" value={summary.studentCount} tone="neutral" />
       </div>
+
+      {(circleStats.length > 1 || attendanceBuckets.some((b) => b.count > 0)) && (
+        <div className="grid md:grid-cols-2 gap-(--space-4) mb-(--space-6)" style={{ breakInside: "avoid" }}>
+          {circleStats.length > 1 && <CircleBarChart data={circleStats} />}
+          <AttendanceDistributionChart data={attendanceBuckets} />
+        </div>
+      )}
 
       <table className="w-full text-[11px] border-collapse">
         <thead>
@@ -192,6 +265,67 @@ function StatBox({ label, value, tone }: { label: string; value: string | number
         {value}
       </p>
       <p className="text-[10px] text-ink-muted font-semibold">{label}</p>
+    </div>
+  );
+}
+
+const CHART_W = 320;
+const CHART_H = 160;
+const CHART_PAD = 24;
+
+function CircleBarChart({ data }: { data: CircleStat[] }) {
+  const top = data.slice(0, 8);
+  const max = Math.max(1, ...top.map((c) => c.avgPoints));
+  const barH = (CHART_H - CHART_PAD) / top.length;
+
+  return (
+    <div className="rounded-(--radius-sm) border border-line p-(--space-3)">
+      <p className="text-[12px] font-bold text-ink mb-(--space-2)">متوسط النقاط حسب الحلقة</p>
+      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} width="100%" height={CHART_H} role="img" aria-label="متوسط النقاط حسب الحلقة">
+        {top.map((c, i) => {
+          const w = (c.avgPoints / max) * (CHART_W - 90);
+          const y = i * barH + 4;
+          return (
+            <g key={c.name}>
+              <text x={CHART_W - 4} y={y + barH * 0.6} fontSize="9" textAnchor="end" fill="var(--color-ink-muted)">
+                {c.name.length > 14 ? c.name.slice(0, 14) + "…" : c.name}
+              </text>
+              <rect x={4} y={y} width={Math.max(2, w)} height={barH * 0.55} rx={2} fill="var(--color-brand)" />
+              <text x={w + 8} y={y + barH * 0.4} fontSize="9" fill="var(--color-ink)">
+                {c.avgPoints}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function AttendanceDistributionChart({ data }: { data: AttendanceBucket[] }) {
+  const max = Math.max(1, ...data.map((b) => b.count));
+  const barW = (CHART_W - CHART_PAD) / data.length;
+
+  return (
+    <div className="rounded-(--radius-sm) border border-line p-(--space-3)">
+      <p className="text-[12px] font-bold text-ink mb-(--space-2)">توزيع نسب الحضور بين الطلاب</p>
+      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} width="100%" height={CHART_H} role="img" aria-label="توزيع نسب الحضور">
+        {data.map((b, i) => {
+          const h = (b.count / max) * (CHART_H - 40);
+          const x = i * barW + 10;
+          return (
+            <g key={b.label}>
+              <rect x={x} y={CHART_H - 24 - h} width={barW - 16} height={Math.max(1, h)} rx={2} fill="var(--color-accent-solid)" />
+              <text x={x + (barW - 16) / 2} y={CHART_H - 26 - h} fontSize="9" textAnchor="middle" fill="var(--color-ink)">
+                {b.count}
+              </text>
+              <text x={x + (barW - 16) / 2} y={CHART_H - 8} fontSize="9" textAnchor="middle" fill="var(--color-ink-muted)">
+                {b.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
     </div>
   );
 }

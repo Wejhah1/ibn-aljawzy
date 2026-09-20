@@ -27,9 +27,16 @@ export async function proxy(request: NextRequest) {
     }
   );
 
+  // getSession() reads the JWT from cookies locally (no network round-trip to the Supabase
+  // Auth server), unlike getUser(). This runs on every single request site-wide, so the
+  // network hop was a major source of the "every page feels slow" complaint. This is safe:
+  // the proxy only decides whether to redirect to /admin/login, it never grants access to
+  // data — every actual Supabase query is independently re-verified against RLS using the
+  // same JWT, so a tampered/stale cookie can get someone past this redirect but never past RLS.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
 
   const { pathname } = request.nextUrl;
   const isAdminArea = pathname.startsWith("/admin");
