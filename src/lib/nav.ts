@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   CalendarRange,
+  UploadCloud,
 } from "lucide-react";
 
 export interface NavItem {
@@ -41,6 +42,7 @@ export const REPORTS_NAV: NavItem[] = [
 
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/seasons", label: "المواسم", icon: CalendarRange },
+  { href: "/admin/import", label: "استيراد Excel", icon: UploadCloud },
   { href: "/admin/settings", label: "الإدارة والإعدادات", icon: Settings },
 ];
 
