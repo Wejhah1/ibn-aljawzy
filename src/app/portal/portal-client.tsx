@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { parentLogoutAction, sendParentNoteAction } from "./actions";
-import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList, MessageSquare, Send } from "lucide-react";
+import { parentLogoutAction, sendParentNoteAction, deleteParentNoteAction } from "./actions";
+import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList, MessageSquare, Send, Trash2 } from "lucide-react";
 
 interface ParentNote {
   id: string;
@@ -148,7 +149,7 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
               <CardTitle className="mb-(--space-3) flex items-center gap-2">
                 <MessageSquare size={18} className="text-brand" /> ملاحظة للإدارة
               </CardTitle>
-              <ParentNotesPanel studentId={selected.id} notes={selected.notes} />
+              <ParentNotesPanel key={selected.id} studentId={selected.id} notes={selected.notes} />
             </Card>
           </>
         )}
@@ -161,6 +162,7 @@ function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: Pare
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
   const [localNotes, setLocalNotes] = useState(notes);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const send = async () => {
     const trimmed = message.trim();
@@ -172,14 +174,24 @@ function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: Pare
     setPending(false);
   };
 
+  const remove = async (noteId: string) => {
+    setDeletingId(noteId);
+    const result = await deleteParentNoteAction(studentId, noteId);
+    if (!result?.error) setLocalNotes((prev) => prev.filter((n) => n.id !== noteId));
+    setDeletingId(null);
+  };
+
   return (
     <div>
       {localNotes.length > 0 && (
         <div className="space-y-(--space-2) mb-(--space-4) max-h-[280px] overflow-y-auto">
           {localNotes.map((n) => (
-            <div
+            <motion.div
               key={n.id}
-              className={`rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15 }}
+              className={`group relative rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
                 n.sender === "admin" ? "bg-brand-soft mr-auto" : "bg-surface-sunken ml-auto"
               }`}
             >
@@ -187,7 +199,17 @@ function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: Pare
               <p className="text-[11px] text-ink-faint mt-1 text-right">
                 {n.sender === "admin" ? "الإدارة" : "أنت"} · {new Date(n.createdAt).toLocaleString("ar-SA")}
               </p>
-            </div>
+              {n.sender === "parent" && !n.id.startsWith("temp-") && (
+                <button
+                  onClick={() => remove(n.id)}
+                  disabled={deletingId === n.id}
+                  title="حذف الرسالة"
+                  className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-raised border border-line-strong text-danger opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                >
+                  <Trash2 size={11} />
+                </button>
+              )}
+            </motion.div>
           ))}
         </div>
       )}

@@ -222,6 +222,13 @@ export async function sendParentNoteAdminAction(studentId: string, message: stri
   return { error: error?.message };
 }
 
+export async function deleteParentNoteAdminAction(noteId: string, studentId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("parent_notes").delete().eq("id", noteId).eq("sender", "admin");
+  revalidatePath(`/admin/students/${studentId}`);
+  return { error: error?.message };
+}
+
 export async function deleteStudentAction(studentId: string) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("delete_student_permanently", { p_student_id: studentId });

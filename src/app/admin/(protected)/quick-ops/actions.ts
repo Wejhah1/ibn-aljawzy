@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getProgramInfo } from "@/lib/settings";
+import { DEFAULT_WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
 
 export interface StudentSearchResult {
   id: string;
@@ -57,6 +59,8 @@ export interface QuickCardData {
   totalPoints: number;
   programDayId: string | null;
   todayStatus: string | null;
+  waLink: string;
+  hasUnreadNote: boolean;
 }
 
 export async function getStudentQuickCardAction(studentId: string): Promise<QuickCardData | null> {
@@ -114,6 +118,20 @@ export async function getStudentQuickCardAction(studentId: string): Promise<Quic
     }
   }
 
+  const [{ data: templateRow }, programInfo, { data: unread }] = await Promise.all([
+    supabase.from("whatsapp_templates").select("body").eq("context", "quick_ops_contact").maybeSingle(),
+    getProgramInfo(supabase),
+    supabase.from("parent_notes").select("id").eq("student_id", studentId).eq("sender", "parent").eq("is_read_by_admin", false).limit(1),
+  ]);
+  const template = templateRow?.body ?? DEFAULT_WHATSAPP_TEMPLATES.quick_ops_contact;
+  const message = fillTemplateLocal(template, {
+    name: student.full_name,
+    program: programInfo.program_name,
+    mosque: programInfo.mosque_name,
+    circle: circleName ?? "",
+  });
+  const waLink = `https://wa.me/${toIntlPhone(student.guardian_phone)}?text=${encodeURIComponent(message)}`;
+
   return {
     student,
     seasonId: currentSeason?.id ?? null,
@@ -123,7 +141,59 @@ export async function getStudentQuickCardAction(studentId: string): Promise<Quic
     totalPoints,
     programDayId,
     todayStatus,
+    waLink,
+    hasUnreadNote: (unread?.length ?? 0) > 0,
   };
+}
+
+function fillTemplateLocal(body: string, vars: Record<string, string>) {
+  return body.replace(/\{(\w+)\}/g, (match, key: string) => vars[key] ?? match);
+}
+
+function toIntlPhone(phone: string, defaultCountryCode = "966") {
+  const digits = phone.replace(/[^\d+]/g, "");
+  if (digits.startsWith("+")) return digits.slice(1);
+  if (digits.startsWith("00")) return digits.slice(2);
+  if (digits.startsWith("0")) return defaultCountryCode + digits.slice(1);
+  if (digits.startsWith(defaultCountryCode)) return digits;
+  return defaultCountryCode + digits;
+}
+
+export interface QuickBadgeOption {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
+export async function getActiveBadgesAction(): Promise<QuickBadgeOption[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("badges").select("id, name, icon").eq("is_active", true).order("name");
+  return data ?? [];
+}
+
+export async function quickGrantBadgeAction(studentId: string, badgeId: string) {
+  const supabase = await createClient();
+  const { data: currentSeason } = await supabase.from("seasons").select("id").eq("status", "current").maybeSingle();
+  if (!currentSeason) return { error: "لا يوجد موسم حالي." };
+  const { error } = await supabase
+    .from("student_badges")
+    .insert({ student_id: studentId, season_id: currentSeason.id, badge_id: badgeId });
+  revalidatePath("/admin/quick-ops");
+  return { error: error?.message };
+}
+
+export async function quickSendNoteAction(studentId: string, message: string) {
+  const supabase = await createClient();
+  const trimmed = message.trim();
+  if (!trimmed) return { error: "الرسالة فارغة" };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from("parent_notes")
+    .insert({ student_id: studentId, sender: "admin", sender_profile_id: user?.id, message: trimmed, is_read_by_admin: true });
+  revalidatePath("/admin/quick-ops");
+  return { error: error?.message };
 }
 
 export async function quickMarkAttendanceAction(

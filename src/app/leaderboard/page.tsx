@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProgramInfo } from "@/lib/settings";
-import { LeaderboardClient } from "./leaderboard-client";
+import { PublicLeaderboardClient } from "./public-leaderboard-client";
 
 interface PublicLeaderboardResult {
   season_name: string | null;
@@ -18,41 +18,26 @@ interface PublicLeaderboardResult {
   circles: { id: string; name: string; color_token: string; total_points: number }[];
 }
 
-export default async function LeaderboardPage() {
+export default async function PublicLeaderboardPage() {
   const supabase = await createClient();
-
-  const { data: currentSeason } = await supabase.from("seasons").select("id, name").eq("status", "current").maybeSingle();
-
-  if (!currentSeason) {
-    return (
-      <main className="p-(--space-8) max-w-[600px] mx-auto text-center">
-        <p className="text-sm font-semibold text-ink-muted">لا يوجد موسم حالي.</p>
-      </main>
-    );
-  }
-
-  const { data } = await supabase.rpc("public_leaderboard");
-  const result = (data ?? { students: [], groups: [], circles: [] }) as unknown as PublicLeaderboardResult;
+  const [{ data }, programInfo] = await Promise.all([supabase.rpc("public_leaderboard"), getProgramInfo(supabase)]);
+  const result = (data ?? { season_name: null, students: [], groups: [], circles: [] }) as unknown as PublicLeaderboardResult;
 
   const entries = result.students.map((s) => ({
     studentId: s.id,
     fullName: s.full_name,
-    code: s.code,
     circleName: s.circle_name,
     points: s.points,
     attendanceRate: s.attendance_rate,
     achievementsCount: s.achievements_count,
     badges: s.badges ?? [],
   }));
-
   const groupEntries = result.groups.map((g) => ({ id: g.id, name: g.name, colorToken: g.color_token, points: g.total_points }));
   const circleEntries = result.circles.map((c) => ({ id: c.id, name: c.name, colorToken: c.color_token, points: c.total_points }));
 
-  const programInfo = await getProgramInfo(supabase);
-
   return (
-    <LeaderboardClient
-      seasonName={currentSeason.name}
+    <PublicLeaderboardClient
+      seasonName={result.season_name}
       entries={entries}
       groupEntries={groupEntries}
       circleEntries={circleEntries}

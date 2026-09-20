@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Input, Label } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ColorTokenPicker } from "@/components/ui/color-token-picker";
 import { createGroupAction, updateGroupAction, type FormState } from "./actions";
 
 interface Group {
@@ -11,6 +12,7 @@ interface Group {
   name: string;
   leader_name: string | null;
   leader_phone: string | null;
+  color_token?: string;
 }
 
 const GROUP_COLOR_OPTIONS = [1, 2, 3, 4, 5, 6];
@@ -27,7 +29,7 @@ export function GroupFormModal({
   const isEdit = !!group;
   const action = isEdit ? updateGroupAction : createGroupAction;
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, null);
-  const defaultColor = `group-${(existingCount % GROUP_COLOR_OPTIONS.length) + 1}`;
+  const defaultColor = group?.color_token ?? `group-${(existingCount % GROUP_COLOR_OPTIONS.length) + 1}`;
 
   useEffect(() => {
     if (state?.success) onClose();
@@ -37,11 +39,11 @@ export function GroupFormModal({
     <Modal title={isEdit ? "تعديل المجموعة" : "مجموعة جديدة"} onClose={onClose}>
       <form action={formAction} className="space-y-(--space-4)">
         {isEdit && <input type="hidden" name="id" value={group!.id} />}
-        {!isEdit && <input type="hidden" name="color_token" value={defaultColor} />}
         <div>
           <Label htmlFor="name">اسم المجموعة</Label>
           <Input id="name" name="name" required defaultValue={group?.name} placeholder="مثال: المجموعة الأولى" />
         </div>
+        <ColorTokenPicker name="color_token" defaultValue={defaultColor} />
         <div>
           <Label htmlFor="leader_name">اسم قائد المجموعة</Label>
           <Input id="leader_name" name="leader_name" defaultValue={group?.leader_name ?? ""} />

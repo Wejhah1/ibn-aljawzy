@@ -18,7 +18,7 @@ export function fillTemplate(body: string, vars: WhatsappVariables): string {
 
 /** ينظّف رقم الجوال ويضيف رمز الدولة الافتراضي (السعودية) إن لم يوجد */
 export function toInternationalPhone(phone: string, defaultCountryCode = "966") {
-  let digits = phone.replace(/[^\d+]/g, "");
+  const digits = phone.replace(/[^\d+]/g, "");
   if (digits.startsWith("+")) return digits.slice(1);
   if (digits.startsWith("00")) return digits.slice(2);
   if (digits.startsWith("0")) return defaultCountryCode + digits.slice(1);

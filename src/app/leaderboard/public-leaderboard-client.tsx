@@ -1,25 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { toPng } from "html-to-image";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BadgeStrip, type BadgeStripItem } from "@/components/badges/badge-strip";
 import type { ProgramInfo } from "@/lib/settings";
-import { Trophy, Maximize2, Minimize2, Download, Play, Pause, Medal, Users, CircleDot } from "lucide-react";
+import { Trophy, Medal, Users, CircleDot, ArrowRight, Play, Pause } from "lucide-react";
 
 interface StudentEntry {
   studentId: string;
   fullName: string;
-  code: string;
   circleName: string | null;
   points: number;
   attendanceRate: number;
   achievementsCount: number;
   badges: BadgeStripItem[];
 }
-
 interface GroupOrCircleEntry {
   id: string;
   name: string;
@@ -85,23 +82,21 @@ function buildDisplayEntries(
   }));
 }
 
-export function LeaderboardClient({
+export function PublicLeaderboardClient({
   seasonName,
   entries,
   groupEntries,
   circleEntries,
   programInfo,
 }: {
-  seasonName: string;
+  seasonName: string | null;
   entries: StudentEntry[];
   groupEntries: GroupOrCircleEntry[];
   circleEntries: GroupOrCircleEntry[];
   programInfo: ProgramInfo;
 }) {
   const [tab, setTab] = useState<TabKey>("points");
-  const [fullscreen, setFullscreen] = useState(false);
-  const [rotating, setRotating] = useState(false);
-  const exportRef = useRef<HTMLDivElement>(null);
+  const [rotating, setRotating] = useState(true);
 
   useEffect(() => {
     if (!rotating) return;
@@ -110,7 +105,7 @@ export function LeaderboardClient({
         const idx = TABS.findIndex((t) => t.key === prev);
         return TABS[(idx + 1) % TABS.length].key;
       });
-    }, 8000);
+    }, 9000);
     return () => clearInterval(interval);
   }, [rotating]);
 
@@ -120,64 +115,53 @@ export function LeaderboardClient({
   const rest = top10.slice(3);
   const currentTab = TABS.find((t) => t.key === tab)!;
 
-  const handleExport = async () => {
-    if (!exportRef.current) return;
-    const dataUrl = await toPng(exportRef.current, { pixelRatio: 2, backgroundColor: "#f7f7f3" });
-    const link = document.createElement("a");
-    link.download = `المتصدرون-${currentTab.label}.png`;
-    link.href = dataUrl;
-    link.click();
-  };
-
   return (
-    <div
-      className={
-        fullscreen
-          ? "fixed inset-0 z-50 min-h-screen flex flex-col items-center justify-center bg-surface p-(--space-8) overflow-y-auto"
-          : "p-(--space-4) md:p-(--space-8) max-w-[900px] mx-auto"
-      }
-    >
-      {!fullscreen && (
+    <main className="min-h-screen bg-surface p-(--space-4) md:p-(--space-8)">
+      <div className="max-w-[900px] mx-auto">
         <div className="flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
-          <div>
-            <h1 className="text-[22px] leading-[30px] font-bold text-ink">المتصدرون</h1>
-            <p className="text-sm text-ink-muted mt-1">{seasonName}</p>
+          <div className="flex items-center gap-(--space-2)">
+            <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-surface-raised border-bold border-line-strong overflow-hidden p-0.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="" className="h-full w-full object-contain" />
+            </div>
+            <div>
+              <h1 className="text-[20px] font-bold text-ink">المتصدرون</h1>
+              <p className="text-[12px] text-ink-muted">
+                {programInfo.program_name} {seasonName ? `· ${seasonName}` : ""}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-(--space-2)">
-            <Button size="sm" variant="outline" onClick={handleExport}>
-              <Download size={14} /> تصدير كصورة
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => setFullscreen(true)}>
-              <Maximize2 size={14} /> ملء الشاشة
-            </Button>
+            <button
+              onClick={() => setRotating((r) => !r)}
+              className="h-9 px-(--space-3) rounded-(--radius-sm) border border-line-strong bg-surface-raised text-[13px] font-bold text-ink-muted flex items-center gap-1.5 hover:bg-surface-sunken"
+            >
+              {rotating ? <Pause size={13} /> : <Play size={13} />} {rotating ? "إيقاف التدوير" : "تدوير تلقائي"}
+            </button>
+            <Link
+              href="/"
+              className="h-9 px-(--space-3) rounded-(--radius-sm) border border-line-strong bg-surface-raised text-[13px] font-bold text-ink-muted flex items-center gap-1.5 hover:bg-surface-sunken"
+            >
+              الرئيسية <ArrowRight size={13} />
+            </Link>
           </div>
         </div>
-      )}
 
-      {fullscreen && (
-        <div className="fixed top-4 left-4 z-50 flex items-center gap-(--space-2)">
-          <Button size="sm" variant="secondary" onClick={() => setRotating((r) => !r)}>
-            {rotating ? <Pause size={14} /> : <Play size={14} />} {rotating ? "إيقاف التدوير" : "تدوير تلقائي"}
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => setFullscreen(false)}>
-            <Minimize2 size={14} /> خروج
-          </Button>
-        </div>
-      )}
-
-      <div className={fullscreen ? "w-full max-w-[900px]" : ""}>
         <div className="flex items-center gap-(--space-2) mb-(--space-6) justify-center flex-wrap">
           {TABS.map((t) => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`h-11 px-(--space-4) rounded-(--radius-sm) border-bold text-sm font-bold transition-colors flex items-center gap-1.5 ${
+              onClick={() => {
+                setTab(t.key);
+                setRotating(false);
+              }}
+              className={`h-10 px-(--space-3) rounded-(--radius-sm) border-bold text-[13px] font-bold transition-colors flex items-center gap-1.5 ${
                 tab === t.key
                   ? "bg-brand text-on-brand border-line-strong shadow-brutal-sm"
                   : "bg-surface-raised text-ink-muted border-line-strong hover:bg-surface-sunken"
               }`}
             >
-              <t.icon size={14} /> {t.label}
+              <t.icon size={13} /> {t.label}
             </button>
           ))}
         </div>
@@ -190,63 +174,24 @@ export function LeaderboardClient({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
           >
-            {podium.length > 0 && <Podium entries={podium} large={fullscreen} />}
-
+            {podium.length > 0 && <Podium entries={podium} />}
             <div className="space-y-(--space-2)">
               {rest.map((e, i) => (
-                <LeaderRow key={e.id} rank={i + 4} entry={e} large={fullscreen} />
+                <LeaderRow key={e.id} rank={i + 4} entry={e} />
               ))}
-              {top10.length === 0 && <p className="text-center text-ink-muted text-sm">لا توجد بيانات بعد.</p>}
+              {top10.length === 0 && <p className="text-center text-ink-muted text-sm py-(--space-8)">لا توجد بيانات بعد.</p>}
             </div>
           </motion.div>
         </AnimatePresence>
+        <p className="text-[11px] text-ink-faint text-center mt-(--space-8)">{currentTab.label}</p>
       </div>
-
-      {/* لوحة التصدير المخفية — مقاس ثابت مصمم للتصدير كصورة أو للعرض على شاشة، منفصلة عن واجهة العرض */}
-      <div className="fixed -left-[9999px] top-0">
-        <div ref={exportRef} style={{ width: 1080, padding: 60 }} className="bg-surface flex flex-col">
-          <div className="flex items-center justify-between mb-10">
-            <div>
-              <p className="text-[42px] font-bold text-ink">المتصدرون</p>
-              <p className="text-[22px] text-ink-muted font-medium mt-1">
-                {programInfo.program_name} · {seasonName}
-              </p>
-            </div>
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface-raised border-[3px] border-ink shadow-[6px_6px_0_0_#171b18] overflow-hidden p-1.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.svg" alt="" className="h-full w-full object-contain" />
-            </div>
-          </div>
-          <p className="text-[28px] font-bold text-brand mb-8">{currentTab.label}</p>
-          <div className="flex flex-col gap-4">
-            {top10.map((e, i) => (
-              <div
-                key={e.id}
-                className="flex items-center justify-between rounded-2xl border-[2px] border-ink px-8 py-5"
-                style={{ backgroundColor: i < 3 ? "#fbf3e6" : "#ffffff" }}
-              >
-                <div className="flex items-center gap-6">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full text-[24px] font-bold border-[2px] border-ink bg-brand-soft text-brand-hover">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <p className="text-[26px] font-bold text-ink">{e.title}</p>
-                    {e.subtitle && <p className="text-[18px] text-ink-muted">{e.subtitle}</p>}
-                  </div>
-                </div>
-                <p className="text-[30px] font-bold text-brand">{e.valueLabel}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    </main>
   );
 }
 
-function Podium({ entries, large }: { entries: DisplayEntry[]; large: boolean }) {
+function Podium({ entries }: { entries: DisplayEntry[] }) {
   const [first, second, third] = entries;
-  const heights = large ? [220, 170, 130] : [160, 120, 90];
+  const heights = [160, 120, 90];
 
   const slot = (entry: DisplayEntry | undefined, rank: 1 | 2 | 3, height: number) => {
     if (!entry) return <div className="flex-1" />;
@@ -256,27 +201,25 @@ function Podium({ entries, large }: { entries: DisplayEntry[]; large: boolean })
         key={entry.id}
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.25, delay: (3 - rank) * 0.06, ease: [0.2, 0, 0, 1] }}
+        transition={{ duration: 0.25, delay: (3 - rank) * 0.06 }}
         className="flex-1 flex flex-col items-center"
       >
         <div
-          className={`flex items-center justify-center rounded-full font-bold shrink-0 mb-(--space-2) ${
-            large ? "h-16 w-16 text-2xl" : "h-11 w-11 text-base"
-          }`}
+          className="flex items-center justify-center rounded-full font-bold shrink-0 mb-(--space-2) h-11 w-11 text-base"
           style={{ backgroundColor: medalColor, color: "#171b18", border: "2.5px solid var(--color-line-strong)" }}
         >
           {rank}
         </div>
         <div className="flex items-center gap-1 mb-1">
-          <p className={`font-bold text-ink text-center leading-tight ${large ? "text-lg" : "text-[12px]"}`}>{entry.title}</p>
-          <BadgeStrip badges={entry.badges} max={2} size={large ? "md" : "sm"} />
+          <p className="font-bold text-ink text-center leading-tight text-[12px]">{entry.title}</p>
+          <BadgeStrip badges={entry.badges} max={2} />
         </div>
-        <p className={`font-bold text-brand mb-(--space-2) ${large ? "text-base" : "text-[11px]"}`}>{entry.valueLabel}</p>
+        <p className="font-bold text-brand mb-(--space-2) text-[11px]">{entry.valueLabel}</p>
         <div
           className="w-full rounded-t-(--radius-md) border-bold border-line-strong border-b-0 flex items-start justify-center pt-(--space-2)"
           style={{ height, backgroundColor: entry.accent ? `${entry.accent}22` : "var(--color-accent-soft)", boxShadow: "var(--shadow-brutal-sm)" }}
         >
-          <Trophy size={large ? 26 : 18} style={{ color: entry.accent ?? "var(--color-accent)" }} />
+          <Trophy size={18} style={{ color: entry.accent ?? "var(--color-accent)" }} />
         </div>
       </motion.div>
     );
@@ -291,16 +234,14 @@ function Podium({ entries, large }: { entries: DisplayEntry[]; large: boolean })
   );
 }
 
-function LeaderRow({ rank, entry, large }: { rank: number; entry: DisplayEntry; large: boolean }) {
+function LeaderRow({ rank, entry }: { rank: number; entry: DisplayEntry }) {
   const isTop3 = rank <= 3;
   return (
     <motion.div
       initial={{ opacity: 0, x: 12 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.18, delay: rank * 0.02, ease: [0.2, 0, 0, 1] }}
-      className={`flex items-center justify-between rounded-(--radius-md) border-bold px-(--space-4) ${
-        large ? "py-(--space-4)" : "py-(--space-3)"
-      }`}
+      transition={{ duration: 0.18, delay: rank * 0.02 }}
+      className="flex items-center justify-between rounded-(--radius-md) border-bold px-(--space-4) py-(--space-3)"
       style={{
         borderColor: "var(--color-line-strong)",
         backgroundColor: isTop3 ? "var(--color-accent-soft)" : "var(--color-surface-raised)",
@@ -309,24 +250,24 @@ function LeaderRow({ rank, entry, large }: { rank: number; entry: DisplayEntry; 
     >
       <div className="flex items-center gap-(--space-3)">
         <span
-          className={`flex items-center justify-center rounded-full font-bold ${large ? "h-12 w-12 text-lg" : "h-9 w-9 text-sm"}`}
+          className="flex items-center justify-center rounded-full font-bold h-9 w-9 text-sm"
           style={{
             backgroundColor: entry.accent ?? (isTop3 ? "var(--color-accent-solid)" : "var(--color-brand-soft)"),
             color: entry.accent ? "#fff" : isTop3 ? "var(--color-on-accent)" : "var(--color-brand-hover)",
           }}
         >
-          {isTop3 ? <Medal size={large ? 22 : 16} /> : rank}
+          {isTop3 ? <Medal size={16} /> : rank}
         </span>
         <div>
           <div className="flex items-center gap-1.5">
-            <p className={`font-bold text-ink ${large ? "text-xl" : "text-sm"}`}>{entry.title}</p>
-            <BadgeStrip badges={entry.badges} max={2} size={large ? "md" : "sm"} />
+            <p className="font-bold text-ink text-sm">{entry.title}</p>
+            <BadgeStrip badges={entry.badges} max={2} />
           </div>
-          {entry.subtitle && <p className={`text-ink-muted ${large ? "text-sm" : "text-[12px]"}`}>{entry.subtitle}</p>}
+          {entry.subtitle && <p className="text-ink-muted text-[12px]">{entry.subtitle}</p>}
         </div>
       </div>
-      <Badge tone={isTop3 ? "accent" : "brand"} className={large ? "text-base px-4 py-2" : undefined}>
-        <Trophy size={large ? 16 : 12} /> {entry.valueLabel}
+      <Badge tone={isTop3 ? "accent" : "brand"}>
+        <Trophy size={12} /> {entry.valueLabel}
       </Badge>
     </motion.div>
   );

@@ -9,16 +9,18 @@ import { Input, Label } from "@/components/ui/input";
 import {
   importMonthlyResultsAction,
   togglePublishPeriodAction,
+  getStudentsForTemplateAction,
   type MonthlyResultRow,
   type ImportSummary,
 } from "./actions";
-import { UploadCloud, CheckCircle2, Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { UploadCloud, CheckCircle2, Eye, EyeOff, AlertTriangle, CalendarDays } from "lucide-react";
 
 interface Period {
   label: string;
   count: number;
   avg: number;
   isPublished: boolean;
+  examDate: string | null;
 }
 
 export function MonthlyResultsClient({
@@ -31,10 +33,12 @@ export function MonthlyResultsClient({
   periods: Period[];
 }) {
   const [periodLabel, setPeriodLabel] = useState("");
+  const [examDate, setExamDate] = useState("");
   const [rows, setRows] = useState<MonthlyResultRow[]>([]);
   const [fileName, setFileName] = useState("");
   const [importing, setImporting] = useState(false);
   const [summary, setSummary] = useState<ImportSummary | null>(null);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
 
   const handleFile = async (file: File) => {
     setFileName(file.name);
@@ -59,20 +63,23 @@ export function MonthlyResultsClient({
   const runImport = async () => {
     if (!periodLabel.trim() || rows.length === 0) return;
     setImporting(true);
-    const res = await importMonthlyResultsAction(seasonId, periodLabel.trim(), rows);
+    const res = await importMonthlyResultsAction(seasonId, periodLabel.trim(), rows, examDate || undefined);
     setSummary(res);
     setImporting(false);
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
+    setDownloadingTemplate(true);
+    const students = await getStudentsForTemplateAction(seasonId);
     const wsData = [
       ["كود", "الاسم", "النسبة"],
-      ["000", "أحمد محمد السيد", 92],
+      ...(students.length > 0 ? students.map((s) => [s.code, s.full_name, ""]) : [["000", "أحمد محمد السيد", 92]]),
     ];
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "النتائج");
     XLSX.writeFile(wb, "قالب_النتائج_الشهرية.xlsx");
+    setDownloadingTemplate(false);
   };
 
   return (
@@ -86,7 +93,14 @@ export function MonthlyResultsClient({
             <Card key={p.label} className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-ink">{p.label}</p>
-                <p className="text-[12px] text-ink-muted">{p.count} طالب · متوسط {p.avg}%</p>
+                <p className="text-[12px] text-ink-muted">
+                  {p.count} طالب · متوسط {p.avg}%
+                  {p.examDate && (
+                    <span className="inline-flex items-center gap-1 mr-2">
+                      <CalendarDays size={11} /> {new Date(p.examDate).toLocaleDateString("ar-SA")}
+                    </span>
+                  )}
+                </p>
               </div>
               <div className="flex items-center gap-(--space-2)">
                 {p.isPublished ? <Badge tone="success">منشور لأولياء الأمور</Badge> : <Badge tone="neutral">غير منشور</Badge>}
@@ -106,13 +120,19 @@ export function MonthlyResultsClient({
       <Card>
         <div className="flex items-center justify-between mb-(--space-4)">
           <CardTitle>رفع نتائج فترة جديدة</CardTitle>
-          <Button size="sm" variant="outline" onClick={downloadTemplate}>
-            تحميل قالب
+          <Button size="sm" variant="outline" onClick={downloadTemplate} disabled={downloadingTemplate}>
+            {downloadingTemplate ? "جارِ التحضير..." : "تحميل قالب"}
           </Button>
         </div>
-        <div className="mb-(--space-4)">
-          <Label htmlFor="periodLabel">اسم الفترة</Label>
-          <Input id="periodLabel" value={periodLabel} onChange={(e) => setPeriodLabel(e.target.value)} placeholder="مثال: الشهر الأول" />
+        <div className="grid sm:grid-cols-2 gap-(--space-3) mb-(--space-4)">
+          <div>
+            <Label htmlFor="periodLabel">اسم الفترة</Label>
+            <Input id="periodLabel" value={periodLabel} onChange={(e) => setPeriodLabel(e.target.value)} placeholder="مثال: الشهر الأول" />
+          </div>
+          <div>
+            <Label htmlFor="examDate">تاريخ الاختبار (اختياري)</Label>
+            <Input id="examDate" type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
+          </div>
         </div>
         <label className="flex flex-col items-center justify-center gap-(--space-2) rounded-(--radius-md) border-bold border-dashed border-line-strong bg-surface-sunken h-28 cursor-pointer hover:bg-brand-soft transition-colors">
           <UploadCloud size={22} className="text-ink-muted" />

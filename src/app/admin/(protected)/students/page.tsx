@@ -17,12 +17,13 @@ export default async function StudentsPage({
     .eq("status", "current")
     .maybeSingle();
 
-  const { data: circles } = await supabase.from("circles").select("id, name").order("name");
+  const { data: circles } = await supabase.from("circles").select("id, name, color_token").order("name");
+  const circleColorById = new Map((circles ?? []).map((c) => [c.id, c.color_token]));
 
   let query = supabase
     .from("students")
     .select(
-      "id, code, full_name, guardian_name, guardian_phone, status, student_season_enrollments(season_id, circle_id, circles(name), groups(name))"
+      "id, code, full_name, guardian_name, guardian_phone, status, student_season_enrollments(season_id, circle_id, total_points, circles(name, color_token), groups(name, color_token))"
     )
     .order("full_name");
 
@@ -38,12 +39,46 @@ export default async function StudentsPage({
     );
   });
 
-  const { data: unreadNotes } = await supabase
-    .from("parent_notes")
-    .select("student_id")
-    .eq("sender", "parent")
-    .eq("is_read_by_admin", false);
+  const [{ data: unreadNotes }, { data: attendanceRows }, { data: badgeRows }] = await Promise.all([
+    supabase.from("parent_notes").select("student_id").eq("sender", "parent").eq("is_read_by_admin", false),
+    currentSeason
+      ? supabase.from("attendance_records").select("student_id, status").eq("season_id", currentSeason.id)
+      : Promise.resolve({ data: [] as { student_id: string; status: string }[] }),
+    currentSeason
+      ? supabase
+          .from("student_badges")
+          .select("student_id, awarded_at, badges(name, icon, display_duration_days)")
+          .eq("season_id", currentSeason.id)
+      : Promise.resolve({ data: [] as never[] }),
+  ]);
+
   const unreadStudentIds = new Set((unreadNotes ?? []).map((n) => n.student_id));
+
+  const attendanceByStudent = new Map<string, { present: number; absent: number }>();
+  for (const r of attendanceRows ?? []) {
+    const entry = attendanceByStudent.get(r.student_id) ?? { present: 0, absent: 0 };
+    if (r.status === "present" || r.status === "late") entry.present += 1;
+    if (r.status === "absent") entry.absent += 1;
+    attendanceByStudent.set(r.student_id, entry);
+  }
+
+  const now = Date.now();
+  const badgesByStudent = new Map<string, { name: string; icon: string | null }[]>();
+  for (const r of (badgeRows ?? []) as {
+    student_id: string;
+    awarded_at: string;
+    badges: { name: string; icon: string | null; display_duration_days: number | null } | { name: string; icon: string | null; display_duration_days: number | null }[] | null;
+  }[]) {
+    const b = Array.isArray(r.badges) ? r.badges[0] : r.badges;
+    if (!b) continue;
+    if (b.display_duration_days) {
+      const ageDays = (now - new Date(r.awarded_at).getTime()) / 86400000;
+      if (ageDays > b.display_duration_days) continue;
+    }
+    const list = badgesByStudent.get(r.student_id) ?? [];
+    list.push({ name: b.name, icon: b.icon });
+    badgesByStudent.set(r.student_id, list);
+  }
 
   const programInfo = await getProgramInfo(supabase);
   const { data: templateRow } = await supabase
@@ -55,8 +90,9 @@ export default async function StudentsPage({
 
   const rows = filtered.map((s) => {
     const enrollment = s.student_season_enrollments.find((e) => e.season_id === currentSeason?.id);
-    const circleName = Array.isArray(enrollment?.circles) ? enrollment?.circles[0]?.name : (enrollment?.circles as { name: string } | null)?.name;
-    const groupName = Array.isArray(enrollment?.groups) ? enrollment?.groups[0]?.name : (enrollment?.groups as { name: string } | null)?.name;
+    const circleObj = Array.isArray(enrollment?.circles) ? enrollment?.circles[0] : (enrollment?.circles as { name: string; color_token: string } | null);
+    const groupObj = Array.isArray(enrollment?.groups) ? enrollment?.groups[0] : (enrollment?.groups as { name: string; color_token: string } | null);
+    const attendance = attendanceByStudent.get(s.id) ?? { present: 0, absent: 0 };
     return {
       id: s.id,
       code: s.code,
@@ -64,9 +100,15 @@ export default async function StudentsPage({
       guardianName: s.guardian_name,
       guardianPhone: s.guardian_phone,
       status: s.status,
-      circleName: circleName ?? null,
-      groupName: groupName ?? null,
+      circleName: circleObj?.name ?? null,
+      circleColor: circleObj?.color_token ?? (enrollment?.circle_id ? circleColorById.get(enrollment.circle_id) ?? null : null),
+      groupName: groupObj?.name ?? null,
+      groupColor: groupObj?.color_token ?? null,
+      points: enrollment?.total_points ?? 0,
+      presentCount: attendance.present,
+      absentCount: attendance.absent,
       hasUnreadNote: unreadStudentIds.has(s.id),
+      badges: badgesByStudent.get(s.id) ?? [],
     };
   });
 

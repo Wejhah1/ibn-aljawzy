@@ -17,7 +17,8 @@ export interface ImportSummary {
 export async function importMonthlyResultsAction(
   seasonId: string,
   periodLabel: string,
-  rows: MonthlyResultRow[]
+  rows: MonthlyResultRow[],
+  examDate?: string
 ): Promise<ImportSummary> {
   const supabase = await createClient();
   const summary: ImportSummary = { saved: 0, notFound: [] };
@@ -43,7 +44,7 @@ export async function importMonthlyResultsAction(
     const { error } = await supabase
       .from("monthly_results")
       .upsert(
-        { student_id: studentId, season_id: seasonId, period_label: periodLabel, percentage: row.percentage },
+        { student_id: studentId, season_id: seasonId, period_label: periodLabel, percentage: row.percentage, exam_date: examDate || null },
         { onConflict: "student_id,season_id,period_label" }
       );
     if (!error) summary.saved++;
@@ -61,4 +62,18 @@ export async function togglePublishPeriodAction(seasonId: string, periodLabel: s
     .eq("season_id", seasonId)
     .eq("period_label", periodLabel);
   revalidatePath("/admin/monthly-results");
+}
+
+export async function getStudentsForTemplateAction(seasonId: string): Promise<{ code: string; full_name: string }[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("student_season_enrollments")
+    .select("students(code, full_name)")
+    .eq("season_id", seasonId)
+    .eq("status", "active");
+
+  return (data ?? [])
+    .map((r) => (Array.isArray(r.students) ? r.students[0] : r.students))
+    .filter((s): s is { code: string; full_name: string } => !!s)
+    .sort((a, b) => a.code.localeCompare(b.code));
 }

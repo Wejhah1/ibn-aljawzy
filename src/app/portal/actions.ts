@@ -37,3 +37,13 @@ export async function sendParentNoteAction(studentId: string, message: string) {
   revalidatePath("/portal");
   return { error: error?.message };
 }
+
+export async function deleteParentNoteAction(studentId: string, noteId: string) {
+  const owns = await assertParentOwnsStudent(studentId);
+  if (!owns) return { error: "غير مصرّح" };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("parent_notes").delete().eq("id", noteId).eq("student_id", studentId).eq("sender", "parent");
+  revalidatePath("/portal");
+  return { error: error?.message };
+}

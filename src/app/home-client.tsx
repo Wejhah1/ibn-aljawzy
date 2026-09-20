@@ -125,6 +125,11 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
                 متابعة ابني <ArrowLeft size={16} />
               </Button>
             </Link>
+            <Link href="/leaderboard">
+              <Button size="lg" variant="secondary">
+                <Trophy size={16} /> لوحة المتصدرين
+              </Button>
+            </Link>
           </motion.div>
         </div>
       </section>

@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { getProgramInfo } from "@/lib/settings";
 import { CirclesPageClient } from "./circles-page-client";
 
 export default async function CirclesPage() {
   const supabase = await createClient();
+  const programInfo = await getProgramInfo(supabase);
 
   const { data: currentSeason } = await supabase
     .from("seasons")
@@ -12,7 +14,7 @@ export default async function CirclesPage() {
 
   const { data: circles } = await supabase
     .from("circles")
-    .select("id, name, leader_name, leader_phone, is_active")
+    .select("id, name, leader_name, leader_phone, teacher_name, teacher_phone, color_token, is_active")
     .order("created_at", { ascending: true });
 
   const { data: groups } = await supabase
@@ -39,6 +41,7 @@ export default async function CirclesPage() {
       currentSeasonId={currentSeason?.id ?? null}
       circleCounts={circleCounts}
       groupCounts={groupCounts}
+      programInfo={programInfo}
     />
   );
 }

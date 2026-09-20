@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import {
   setStudentFlagAction,
   resolveStudentFlagAction,
   sendParentNoteAdminAction,
+  deleteParentNoteAdminAction,
   deleteStudentAction,
   type FormState,
 } from "../actions";
@@ -344,9 +345,20 @@ export function StudentProfileClient({
   );
 }
 
-function ParentNotesThread({ studentId, notes }: { studentId: string; notes: ParentNote[] }) {
+function ParentNotesThread({ studentId, notes: initialNotes }: { studentId: string; notes: ParentNote[] }) {
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
+  const [notes, setNotes] = useState(initialNotes);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => setNotes(initialNotes), [initialNotes]);
+
+  const deleteNote = async (noteId: string) => {
+    setDeletingId(noteId);
+    const result = await deleteParentNoteAdminAction(noteId, studentId);
+    if (!result?.error) setNotes((prev) => prev.filter((n) => n.id !== noteId));
+    setDeletingId(null);
+  };
 
   return (
     <div>
@@ -355,7 +367,7 @@ function ParentNotesThread({ studentId, notes }: { studentId: string; notes: Par
         {notes.map((n) => (
           <div
             key={n.id}
-            className={`rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
+            className={`group relative rounded-(--radius-sm) px-(--space-3) py-(--space-2) max-w-[85%] ${
               n.sender === "admin" ? "bg-brand-soft mr-auto text-right" : "bg-surface-sunken ml-auto text-right"
             }`}
           >
@@ -363,6 +375,16 @@ function ParentNotesThread({ studentId, notes }: { studentId: string; notes: Par
             <p className="text-[11px] text-ink-faint mt-1">
               {n.sender === "admin" ? "الإدارة" : "ولي الأمر"} · {new Date(n.created_at).toLocaleString("ar-SA")}
             </p>
+            {n.sender === "admin" && (
+              <button
+                onClick={() => deleteNote(n.id)}
+                disabled={deletingId === n.id}
+                title="حذف الرسالة"
+                className="absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-raised border border-line-strong text-danger opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+              >
+                <Trash2 size={11} />
+              </button>
+            )}
           </div>
         ))}
       </div>

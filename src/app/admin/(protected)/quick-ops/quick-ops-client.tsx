@@ -1,20 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, Textarea } from "@/components/ui/input";
+import { Modal } from "@/components/ui/modal";
 import { BarcodeScannerModal } from "@/components/scanner/barcode-scanner-modal";
 import {
   searchStudentsAction,
   getStudentQuickCardAction,
   quickMarkAttendanceAction,
   quickAddPointsAction,
+  getActiveBadgesAction,
+  quickGrantBadgeAction,
+  quickSendNoteAction,
   type StudentSearchResult,
   type QuickCardData,
+  type QuickBadgeOption,
 } from "./actions";
-import { ScanLine, Search, CheckCircle2, XCircle, Clock, FileWarning, Plus, Minus, Users } from "lucide-react";
+import { ScanLine, Search, CheckCircle2, XCircle, Clock, FileWarning, Plus, Minus, Users, MessageCircle, Award, Send } from "lucide-react";
 
 const POINT_AMOUNTS = [1, 5, 10, 25];
 
@@ -114,6 +120,8 @@ export function QuickOpsClient() {
 function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: () => void }) {
   const [data, setData] = useState<QuickCardData | null>(null);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [badgeModalOpen, setBadgeModalOpen] = useState(false);
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
 
   const reload = async () => {
     const d = await getStudentQuickCardAction(studentId);
@@ -179,12 +187,65 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
           <span className="text-[28px] font-bold">{data.totalPoints}</span>
           <span className="text-sm font-semibold">نقطة</span>
         </div>
+
+        <div className="mt-(--space-4) flex items-center gap-(--space-2)">
+          <a
+            href={data.waLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-(--radius-sm) border-bold border-line-strong text-brand text-[13px] font-bold hover:bg-brand-soft transition-colors"
+          >
+            <MessageCircle size={16} /> تواصل واتساب
+          </a>
+          <button
+            onClick={() => setBadgeModalOpen(true)}
+            className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-(--radius-sm) border-bold border-line-strong text-accent text-[13px] font-bold hover:bg-accent-soft transition-colors"
+          >
+            <Award size={16} /> منح وسام
+          </button>
+          <button
+            onClick={() => setNoteModalOpen(true)}
+            className="flex-1 h-11 flex items-center justify-center gap-1.5 rounded-(--radius-sm) border-bold border-line-strong text-info text-[13px] font-bold hover:bg-info-soft transition-colors relative"
+          >
+            <Send size={16} /> ملاحظة
+            {data.hasUnreadNote && <span className="absolute -top-1 -left-1 h-2.5 w-2.5 rounded-full bg-danger" />}
+          </button>
+        </div>
       </Card>
 
-      {flashMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-ink text-surface px-(--space-4) py-(--space-2) rounded-(--radius-sm) text-sm font-bold shadow-brutal">
-          {flashMessage}
-        </div>
+      <AnimatePresence>
+        {flashMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-ink text-surface px-(--space-4) py-(--space-2) rounded-(--radius-sm) text-sm font-bold shadow-brutal"
+          >
+            {flashMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {badgeModalOpen && (
+        <QuickBadgeModal
+          studentId={studentId}
+          onClose={() => setBadgeModalOpen(false)}
+          onGranted={(name) => {
+            flash(`تم منح وسام "${name}"`);
+            setBadgeModalOpen(false);
+          }}
+        />
+      )}
+      {noteModalOpen && (
+        <QuickNoteModal
+          studentId={studentId}
+          onClose={() => setNoteModalOpen(false)}
+          onSent={() => {
+            flash("تم إرسال الملاحظة");
+            setNoteModalOpen(false);
+          }}
+        />
       )}
 
       <Card className="mb-(--space-4)">
@@ -253,5 +314,82 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
         </Card>
       )}
     </main>
+  );
+}
+
+function QuickBadgeModal({
+  studentId,
+  onClose,
+  onGranted,
+}: {
+  studentId: string;
+  onClose: () => void;
+  onGranted: (badgeName: string) => void;
+}) {
+  const [badges, setBadges] = useState<QuickBadgeOption[] | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getActiveBadgesAction().then(setBadges);
+  }, []);
+
+  const grant = async (b: QuickBadgeOption) => {
+    setPendingId(b.id);
+    const result = await quickGrantBadgeAction(studentId, b.id);
+    setPendingId(null);
+    if (!result?.error) onGranted(b.name);
+  };
+
+  return (
+    <Modal title="منح وسام" onClose={onClose}>
+      {badges === null ? (
+        <p className="text-sm text-ink-muted text-center py-(--space-6)">جارِ التحميل...</p>
+      ) : badges.length === 0 ? (
+        <CardDescription>لا توجد أوسمة فعّالة بعد.</CardDescription>
+      ) : (
+        <div className="grid grid-cols-2 gap-(--space-2)">
+          {badges.map((b) => (
+            <button
+              key={b.id}
+              onClick={() => grant(b)}
+              disabled={pendingId === b.id}
+              className="flex items-center gap-(--space-2) rounded-(--radius-sm) border-bold border-line-strong px-(--space-3) py-(--space-3) hover:bg-accent-soft transition-colors text-right"
+            >
+              <span className="text-2xl">{b.icon || "🏅"}</span>
+              <span className="text-sm font-bold text-ink">{b.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function QuickNoteModal({ studentId, onClose, onSent }: { studentId: string; onClose: () => void; onSent: () => void }) {
+  const [message, setMessage] = useState("");
+  const [pending, setPending] = useState(false);
+
+  const send = async () => {
+    if (!message.trim()) return;
+    setPending(true);
+    const result = await quickSendNoteAction(studentId, message);
+    setPending(false);
+    if (!result?.error) onSent();
+  };
+
+  return (
+    <Modal title="إرسال ملاحظة لولي الأمر" onClose={onClose}>
+      <div className="space-y-(--space-4)">
+        <Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} placeholder="اكتب ملاحظتك هنا..." autoFocus />
+        <div className="flex justify-end gap-(--space-2)">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            إلغاء
+          </Button>
+          <Button type="button" disabled={!message.trim() || pending} onClick={send}>
+            <Send size={14} /> {pending ? "جارِ الإرسال..." : "إرسال"}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
