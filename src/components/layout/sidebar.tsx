@@ -46,8 +46,9 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
   return (
     <aside className="hidden md:flex w-[264px] shrink-0 flex-col border-l border-line bg-surface-raised h-screen sticky top-0 overflow-y-auto">
       <div className="flex items-center gap-(--space-3) px-(--space-4) h-16 border-b border-line shrink-0">
-        <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-brand text-on-brand border-bold border-line-strong font-bold">
-          ا
+        <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-surface-raised border-bold border-line-strong shrink-0 overflow-hidden p-0.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="شعار حلقات ابن الجوزي" className="h-full w-full object-contain" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-bold text-ink truncate">حلقات ابن الجوزي</p>

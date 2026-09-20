@@ -12,6 +12,7 @@ import { saveCertificateConfigAction, saveCardConfigAction, searchStudentsForPri
 import { Save, Download, Search, Award, IdCard, LayoutGrid } from "lucide-react";
 
 const SCRIPT_FONT_PREVIEW_SRC = "/fonts/TheYearOfHandicrafts-Regular.otf";
+const LOGO_PREVIEW_SRC = "/logo.svg";
 
 export function PrintingClient({
   initialCertificateConfig,
@@ -130,7 +131,8 @@ function CertificateDesigner({
           dateLabel: new Date().toLocaleDateString("ar-SA"),
         },
         config,
-        SCRIPT_FONT_PREVIEW_SRC
+        SCRIPT_FONT_PREVIEW_SRC,
+        LOGO_PREVIEW_SRC
       ),
     [config, programInfo, seasonName, student]
   );
@@ -244,7 +246,8 @@ function CardDesigner({ initial, programInfo }: { initial: StudentCardConfig; pr
         },
         config,
         SCRIPT_FONT_PREVIEW_SRC,
-        config.showQrOrBarcode === "barcode" ? `/api/print/barcode?code=${student?.code ?? "000"}` : null
+        config.showQrOrBarcode === "barcode" ? `/api/print/barcode?code=${student?.code ?? "000"}` : null,
+        LOGO_PREVIEW_SRC
       ),
     [config, programInfo, student]
   );

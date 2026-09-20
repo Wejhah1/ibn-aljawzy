@@ -26,6 +26,7 @@ import {
   Send,
   Loader2,
   History,
+  Search,
 } from "lucide-react";
 
 type Status = "present" | "absent" | "late" | "excused" | null;
@@ -81,6 +82,7 @@ export function AttendanceClient({
   const [pending, startTransition] = useTransition();
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [historyFor, setHistoryFor] = useState<Row | null>(null);
+  const [nameQuery, setNameQuery] = useState("");
   const lastLocalChange = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
@@ -95,6 +97,12 @@ export function AttendanceClient({
     }
     return s;
   }, [rows]);
+
+  const filteredRows = useMemo(() => {
+    const q = nameQuery.trim();
+    if (!q) return rows;
+    return rows.filter((r) => r.fullName.includes(q) || r.code.includes(q));
+  }, [rows, nameQuery]);
 
   const setStatus = (studentId: string, status: Exclude<Status, null>) => {
     if (!selectedDay || selectedDay.is_holiday) return;
@@ -252,6 +260,22 @@ export function AttendanceClient({
         <StatChip label="غير مسجّل" count={stats.unmarked} tone="neutral" />
       </div>
 
+      <div className="relative mb-(--space-4)">
+        <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint" />
+        <input
+          value={nameQuery}
+          onChange={(e) => setNameQuery(e.target.value)}
+          placeholder="ابحث باسم الطالب أو كوده..."
+          className="w-full h-11 rounded-(--radius-sm) border border-line bg-surface-raised pr-9 pl-3 text-sm text-ink placeholder:text-ink-faint"
+        />
+      </div>
+
+      {nameQuery.trim() && filteredRows.length === 0 && (
+        <Card className="mb-(--space-4)">
+          <CardDescription>لا يوجد طالب مطابق لبحثك.</CardDescription>
+        </Card>
+      )}
+
       {!selectedDay && (
         <Card className="mb-(--space-4) border-warning bg-warning-soft">
           <CardDescription className="text-warning font-semibold">لا توجد أيام برنامج لهذا الموسم بعد.</CardDescription>
@@ -280,7 +304,7 @@ export function AttendanceClient({
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {filteredRows.map((r) => (
               <tr key={r.studentId} className="border-t border-line bg-surface-raised">
                 <td className="p-(--space-3)">
                   <span className="font-semibold text-ink">{r.fullName}</span> <Badge tone="neutral">#{r.code}</Badge>
@@ -337,7 +361,7 @@ export function AttendanceClient({
 
       {/* بطاقات للجوال */}
       <div className="md:hidden space-y-(--space-3)">
-        {rows.map((r) => (
+        {filteredRows.map((r) => (
           <Card key={r.studentId}>
             <div className="flex items-center justify-between mb-(--space-3)">
               <div>

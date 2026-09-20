@@ -134,10 +134,11 @@ function StudentCardFace({
         style={{ backgroundColor: "var(--color-accent-solid)", color: "var(--color-on-accent)" }}
       >
         <div
-          className="h-[14mm] w-[14mm] rounded-full flex items-center justify-center font-bold mb-[3mm] border"
-          style={{ backgroundColor: "var(--color-surface-raised)", color: "var(--color-accent)", borderColor: "var(--color-line-strong)", fontSize: "20px" }}
+          className="h-[14mm] w-[14mm] rounded-full flex items-center justify-center mb-[3mm] border overflow-hidden p-[1.5mm]"
+          style={{ backgroundColor: "var(--color-surface-raised)", borderColor: "var(--color-line-strong)" }}
         >
-          ا
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="" className="h-full w-full object-contain" />
         </div>
         <p className="font-script font-bold" style={{ fontSize: "15px" }}>
           بطاقة الطالب

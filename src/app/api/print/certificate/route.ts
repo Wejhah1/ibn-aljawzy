@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { renderHtmlToPdf } from "@/lib/pdf/render";
 import { buildCertificateHtml } from "@/lib/print/templates";
-import { getScriptFontDataUri } from "@/lib/print/fonts";
+import { getScriptFontDataUri, getLogoDataUri } from "@/lib/print/fonts";
 import { getCertificateConfig } from "@/lib/print/config";
 import { getProgramInfo } from "@/lib/settings";
 
@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
   const programInfo = await getProgramInfo(supabase);
   const config = await getCertificateConfig(supabase);
   const scriptFont = await getScriptFontDataUri();
+  const logo = await getLogoDataUri();
 
   const html = buildCertificateHtml(
     {
@@ -35,7 +36,8 @@ export async function GET(request: NextRequest) {
       dateLabel: new Date().toLocaleDateString("ar-SA"),
     },
     config,
-    scriptFont
+    scriptFont,
+    logo
   );
 
   const pdf = await renderHtmlToPdf(html, {

@@ -32,7 +32,12 @@ function baseHead(scriptFontDataUri: string) {
   `;
 }
 
-export function buildCertificateHtml(data: CertificateData, config: CertificateConfig, scriptFontDataUri: string) {
+export function buildCertificateHtml(
+  data: CertificateData,
+  config: CertificateConfig,
+  scriptFontDataUri: string,
+  logoDataUri: string
+) {
   const isLandscape = config.orientation === "landscape";
   const w = isLandscape ? "297mm" : "210mm";
   const h = isLandscape ? "210mm" : "297mm";
@@ -48,7 +53,7 @@ export function buildCertificateHtml(data: CertificateData, config: CertificateC
   <div style="width:${w};height:${h};position:relative;background:${TOKENS.surfaceRaised};border:10px solid ${TOKENS.accentSolid};padding:16mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
     <div style="position:absolute;inset:6mm;border:1.5px solid ${TOKENS.accent};pointer-events:none;"></div>
 
-    ${config.showLogo ? `<div style="width:22mm;height:22mm;border-radius:50%;background:${TOKENS.accentSolid};color:${TOKENS.onAccent};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;margin-bottom:8mm;border:2px solid ${TOKENS.ink};">ا</div>` : ""}
+    ${config.showLogo ? `<div style="width:22mm;height:22mm;border-radius:50%;background:${TOKENS.surfaceRaised};display:flex;align-items:center;justify-content:center;margin-bottom:8mm;border:2px solid ${TOKENS.ink};padding:2mm;box-sizing:border-box;"><img src="${logoDataUri}" style="width:100%;height:100%;object-fit:contain;" /></div>` : ""}
 
     <h1 style="font-family:'Year of Handicrafts',serif;font-size:${config.titleFontSize}px;color:${TOKENS.accent};font-weight:700;margin-bottom:10mm;">
       ${config.titleText}
@@ -86,7 +91,8 @@ export function buildStudentCardHtml(
   data: StudentCardData,
   config: StudentCardConfig,
   scriptFontDataUri: string,
-  barcodeDataUri: string | null
+  barcodeDataUri: string | null,
+  logoDataUri: string
 ) {
   const w = "85.6mm";
   const h = "54mm";
@@ -97,7 +103,7 @@ export function buildStudentCardHtml(
 <body style="background:${TOKENS.surface};">
   <div style="width:${w};height:${h};position:relative;background:linear-gradient(135deg,${TOKENS.accentSolid} 0%,${TOKENS.accentSolid} 38%,${TOKENS.surfaceRaised} 38%);border:2px solid ${TOKENS.ink};border-radius:3mm;overflow:hidden;display:flex;">
     <div style="width:38%;padding:4mm;display:flex;flex-direction:column;align-items:center;justify-content:center;color:${TOKENS.onAccent};text-align:center;">
-      <div style="width:14mm;height:14mm;border-radius:50%;background:${TOKENS.surfaceRaised};color:${TOKENS.accent};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;margin-bottom:3mm;border:1.5px solid ${TOKENS.ink};">ا</div>
+      <div style="width:14mm;height:14mm;border-radius:50%;background:${TOKENS.surfaceRaised};display:flex;align-items:center;justify-content:center;margin-bottom:3mm;border:1.5px solid ${TOKENS.ink};padding:1.5mm;box-sizing:border-box;"><img src="${logoDataUri}" style="width:100%;height:100%;object-fit:contain;" /></div>
       <p style="font-family:'Year of Handicrafts',serif;font-size:15px;font-weight:700;">بطاقة الطالب</p>
     </div>
     <div style="flex:1;padding:4mm;display:flex;flex-direction:column;">

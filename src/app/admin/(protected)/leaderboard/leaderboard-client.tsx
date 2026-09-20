@@ -154,8 +154,9 @@ export function LeaderboardClient({
                 {programInfo.program_name} · {seasonName}
               </p>
             </div>
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand text-on-brand text-4xl font-bold border-[3px] border-ink shadow-[6px_6px_0_0_#171b18]">
-              ا
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-surface-raised border-[3px] border-ink shadow-[6px_6px_0_0_#171b18] overflow-hidden p-1.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="" className="h-full w-full object-contain" />
             </div>
           </div>
           <p className="text-[28px] font-bold text-brand mb-8">{TABS.find((t) => t.key === tab)?.label}</p>

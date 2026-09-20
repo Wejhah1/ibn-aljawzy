@@ -39,8 +39,9 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
       <header className="border-b border-line bg-surface-raised">
         <div className="max-w-[800px] mx-auto px-(--space-4) h-16 flex items-center justify-between">
           <div className="flex items-center gap-(--space-2)">
-            <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-brand text-on-brand border-bold border-line-strong font-bold">
-              ا
+            <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-surface-raised border-bold border-line-strong overflow-hidden p-0.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="شعار حلقات ابن الجوزي" className="h-full w-full object-contain" />
             </div>
             <p className="text-sm font-bold text-ink">بوابة ولي الأمر</p>
           </div>

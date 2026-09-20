@@ -176,8 +176,9 @@ export function ClassicReportClient({
 
       {/* رأس التقرير القابل للطباعة */}
       <div className="flex items-center justify-between border-b-2 border-ink pb-(--space-4) mb-(--space-4)">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-soft text-accent font-bold text-2xl border-2 border-ink shrink-0">
-          ا
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-raised border-2 border-ink shrink-0 overflow-hidden p-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="" className="h-full w-full object-contain" />
         </div>
         <div className="text-center flex-1">
           <p className="text-[20px] font-bold text-brand">{programInfo.program_name}</p>
@@ -187,8 +188,9 @@ export function ClassicReportClient({
             {seasonName} · من {fmt(startDate)} إلى {fmt(endDate)} · عدد أيام الدوام: {dayCount}
           </p>
         </div>
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-2xl border-2 border-ink shrink-0">
-          ا
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-raised border-2 border-ink shrink-0 overflow-hidden p-1">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="" className="h-full w-full object-contain" />
         </div>
       </div>
 

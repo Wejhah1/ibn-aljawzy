@@ -11,3 +11,13 @@ export async function getScriptFontDataUri(): Promise<string> {
   cachedFont = `data:font/otf;base64,${buf.toString("base64")}`;
   return cachedFont;
 }
+
+let cachedLogo: string | null = null;
+
+export async function getLogoDataUri(): Promise<string> {
+  if (cachedLogo) return cachedLogo;
+  const logoPath = path.join(process.cwd(), "public", "logo.svg");
+  const buf = await readFile(logoPath);
+  cachedLogo = `data:image/svg+xml;base64,${buf.toString("base64")}`;
+  return cachedLogo;
+}

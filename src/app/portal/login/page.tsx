@@ -18,8 +18,9 @@ export default function ParentLoginPage() {
           <ArrowRight size={14} /> العودة للرئيسية
         </Link>
         <div className="text-center mb-(--space-8)">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-(--radius-md) bg-brand text-on-brand border-bold border-line-strong shadow-brutal-sm text-2xl font-bold mb-(--space-4)">
-            ا
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-(--radius-md) bg-surface-raised border-bold border-line-strong shadow-brutal-sm mb-(--space-4) overflow-hidden p-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="شعار حلقات ابن الجوزي" className="h-full w-full object-contain" />
           </div>
           <h1 className="text-[22px] leading-[30px] font-bold text-ink">بوابة ولي الأمر</h1>
           <p className="text-[12px] leading-[18px] font-medium text-ink-muted mt-1">

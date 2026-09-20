@@ -48,8 +48,9 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
               // eslint-disable-next-line @next/next/no-img-element
               <img src={content.logo_url} alt={title} className="h-9 w-9 rounded-(--radius-sm) object-cover border-bold border-line-strong" />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-brand text-on-brand border-bold border-line-strong font-bold">
-                ا
+              <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-surface-raised border-bold border-line-strong overflow-hidden p-0.5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo.svg" alt={title} className="h-full w-full object-contain" />
               </div>
             )}
             <p className="text-sm font-bold text-ink hidden sm:block">{title}</p>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { renderHtmlToPdf } from "@/lib/pdf/render";
 import { buildStudentCardHtml } from "@/lib/print/templates";
-import { getScriptFontDataUri } from "@/lib/print/fonts";
+import { getScriptFontDataUri, getLogoDataUri } from "@/lib/print/fonts";
 import { generateBarcodeDataUri } from "@/lib/print/barcode";
 import { getCardConfig } from "@/lib/print/config";
 import { getProgramInfo } from "@/lib/settings";
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
   const programInfo = await getProgramInfo(supabase);
   const config = await getCardConfig(supabase);
   const scriptFont = await getScriptFontDataUri();
+  const logo = await getLogoDataUri();
   const barcode = config.showQrOrBarcode === "barcode" ? await generateBarcodeDataUri(student.code) : null;
 
   const html = buildStudentCardHtml(
@@ -54,7 +55,8 @@ export async function GET(request: NextRequest) {
     },
     config,
     scriptFont,
-    barcode
+    barcode,
+    logo
   );
 
   const pdf = await renderHtmlToPdf(html, { width: "85.6mm", height: "54mm" });
