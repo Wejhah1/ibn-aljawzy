@@ -39,7 +39,7 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
   return (
     <main className="min-h-screen bg-surface">
       <header className="border-b border-line bg-surface-raised">
-        <div className="max-w-[800px] mx-auto px-(--space-4) h-16 flex items-center justify-between">
+        <div className="max-w-[800px] mx-auto px-(--space-4) min-h-16 py-(--space-2) flex items-center justify-between">
           <div className="flex items-center gap-(--space-2)">
             <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-surface-raised border-bold border-line-strong overflow-hidden p-0.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
