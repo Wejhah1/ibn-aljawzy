@@ -42,7 +42,9 @@ async function resolveCircleId(
   const cacheKey = trimmed.toLowerCase();
   if (cache.has(cacheKey)) return cache.get(cacheKey)!;
 
-  const { data: existing } = await supabase.from("circles").select("id").ilike("name", trimmed).maybeSingle();
+  let query = supabase.from("circles").select("id").ilike("name", trimmed);
+  query = seasonId ? query.eq("season_id", seasonId) : query.is("season_id", null);
+  const { data: existing } = await query.maybeSingle();
   if (existing) {
     cache.set(cacheKey, existing.id);
     return existing.id;
@@ -62,21 +64,31 @@ async function resolveCircleId(
 async function resolveGroupId(
   supabase: SupabaseClient<Database>,
   name: string | undefined,
+  circleId: string | null,
   cache: Map<string, string>,
   counter: { created: number }
 ): Promise<string | null> {
   const trimmed = name?.trim();
-  if (!trimmed) return null;
-  const cacheKey = trimmed.toLowerCase();
+  if (!trimmed || !circleId) return null;
+  const cacheKey = `${circleId}:${trimmed.toLowerCase()}`;
   if (cache.has(cacheKey)) return cache.get(cacheKey)!;
 
-  const { data: existing } = await supabase.from("groups").select("id").ilike("name", trimmed).maybeSingle();
+  const { data: existing } = await supabase
+    .from("groups")
+    .select("id")
+    .eq("circle_id", circleId)
+    .ilike("name", trimmed)
+    .maybeSingle();
   if (existing) {
     cache.set(cacheKey, existing.id);
     return existing.id;
   }
 
-  const { data: created, error } = await supabase.from("groups").insert({ name: trimmed }).select("id").single();
+  const { data: created, error } = await supabase
+    .from("groups")
+    .insert({ name: trimmed, circle_id: circleId })
+    .select("id")
+    .single();
   if (error || !created) return null;
   cache.set(cacheKey, created.id);
   counter.created++;
@@ -109,7 +121,7 @@ export async function importStudentsAction(
 
     try {
       const circleId = await resolveCircleId(supabase, row.circle_name, seasonId, circleCache, circleCounter);
-      const groupId = await resolveGroupId(supabase, row.group_name, groupCache, groupCounter);
+      const groupId = await resolveGroupId(supabase, row.group_name, circleId, groupCache, groupCounter);
 
       const studentFields = {
         full_name: row.full_name,
