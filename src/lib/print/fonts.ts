@@ -21,3 +21,12 @@ export async function getLogoDataUri(): Promise<string> {
   cachedLogo = `data:image/svg+xml;base64,${buf.toString("base64")}`;
   return cachedLogo;
 }
+
+let cachedBarcodeLib: string | null = null;
+
+export async function getBarcodeLibSource(): Promise<string> {
+  if (cachedBarcodeLib) return cachedBarcodeLib;
+  const libPath = path.join(process.cwd(), "node_modules", "jsbarcode", "dist", "JsBarcode.all.min.js");
+  cachedBarcodeLib = await readFile(libPath, "utf-8");
+  return cachedBarcodeLib;
+}

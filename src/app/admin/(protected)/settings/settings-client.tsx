@@ -129,6 +129,16 @@ function ProgramInfoTab({ initial }: { initial: ProgramInfo }) {
           <Label htmlFor="contact_phone">رقم تواصل البرنامج</Label>
           <Input id="contact_phone" name="contact_phone" dir="ltr" defaultValue={initial.contact_phone} />
         </div>
+        <div>
+          <Label htmlFor="secondary_logo_url">رابط الشعار الثاني (مكنون)</Label>
+          <Input
+            id="secondary_logo_url"
+            name="secondary_logo_url"
+            dir="ltr"
+            placeholder="https://..."
+            defaultValue={initial.secondary_logo_url}
+          />
+        </div>
         {state?.success && <p className="text-[13px] font-semibold text-brand">تم الحفظ بنجاح.</p>}
         <div className="flex justify-end">
           <Button type="submit" disabled={pending}>

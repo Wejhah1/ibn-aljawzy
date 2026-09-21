@@ -25,15 +25,25 @@ export const DEFAULT_CERTIFICATE_CONFIG: CertificateConfig = {
 };
 
 export interface StudentCardConfig {
-  showQrOrBarcode: "barcode" | "qr" | "none";
-  showAddress: boolean;
-  showBirthDate: boolean;
+  bgColor: string;
+  textColor: string;
+  accentColor: string;
+  barcodeColor: string;
+  showCircle: boolean;
+  showGroup: boolean;
+  showSecondaryLogo: boolean;
+  logoSize: number;
 }
 
 export const DEFAULT_CARD_CONFIG: StudentCardConfig = {
-  showQrOrBarcode: "barcode",
-  showAddress: false,
-  showBirthDate: true,
+  bgColor: "#ffffff",
+  textColor: "#171b18",
+  accentColor: "#0e6b4f",
+  barcodeColor: "#171b18",
+  showCircle: true,
+  showGroup: false,
+  showSecondaryLogo: false,
+  logoSize: 90,
 };
 
 export interface CertificateData {
@@ -51,6 +61,6 @@ export interface StudentCardData {
   programName: string;
   mosqueName: string;
   circleName: string | null;
-  birthDate: string | null;
-  address: string | null;
+  groupName: string | null;
+  secondaryLogoUrl: string | null;
 }

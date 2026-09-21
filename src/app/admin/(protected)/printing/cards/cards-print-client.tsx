@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Barcode } from "@/components/print/Barcode";
 import type { StudentCardConfig } from "@/lib/print/types";
 import type { ProgramInfo } from "@/lib/settings";
 import { Printer } from "lucide-react";
@@ -9,9 +10,8 @@ interface StudentCard {
   id: string;
   code: string;
   fullName: string;
-  birthDate: string | null;
-  address: string | null;
   circleName: string | null;
+  groupName: string | null;
 }
 
 const CARDS_PER_PAGE = 8;
@@ -24,7 +24,6 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 export function CardsPrintClient({
   students,
-  barcodes,
   circles,
   groups,
   selectedCircle,
@@ -33,7 +32,6 @@ export function CardsPrintClient({
   programInfo,
 }: {
   students: StudentCard[];
-  barcodes: Record<string, string>;
   circles: { id: string; name: string }[];
   groups: { id: string; name: string }[];
   selectedCircle: string;
@@ -105,7 +103,7 @@ export function CardsPrintClient({
           style={{ pageBreakAfter: pageIndex < pages.length - 1 ? "always" : "auto" }}
         >
           {page.map((s) => (
-            <StudentCardFace key={s.id} student={s} barcode={barcodes[s.code]} cardConfig={cardConfig} programInfo={programInfo} />
+            <StudentCardFace key={s.id} student={s} cardConfig={cardConfig} programInfo={programInfo} />
           ))}
         </div>
       ))}
@@ -115,69 +113,82 @@ export function CardsPrintClient({
 
 function StudentCardFace({
   student,
-  barcode,
   cardConfig,
   programInfo,
 }: {
   student: StudentCard;
-  barcode: string | undefined;
   cardConfig: StudentCardConfig;
   programInfo: ProgramInfo;
 }) {
+  const accent = cardConfig.accentColor;
+  const logoPx = cardConfig.logoSize / 2.2;
+
   return (
     <div
-      className="border-bold border-line-strong rounded-[3mm] overflow-hidden flex shrink-0"
-      style={{ width: "85.6mm", height: "54mm", background: "var(--color-surface-raised)" }}
+      className="relative flex flex-col rounded-2xl overflow-hidden shadow-lg shrink-0"
+      style={{
+        width: "85mm",
+        height: "54mm",
+        backgroundColor: cardConfig.bgColor,
+        color: cardConfig.textColor,
+        border: `1px solid ${accent}33`,
+      }}
     >
-      <div
-        className="w-[38%] p-[4mm] flex flex-col items-center justify-center text-center shrink-0"
-        style={{ backgroundColor: "var(--color-accent-solid)", color: "var(--color-on-accent)" }}
-      >
-        <div
-          className="h-[14mm] w-[14mm] rounded-full flex items-center justify-center mb-[3mm] border overflow-hidden p-[1.5mm]"
-          style={{ backgroundColor: "var(--color-surface-raised)", borderColor: "var(--color-line-strong)" }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="" className="h-full w-full object-contain" />
-        </div>
-        <p className="font-script font-bold" style={{ fontSize: "15px" }}>
-          بطاقة الطالب
-        </p>
-      </div>
-      <div className="flex-1 p-[4mm] flex flex-col min-w-0">
-        <p className="font-script font-bold text-brand" style={{ fontSize: "14px" }}>
-          {programInfo.program_name}
-        </p>
-        <p className="font-script text-ink-sage mb-[3mm]" style={{ fontSize: "10px" }}>
-          {programInfo.mosque_name}
-        </p>
-        <p className="font-script font-bold text-ink mb-[2mm] truncate" style={{ fontSize: "17px" }}>
-          {student.fullName}
-        </p>
-        <p className="text-ink-muted" style={{ fontSize: "10px", fontFamily: "monospace" }}>
-          كود: {student.code}
-        </p>
-        {student.circleName && (
-          <p className="text-ink-muted truncate" style={{ fontSize: "9px" }}>
-            {student.circleName}
-          </p>
-        )}
-        {cardConfig.showBirthDate && student.birthDate && (
-          <p className="text-ink-muted" style={{ fontSize: "9px" }}>
-            الميلاد: {student.birthDate}
-          </p>
-        )}
-        {cardConfig.showAddress && student.address && (
-          <p className="text-ink-muted truncate" style={{ fontSize: "9px" }}>
-            {student.address}
-          </p>
-        )}
-        {barcode && (
-          <div className="mt-auto text-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={barcode} alt={student.code} style={{ width: "100%", height: "10mm", objectFit: "contain" }} />
+      <div className="h-2 w-full shrink-0" style={{ background: `linear-gradient(90deg, ${accent}, ${accent}88, ${accent})` }} />
+
+      <svg className="absolute -top-6 -left-6 opacity-10" width="90" height="90" viewBox="0 0 90 90" fill={accent}>
+        <path d="M45 5l10 25 25 10-25 10-10 25-10-25-25-10 25-10z" />
+      </svg>
+      <svg className="absolute -bottom-8 -right-8 opacity-[0.06]" width="120" height="120" viewBox="0 0 120 120" fill={accent}>
+        <circle cx="60" cy="60" r="50" />
+      </svg>
+
+      <div className="relative flex items-center justify-between gap-2 px-3 pt-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.svg" alt="" style={{ height: logoPx, width: logoPx }} className="object-contain shrink-0" />
+        <div className="text-center flex-1 min-w-0">
+          <div className="text-[10px] font-semibold leading-tight truncate" style={{ color: accent }}>
+            {programInfo.program_name}
           </div>
+          <div className="text-[9px] opacity-70 leading-tight truncate">{programInfo.mosque_name}</div>
+        </div>
+        {cardConfig.showSecondaryLogo && programInfo.secondary_logo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={programInfo.secondary_logo_url}
+            alt=""
+            style={{ height: logoPx, width: logoPx }}
+            className="object-contain shrink-0"
+          />
+        ) : (
+          <div style={{ height: logoPx, width: logoPx }} className="shrink-0" />
         )}
+      </div>
+
+      <div className="relative flex-1 flex flex-col items-center justify-center text-center px-3">
+        <div className="font-bold text-lg leading-tight">{student.fullName}</div>
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-1">
+          {cardConfig.showCircle && student.circleName && (
+            <span
+              className="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+              style={{ backgroundColor: `${accent}22`, color: accent }}
+            >
+              {student.circleName}
+            </span>
+          )}
+          {cardConfig.showGroup && student.groupName && (
+            <span
+              className="inline-block rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+              style={{ backgroundColor: `${accent}22`, color: accent }}
+            >
+              {student.groupName}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="relative flex flex-col items-center pb-2">
+        <Barcode value={student.code} color={cardConfig.barcodeColor} height={38} width={2.2} fontSize={14} />
       </div>
     </div>
   );

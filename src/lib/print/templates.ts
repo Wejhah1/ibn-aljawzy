@@ -91,36 +91,74 @@ export function buildStudentCardHtml(
   data: StudentCardData,
   config: StudentCardConfig,
   scriptFontDataUri: string,
-  barcodeDataUri: string | null,
+  barcodeLibSource: string,
   logoDataUri: string
 ) {
-  const w = "85.6mm";
-  const h = "54mm";
+  const accent = config.accentColor;
+  const logoPx = config.logoSize / 2.2;
+  const paddedCode = String(data.code ?? "").padStart(3, "0");
+  const secondaryLogo =
+    config.showSecondaryLogo && data.secondaryLogoUrl
+      ? `<img src="${data.secondaryLogoUrl}" style="height:${logoPx}px;width:${logoPx}px;object-fit:contain;flex-shrink:0;" />`
+      : `<div style="height:${logoPx}px;width:${logoPx}px;flex-shrink:0;"></div>`;
 
   return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta charset="utf-8" />${baseHead(scriptFontDataUri)}</head>
 <body style="background:${TOKENS.surface};">
-  <div style="width:${w};height:${h};position:relative;background:linear-gradient(135deg,${TOKENS.accentSolid} 0%,${TOKENS.accentSolid} 38%,${TOKENS.surfaceRaised} 38%);border:2px solid ${TOKENS.ink};border-radius:3mm;overflow:hidden;display:flex;">
-    <div style="width:38%;padding:4mm;display:flex;flex-direction:column;align-items:center;justify-content:center;color:${TOKENS.onAccent};text-align:center;">
-      <div style="width:14mm;height:14mm;border-radius:50%;background:${TOKENS.surfaceRaised};display:flex;align-items:center;justify-content:center;margin-bottom:3mm;border:1.5px solid ${TOKENS.ink};padding:1.5mm;box-sizing:border-box;"><img src="${logoDataUri}" style="width:100%;height:100%;object-fit:contain;" /></div>
-      <p style="font-family:'Year of Handicrafts',serif;font-size:15px;font-weight:700;">بطاقة الطالب</p>
+  <div style="width:85mm;height:54mm;position:relative;overflow:hidden;border-radius:16px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);background:${config.bgColor};color:${config.textColor};border:1px solid ${accent}33;display:flex;flex-direction:column;">
+    <div style="height:8px;width:100%;flex-shrink:0;background:linear-gradient(90deg, ${accent}, ${accent}88, ${accent});"></div>
+
+    <svg style="position:absolute;top:-24px;left:-24px;opacity:0.1;" width="90" height="90" viewBox="0 0 90 90" fill="${accent}">
+      <path d="M45 5l10 25 25 10-25 10-10 25-10-25-25-10 25-10z" />
+    </svg>
+    <svg style="position:absolute;bottom:-32px;right:-32px;opacity:0.06;" width="120" height="120" viewBox="0 0 120 120" fill="${accent}">
+      <circle cx="60" cy="60" r="50" />
+    </svg>
+
+    <div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 12px 0;">
+      <img src="${logoDataUri}" style="height:${logoPx}px;width:${logoPx}px;object-fit:contain;flex-shrink:0;" />
+      <div style="text-align:center;flex:1;min-width:0;">
+        <div style="font-size:10px;font-weight:600;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${accent};">${data.programName}</div>
+        <div style="font-size:9px;opacity:0.7;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${data.mosqueName}</div>
+      </div>
+      ${secondaryLogo}
     </div>
-    <div style="flex:1;padding:4mm;display:flex;flex-direction:column;">
-      <p style="font-family:'Year of Handicrafts',serif;font-size:14px;font-weight:700;color:${TOKENS.brand};">${data.programName}</p>
-      <p style="font-family:'Year of Handicrafts',serif;font-size:10px;color:${TOKENS.inkSage};margin-bottom:3mm;">${data.mosqueName}</p>
-      <p style="font-family:'Year of Handicrafts',serif;font-size:17px;font-weight:700;color:${TOKENS.ink};margin-bottom:2mm;">${data.studentName}</p>
-      <p style="font-size:10px;color:${TOKENS.inkMuted};font-family:monospace;">كود: ${data.code}</p>
-      ${data.circleName ? `<p style="font-size:9px;color:${TOKENS.inkMuted};">${data.circleName}</p>` : ""}
-      ${config.showBirthDate && data.birthDate ? `<p style="font-size:9px;color:${TOKENS.inkMuted};">الميلاد: ${data.birthDate}</p>` : ""}
-      ${config.showAddress && data.address ? `<p style="font-size:9px;color:${TOKENS.inkMuted};">${data.address}</p>` : ""}
-      ${
-        barcodeDataUri
-          ? `<div style="margin-top:auto;text-align:center;"><img src="${barcodeDataUri}" style="width:100%;height:10mm;object-fit:contain;" /></div>`
-          : ""
-      }
+
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 12px;">
+      <div style="font-weight:700;font-size:18px;line-height:1.25;">${data.studentName}</div>
+      <div style="margin-top:4px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;">
+        ${
+          config.showCircle && data.circleName
+            ? `<span style="display:inline-block;border-radius:999px;padding:2px 10px;font-size:11px;font-weight:500;background:${accent}22;color:${accent};">${data.circleName}</span>`
+            : ""
+        }
+        ${
+          config.showGroup && data.groupName
+            ? `<span style="display:inline-block;border-radius:999px;padding:2px 10px;font-size:11px;font-weight:500;background:${accent}22;color:${accent};">${data.groupName}</span>`
+            : ""
+        }
+      </div>
+    </div>
+
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center;padding-bottom:8px;flex-shrink:0;">
+      <svg id="barcode"></svg>
     </div>
   </div>
+  <script>${barcodeLibSource}</script>
+  <script>
+    JsBarcode("#barcode", ${JSON.stringify(paddedCode)}, {
+      format: "CODE128",
+      width: 2.2,
+      height: 38,
+      fontSize: 14,
+      lineColor: ${JSON.stringify(config.barcodeColor)},
+      background: "transparent",
+      margin: 4,
+      displayValue: true,
+      font: "IBM Plex Sans Arabic, sans-serif",
+    });
+  </script>
 </body>
 </html>`;
 }

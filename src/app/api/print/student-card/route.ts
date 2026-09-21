@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { renderHtmlToPdf } from "@/lib/pdf/render";
 import { buildStudentCardHtml } from "@/lib/print/templates";
-import { getScriptFontDataUri, getLogoDataUri } from "@/lib/print/fonts";
-import { generateBarcodeDataUri } from "@/lib/print/barcode";
+import { getScriptFontDataUri, getLogoDataUri, getBarcodeLibSource } from "@/lib/print/fonts";
 import { getCardConfig } from "@/lib/print/config";
 import { getProgramInfo } from "@/lib/settings";
 
@@ -26,22 +25,25 @@ export async function GET(request: NextRequest) {
 
   const { data: currentSeason } = await supabase.from("seasons").select("id").eq("status", "current").maybeSingle();
   let circleName: string | null = null;
+  let groupName: string | null = null;
   if (currentSeason) {
     const { data: enrollment } = await supabase
       .from("student_season_enrollments")
-      .select("circles(name)")
+      .select("circles(name), groups(name)")
       .eq("student_id", studentId)
       .eq("season_id", currentSeason.id)
       .maybeSingle();
     const c = Array.isArray(enrollment?.circles) ? enrollment?.circles[0] : enrollment?.circles;
+    const g = Array.isArray(enrollment?.groups) ? enrollment?.groups[0] : enrollment?.groups;
     circleName = c?.name ?? null;
+    groupName = g?.name ?? null;
   }
 
   const programInfo = await getProgramInfo(supabase);
   const config = await getCardConfig(supabase);
   const scriptFont = await getScriptFontDataUri();
   const logo = await getLogoDataUri();
-  const barcode = config.showQrOrBarcode === "barcode" ? await generateBarcodeDataUri(student.code) : null;
+  const barcodeLib = await getBarcodeLibSource();
 
   const html = buildStudentCardHtml(
     {
@@ -50,16 +52,16 @@ export async function GET(request: NextRequest) {
       programName: programInfo.program_name,
       mosqueName: programInfo.mosque_name,
       circleName,
-      birthDate: student.birth_date,
-      address: student.address,
+      groupName,
+      secondaryLogoUrl: programInfo.secondary_logo_url || null,
     },
     config,
     scriptFont,
-    barcode,
+    barcodeLib,
     logo
   );
 
-  const pdf = await renderHtmlToPdf(html, { width: "85.6mm", height: "54mm" });
+  const pdf = await renderHtmlToPdf(html, { width: "85mm", height: "54mm" });
 
   const encodedName = encodeURIComponent(`بطاقة-${student.full_name}.pdf`);
   return new NextResponse(pdf as unknown as BodyInit, {

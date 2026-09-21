@@ -24,7 +24,7 @@ export async function saveProgramInfoAction(_prev: FormState, formData: FormData
     data: { user },
   } = await supabase.auth.getUser();
 
-  const fields = ["program_name", "mosque_name", "address", "contact_phone"] as const;
+  const fields = ["program_name", "mosque_name", "address", "contact_phone", "secondary_logo_url"] as const;
   for (const key of fields) {
     const value = String(formData.get(key) ?? "");
     await supabase

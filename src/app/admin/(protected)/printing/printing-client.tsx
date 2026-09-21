@@ -19,11 +19,13 @@ export function PrintingClient({
   initialCardConfig,
   programInfo,
   seasonName,
+  barcodeLibSource,
 }: {
   initialCertificateConfig: CertificateConfig;
   initialCardConfig: StudentCardConfig;
   programInfo: ProgramInfo;
   seasonName: string;
+  barcodeLibSource: string;
 }) {
   const [tab, setTab] = useState<"certificate" | "card">("certificate");
 
@@ -60,7 +62,7 @@ export function PrintingClient({
       {tab === "certificate" ? (
         <CertificateDesigner initial={initialCertificateConfig} programInfo={programInfo} seasonName={seasonName} />
       ) : (
-        <CardDesigner initial={initialCardConfig} programInfo={programInfo} />
+        <CardDesigner initial={initialCardConfig} programInfo={programInfo} barcodeLibSource={barcodeLibSource} />
       )}
     </main>
   );
@@ -226,7 +228,22 @@ function CertificateDesigner({
   );
 }
 
-function CardDesigner({ initial, programInfo }: { initial: StudentCardConfig; programInfo: ProgramInfo }) {
+const CARD_COLOR_FIELDS = [
+  ["bgColor", "لون الخلفية"],
+  ["textColor", "لون النص"],
+  ["accentColor", "اللون المميز"],
+  ["barcodeColor", "لون الباركود"],
+] as const;
+
+function CardDesigner({
+  initial,
+  programInfo,
+  barcodeLibSource,
+}: {
+  initial: StudentCardConfig;
+  programInfo: ProgramInfo;
+  barcodeLibSource: string;
+}) {
   const [config, setConfig] = useState(initial);
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
@@ -236,55 +253,82 @@ function CardDesigner({ initial, programInfo }: { initial: StudentCardConfig; pr
     () =>
       buildStudentCardHtml(
         {
-          studentName: student?.full_name ?? "اسم الطالب",
+          studentName: student?.full_name ?? "الطالب النموذجي",
           code: student?.code ?? "000",
           programName: programInfo.program_name,
           mosqueName: programInfo.mosque_name,
-          circleName: "حلقة تجريبية",
-          birthDate: "2014-01-01",
-          address: null,
+          circleName: "الحلقة الأولى",
+          groupName: "المجموعة الخضراء",
+          secondaryLogoUrl: programInfo.secondary_logo_url || null,
         },
         config,
         SCRIPT_FONT_PREVIEW_SRC,
-        config.showQrOrBarcode === "barcode" ? `/api/print/barcode?code=${student?.code ?? "000"}` : null,
+        barcodeLibSource,
         LOGO_PREVIEW_SRC
       ),
-    [config, programInfo, student]
+    [config, programInfo, student, barcodeLibSource]
   );
 
   return (
     <div className="grid lg:grid-cols-[380px_1fr] gap-(--space-6)">
       <Card className="space-y-(--space-4) h-fit">
-        <div>
-          <Label htmlFor="showQrOrBarcode">رمز التعريف</Label>
-          <select
-            id="showQrOrBarcode"
-            value={config.showQrOrBarcode}
-            onChange={(e) => setConfig({ ...config, showQrOrBarcode: e.target.value as "barcode" | "qr" | "none" })}
-            className="h-11 w-full rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
-          >
-            <option value="barcode">باركود</option>
-            <option value="none">بدون</option>
-          </select>
+        <div className="space-y-(--space-3)">
+          {CARD_COLOR_FIELDS.map(([key, label]) => (
+            <div key={key} className="flex items-center gap-(--space-2)">
+              <Label className="min-w-0 flex-1 truncate">{label}</Label>
+              <input
+                type="color"
+                value={config[key]}
+                onChange={(e) => setConfig({ ...config, [key]: e.target.value })}
+                className="h-9 w-12 shrink-0 rounded border border-line"
+              />
+              <Input
+                value={config[key]}
+                onChange={(e) => setConfig({ ...config, [key]: e.target.value })}
+                className="h-9 w-24 shrink-0 font-mono text-xs"
+              />
+            </div>
+          ))}
         </div>
         <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
           <input
             type="checkbox"
-            checked={config.showBirthDate}
-            onChange={(e) => setConfig({ ...config, showBirthDate: e.target.checked })}
+            checked={config.showCircle}
+            onChange={(e) => setConfig({ ...config, showCircle: e.target.checked })}
             className="h-5 w-5"
           />
-          إظهار تاريخ الميلاد
+          إظهار اسم الحلقة
         </label>
         <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
           <input
             type="checkbox"
-            checked={config.showAddress}
-            onChange={(e) => setConfig({ ...config, showAddress: e.target.checked })}
+            checked={config.showGroup}
+            onChange={(e) => setConfig({ ...config, showGroup: e.target.checked })}
             className="h-5 w-5"
           />
-          إظهار العنوان
+          إظهار اسم المجموعة
         </label>
+        <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
+          <input
+            type="checkbox"
+            checked={config.showSecondaryLogo}
+            onChange={(e) => setConfig({ ...config, showSecondaryLogo: e.target.checked })}
+            className="h-5 w-5"
+          />
+          إظهار الشعار الثاني
+        </label>
+        <div>
+          <Label htmlFor="logoSize">حجم الشعار: {config.logoSize}px</Label>
+          <input
+            id="logoSize"
+            type="range"
+            min={40}
+            max={160}
+            value={config.logoSize}
+            onChange={(e) => setConfig({ ...config, logoSize: Number(e.target.value) })}
+            className="w-full"
+          />
+        </div>
 
         <div className="pt-(--space-3) border-t border-line space-y-(--space-3)">
           <StudentPicker onPick={setStudent} />
@@ -317,7 +361,7 @@ function CardDesigner({ initial, programInfo }: { initial: StudentCardConfig; pr
 
       <Card className="flex items-center justify-center p-(--space-4) bg-surface-sunken">
         <div style={{ transform: "scale(2.2)", transformOrigin: "center" }}>
-          <iframe title="معاينة البطاقة" srcDoc={html} style={{ width: "85.6mm", height: "54mm", border: "none" }} />
+          <iframe title="معاينة البطاقة" srcDoc={html} style={{ width: "85mm", height: "54mm", border: "none" }} />
         </div>
       </Card>
     </div>

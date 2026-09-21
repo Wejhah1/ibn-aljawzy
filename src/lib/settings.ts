@@ -6,6 +6,7 @@ export interface ProgramInfo {
   mosque_name: string;
   address: string;
   contact_phone: string;
+  secondary_logo_url: string;
 }
 
 const DEFAULTS: ProgramInfo = {
@@ -13,6 +14,7 @@ const DEFAULTS: ProgramInfo = {
   mosque_name: "مسجد الطرباق",
   address: "",
   contact_phone: "",
+  secondary_logo_url: "",
 };
 
 export async function getProgramInfo(supabase: SupabaseClient<Database>): Promise<ProgramInfo> {
