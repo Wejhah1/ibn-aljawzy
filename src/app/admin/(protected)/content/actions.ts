@@ -32,6 +32,7 @@ export async function createNewsPostAction(_prev: FormState, formData: FormData)
   const title = String(formData.get("title") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
   const imageUrl = String(formData.get("image_url") ?? "").trim();
+  const category = String(formData.get("category") ?? "").trim() || "إعلان";
   if (!title) return { error: "عنوان الخبر مطلوب." };
 
   const supabase = await createClient();
@@ -41,7 +42,7 @@ export async function createNewsPostAction(_prev: FormState, formData: FormData)
 
   const { error } = await supabase
     .from("news_posts")
-    .insert({ title, body: body || null, image_url: imageUrl || null, created_by: user?.id });
+    .insert({ title, body: body || null, image_url: imageUrl || null, category, created_by: user?.id });
   if (error) return { error: error.message };
 
   revalidatePath("/admin/content");

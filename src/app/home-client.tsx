@@ -24,6 +24,7 @@ interface NewsPost {
   title: string;
   body: string | null;
   image_url: string | null;
+  category: string;
   published_at: string;
 }
 
@@ -33,11 +34,12 @@ const FEATURES = [
   { icon: ShieldCheck, title: "متابعة أولياء الأمور", desc: "بوابة خاصة لولي الأمر لمتابعة حضور ونتائج ابنه أولاً بأول." },
 ];
 
-const NEWS_STYLES = [
-  { icon: GraduationCap, label: "إنجاز", bg: "bg-info", soft: "bg-info-soft", fg: "text-info" },
-  { icon: Sparkles, label: "فعالية", bg: "bg-accent-solid", soft: "bg-accent-soft", fg: "text-accent" },
-  { icon: Megaphone, label: "إعلان", bg: "bg-brand", soft: "bg-brand-soft", fg: "text-brand" },
-];
+const NEWS_STYLES: Record<string, { icon: typeof GraduationCap; bg: string; soft: string; fg: string }> = {
+  "إنجاز": { icon: GraduationCap, bg: "bg-info", soft: "bg-info-soft", fg: "text-info" },
+  "فعالية": { icon: Sparkles, bg: "bg-accent-solid", soft: "bg-accent-soft", fg: "text-accent" },
+  "إعلان": { icon: Megaphone, bg: "bg-brand", soft: "bg-brand-soft", fg: "text-brand" },
+};
+const DEFAULT_NEWS_STYLE = { icon: Megaphone, bg: "bg-brand", soft: "bg-brand-soft", fg: "text-brand" };
 
 export function HomeClient({ stats, content, news }: { stats: PublicStats; content: HomepageContent; news: NewsPost[] }) {
   const title = content.hero_title?.trim() || "حلقات ابن الجوزي";
@@ -216,7 +218,7 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
             </motion.h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-(--space-4)">
               {news.map((n, i) => {
-                const style = NEWS_STYLES[i % NEWS_STYLES.length];
+                const style = NEWS_STYLES[n.category] ?? DEFAULT_NEWS_STYLE;
                 const Icon = style.icon;
                 return (
                   <motion.div
@@ -247,7 +249,7 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
                     <div className="p-(--space-4)">
                       <span className={`inline-flex items-center gap-1 rounded-full ${style.soft} ${style.fg} px-(--space-2) py-0.5 text-[11px] font-bold mb-(--space-2)`}>
                         <Star size={10} className="fill-current" />
-                        {style.label}
+                        {n.category}
                       </span>
                       <h3 className="text-[15px] font-bold text-ink mb-(--space-2)">{n.title}</h3>
                       {n.body && <p className="text-sm text-ink-muted leading-relaxed line-clamp-3">{n.body}</p>}

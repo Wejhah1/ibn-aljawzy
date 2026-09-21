@@ -493,6 +493,7 @@ export type Database = {
       news_posts: {
         Row: {
           body: string | null
+          category: string
           created_at: string
           created_by: string | null
           id: string
@@ -503,6 +504,7 @@ export type Database = {
         }
         Insert: {
           body?: string | null
+          category?: string
           created_at?: string
           created_by?: string | null
           id?: string
@@ -513,6 +515,7 @@ export type Database = {
         }
         Update: {
           body?: string | null
+          category?: string
           created_at?: string
           created_by?: string | null
           id?: string

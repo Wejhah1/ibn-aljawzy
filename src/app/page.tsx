@@ -22,7 +22,7 @@ export default async function HomePage() {
     supabase.rpc("public_homepage_content"),
     supabase
       .from("news_posts")
-      .select("id, title, body, image_url, published_at")
+      .select("id, title, body, image_url, category, published_at")
       .eq("is_published", true)
       .order("published_at", { ascending: false })
       .limit(6),

@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea } from "@/components/ui/input";
+import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import {
   saveHomepageContentAction,
   createNewsPostAction,
@@ -19,9 +19,12 @@ interface NewsPost {
   title: string;
   body: string | null;
   image_url: string | null;
+  category: string;
   is_published: boolean;
   published_at: string;
 }
+
+const NEWS_CATEGORY_PRESETS = ["إعلان", "إنجاز", "فعالية"];
 
 export function ContentClient({
   homepage,
@@ -114,6 +117,7 @@ function NewsSection({ initial }: { initial: NewsPost[] }) {
               <div className="flex items-center gap-(--space-2)">
                 <p className="text-sm font-semibold text-ink truncate">{n.title}</p>
                 <Badge tone={n.is_published ? "success" : "neutral"}>{n.is_published ? "منشور" : "مخفي"}</Badge>
+                <Badge tone="neutral">{n.category}</Badge>
               </div>
               {n.body && <p className="text-[12px] text-ink-muted mt-1 line-clamp-2">{n.body}</p>}
               <p className="text-[11px] text-ink-faint mt-1">{new Date(n.published_at).toLocaleDateString("ar-SA")}</p>
@@ -151,8 +155,13 @@ function NewsPostForm({ onCreated }: { onCreated: (post: NewsPost) => void }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [category, setCategory] = useState(NEWS_CATEGORY_PRESETS[0]);
+  const [customCategory, setCustomCategory] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isCustom = category === "أخرى";
+  const finalCategory = isCustom ? customCategory.trim() : category;
 
   return (
     <Card>
@@ -166,19 +175,39 @@ function NewsPostForm({ onCreated }: { onCreated: (post: NewsPost) => void }) {
           <Textarea id="news_body" rows={3} value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
         <div>
+          <Label htmlFor="news_category">نوع الخبر</Label>
+          <Select id="news_category" value={category} onChange={(e) => setCategory(e.target.value)}>
+            {NEWS_CATEGORY_PRESETS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+            <option value="أخرى">أخرى (اكتب النوع)</option>
+          </Select>
+          {isCustom && (
+            <Input
+              className="mt-(--space-2)"
+              placeholder="اكتب نوع الخبر"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+            />
+          )}
+        </div>
+        <div>
           <Label htmlFor="news_image">رابط صورة (اختياري)</Label>
           <Input id="news_image" dir="ltr" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
         </div>
         {error && <p className="text-[13px] font-semibold text-danger">{error}</p>}
         <div className="flex justify-end">
           <Button
-            disabled={!title.trim() || pending}
+            disabled={!title.trim() || (isCustom && !customCategory.trim()) || pending}
             onClick={async () => {
               setPending(true);
               const fd = new FormData();
               fd.set("title", title);
               fd.set("body", body);
               fd.set("image_url", imageUrl);
+              fd.set("category", finalCategory);
               const res = await createNewsPostAction(null, fd);
               if (res?.error) {
                 setError(res.error);
@@ -190,6 +219,7 @@ function NewsPostForm({ onCreated }: { onCreated: (post: NewsPost) => void }) {
                 title,
                 body: body || null,
                 image_url: imageUrl || null,
+                category: finalCategory,
                 is_published: true,
                 published_at: new Date().toISOString(),
               });
