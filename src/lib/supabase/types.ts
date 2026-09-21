@@ -531,6 +531,60 @@ export type Database = {
           },
         ]
       }
+      notification_log: {
+        Row: {
+          body: string
+          data: Json | null
+          guardian_phone: string | null
+          id: number
+          notification_type: string
+          sent_at: string
+          staff_id: string | null
+          status: string
+          student_id: string | null
+          title: string
+        }
+        Insert: {
+          body: string
+          data?: Json | null
+          guardian_phone?: string | null
+          id?: number
+          notification_type: string
+          sent_at?: string
+          staff_id?: string | null
+          status?: string
+          student_id?: string | null
+          title: string
+        }
+        Update: {
+          body?: string
+          data?: Json | null
+          guardian_phone?: string | null
+          id?: number
+          notification_type?: string
+          sent_at?: string
+          staff_id?: string | null
+          status?: string
+          student_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parent_notes: {
         Row: {
           created_at: string
@@ -715,6 +769,50 @@ export type Database = {
             columns: ["season_id"]
             isOneToOne: false
             referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string
+          endpoint: string
+          guardian_phone: string | null
+          id: number
+          last_used_at: string
+          p256dh_key: string
+          staff_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string
+          endpoint: string
+          guardian_phone?: string | null
+          id?: number
+          last_used_at?: string
+          p256dh_key: string
+          staff_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string
+          endpoint?: string
+          guardian_phone?: string | null
+          id?: number
+          last_used_at?: string
+          p256dh_key?: string
+          staff_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1126,6 +1224,7 @@ export type Database = {
         Returns: string
       }
       archive_season: { Args: { p_season_id: string }; Returns: undefined }
+      cleanup_old_subscriptions: { Args: never; Returns: undefined }
       create_season: {
         Args: {
           p_carry_over_points: boolean

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { notifyAchievementUnlocked, notifyBadgeAwarded } from "@/app/admin/notifications-actions";
 
 export type FormState = { error?: string; success?: boolean } | null;
 
@@ -122,7 +123,7 @@ export async function grantAchievementAction(studentId: string, achievementId: s
 
   const { data: achievement } = await supabase
     .from("achievements")
-    .select("points_awarded")
+    .select("name, points_awarded")
     .eq("id", achievementId)
     .single();
 
@@ -140,6 +141,8 @@ export async function grantAchievementAction(studentId: string, achievementId: s
     });
   }
 
+  if (achievement?.name) notifyAchievementUnlocked(studentId, achievement.name).catch((e) => console.error("فشل إشعار الإنجاز:", e));
+
   revalidatePath(`/admin/students/${studentId}`);
   revalidatePath("/admin/leaderboard");
   return { success: true };
@@ -151,6 +154,10 @@ export async function grantBadgeAction(studentId: string, badgeId: string) {
   if (!seasonId) return { error: "لا يوجد موسم حالي." };
 
   const { error } = await supabase.from("student_badges").insert({ student_id: studentId, season_id: seasonId, badge_id: badgeId });
+  if (!error) {
+    const { data: badge } = await supabase.from("badges").select("name").eq("id", badgeId).maybeSingle();
+    if (badge?.name) notifyBadgeAwarded(studentId, badge.name).catch((e) => console.error("فشل إشعار الوسام:", e));
+  }
   revalidatePath(`/admin/students/${studentId}`);
   revalidatePath("/admin/leaderboard");
   return { error: error?.message };

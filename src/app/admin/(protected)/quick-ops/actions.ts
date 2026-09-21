@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getProgramInfo } from "@/lib/settings";
 import { DEFAULT_WHATSAPP_TEMPLATES } from "@/lib/whatsapp";
+import { notifyAttendanceUpdate, notifyBadgeAwarded, notifyPointsChanged } from "@/app/admin/notifications-actions";
 
 export interface StudentSearchResult {
   id: string;
@@ -178,6 +179,10 @@ export async function quickGrantBadgeAction(studentId: string, badgeId: string) 
   const { error } = await supabase
     .from("student_badges")
     .insert({ student_id: studentId, season_id: currentSeason.id, badge_id: badgeId });
+  if (!error) {
+    const { data: badge } = await supabase.from("badges").select("name").eq("id", badgeId).maybeSingle();
+    if (badge?.name) notifyBadgeAwarded(studentId, badge.name).catch((e) => console.error("فشل إشعار الوسام:", e));
+  }
   revalidatePath("/admin/quick-ops");
   return { error: error?.message };
 }
@@ -210,6 +215,7 @@ export async function quickMarkAttendanceAction(
   revalidatePath("/admin/quick-ops");
   revalidatePath("/admin");
   if (error) return { error: error.message, data: null };
+  notifyAttendanceUpdate(studentId, status).catch((e) => console.error("فشل إشعار الحضور:", e));
   return { error: undefined, data: await getStudentQuickCardAction(studentId) };
 }
 
@@ -223,5 +229,6 @@ export async function quickAddPointsAction(studentId: string, seasonId: string, 
   });
   revalidatePath("/admin/quick-ops");
   if (error) return { error: error.message, data: null };
+  notifyPointsChanged(studentId, points, reason).catch((e) => console.error("فشل إشعار النقاط:", e));
   return { error: undefined, data: await getStudentQuickCardAction(studentId) };
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendCloudApiTextMessage } from "@/lib/whatsapp-cloud-api";
+import { notifyAttendanceUpdate } from "@/app/admin/notifications-actions";
 
 export interface AutoPointsSettings {
   isEnabled: boolean;
@@ -59,17 +60,19 @@ export async function setAttendanceAction(
   });
   revalidatePath("/admin/attendance");
   revalidatePath("/admin");
+  if (!error) notifyAttendanceUpdate(studentId, status).catch((e) => console.error("فشل إشعار الحضور:", e));
   return { error: error?.message };
 }
 
 export async function bulkMarkPresentAction(studentIds: string[], programDayId: string) {
   const supabase = await createClient();
   for (const studentId of studentIds) {
-    await supabase.rpc("mark_attendance", {
+    const { error } = await supabase.rpc("mark_attendance", {
       p_student_id: studentId,
       p_program_day_id: programDayId,
       p_status: "present",
     });
+    if (!error) notifyAttendanceUpdate(studentId, "present").catch((e) => console.error("فشل إشعار الحضور:", e));
   }
   revalidatePath("/admin/attendance");
   revalidatePath("/admin");

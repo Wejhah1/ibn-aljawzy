@@ -16,7 +16,7 @@ export default async function LoginPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.svg" alt="شعار حلقات ابن الجوزي" className="h-full w-full object-contain" />
           </div>
-          <h1 className="text-[22px] leading-[30px] font-bold text-ink">حلقات ابن الجوزي الصيفي</h1>
+          <h1 className="text-[22px] leading-[30px] font-bold text-ink">حلقات ابن الجوزي</h1>
           <p className="text-[12px] leading-[18px] font-medium text-ink-muted mt-1">
             لوحة تحكم فريق الإدارة — مسجد الطرباق
           </p>

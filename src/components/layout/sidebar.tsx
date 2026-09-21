@@ -45,14 +45,16 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
 
   return (
     <aside className="hidden md:flex w-[264px] shrink-0 flex-col border-l border-line bg-surface-raised h-screen sticky top-0 overflow-y-auto">
-      <div className="flex items-center gap-(--space-3) px-(--space-4) h-16 border-b border-line shrink-0">
-        <div className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) bg-surface-raised border-bold border-line-strong shrink-0 overflow-hidden p-0.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="شعار حلقات ابن الجوزي" className="h-full w-full object-contain" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[13px] font-bold text-ink truncate">حلقات ابن الجوزي</p>
-          <p className="text-[11px] text-ink-muted truncate">مسجد الطرباق</p>
+      <div className="flex items-center justify-between gap-(--space-2) px-(--space-4) py-(--space-4) border-b border-line shrink-0">
+        <div className="flex flex-col items-center gap-(--space-2) flex-1 min-w-0">
+          <div className="flex h-12 w-12 items-center justify-center rounded-(--radius-sm) bg-surface-raised border-bold border-line-strong shrink-0 overflow-hidden p-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="شعار حلقات ابن الجوزي" className="h-full w-full object-contain" />
+          </div>
+          <div className="min-w-0 text-center">
+            <p className="text-[13px] font-bold text-ink truncate">حلقات ابن الجوزي</p>
+            <p className="text-[11px] text-ink-muted truncate">مسجد الطرباق</p>
+          </div>
         </div>
         <NotificationBell />
       </div>

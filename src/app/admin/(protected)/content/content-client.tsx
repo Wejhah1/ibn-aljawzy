@@ -52,7 +52,7 @@ function HomepageContentForm({ initial }: { initial: { hero_title: string; hero_
       <form action={formAction} className="space-y-(--space-4)">
         <div>
           <Label htmlFor="hero_title">العنوان الرئيسي (اتركه فارغاً لاستخدام الاسم الافتراضي)</Label>
-          <Input id="hero_title" name="hero_title" defaultValue={initial.hero_title} placeholder="حلقات ابن الجوزي الصيفي" />
+          <Input id="hero_title" name="hero_title" defaultValue={initial.hero_title} placeholder="حلقات ابن الجوزي" />
         </div>
         <div>
           <Label htmlFor="hero_subtitle">الوصف التعريفي</Label>

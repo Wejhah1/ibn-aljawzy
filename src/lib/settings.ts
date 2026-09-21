@@ -9,7 +9,7 @@ export interface ProgramInfo {
 }
 
 const DEFAULTS: ProgramInfo = {
-  program_name: "حلقات ابن الجوزي الصيفي",
+  program_name: "حلقات ابن الجوزي",
   mosque_name: "مسجد الطرباق",
   address: "",
   contact_phone: "",

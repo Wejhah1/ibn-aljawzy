@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Users, CircleDot, Calendar, BookOpen, Trophy, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Users, CircleDot, Calendar, BookOpen, Trophy, ShieldCheck, ArrowLeft, GraduationCap, Megaphone, Sparkles, Star } from "lucide-react";
 
 interface PublicStats {
   season_name: string | null;
@@ -33,8 +33,14 @@ const FEATURES = [
   { icon: ShieldCheck, title: "متابعة أولياء الأمور", desc: "بوابة خاصة لولي الأمر لمتابعة حضور ونتائج ابنه أولاً بأول." },
 ];
 
+const NEWS_STYLES = [
+  { icon: GraduationCap, label: "إنجاز", bg: "bg-info", soft: "bg-info-soft", fg: "text-info" },
+  { icon: Sparkles, label: "فعالية", bg: "bg-accent-solid", soft: "bg-accent-soft", fg: "text-accent" },
+  { icon: Megaphone, label: "إعلان", bg: "bg-brand", soft: "bg-brand-soft", fg: "text-brand" },
+];
+
 export function HomeClient({ stats, content, news }: { stats: PublicStats; content: HomepageContent; news: NewsPost[] }) {
-  const title = content.hero_title?.trim() || "حلقات ابن الجوزي الصيفي";
+  const title = content.hero_title?.trim() || "حلقات ابن الجوزي";
   const subtitle =
     content.hero_subtitle?.trim() ||
     "برنامج تحفيظ صيفي بمسجد الطرباق — يجمع بين حفظ القرآن الكريم، التحفيز بنظام النقاط، ومتابعة دقيقة لأولياء الأمور طوال الموسم.";
@@ -142,7 +148,8 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="rounded-(--radius-md) border-bold border-line-strong bg-surface-raised p-(--space-6) text-center shadow-brutal-sm"
+            whileHover={{ y: -3 }}
+            className="rounded-(--radius-md) border-bold border-line-strong bg-surface-raised p-(--space-6) text-center shadow-brutal-sm transition-shadow hover:shadow-brutal"
           >
             <Users className="mx-auto mb-(--space-2) text-brand" size={26} />
             <p className="text-[32px] font-bold text-ink">{stats.total_active_students}</p>
@@ -153,7 +160,8 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="rounded-(--radius-md) border-bold border-line-strong bg-surface-raised p-(--space-6) text-center shadow-brutal-sm"
+            whileHover={{ y: -3 }}
+            className="rounded-(--radius-md) border-bold border-line-strong bg-surface-raised p-(--space-6) text-center shadow-brutal-sm transition-shadow hover:shadow-brutal"
           >
             <CircleDot className="mx-auto mb-(--space-2) text-brand" size={26} />
             <p className="text-[32px] font-bold text-ink">{stats.total_circles}</p>
@@ -181,9 +189,10 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="rounded-(--radius-lg) border-bold border-line-strong bg-surface-raised p-(--space-6)"
+                whileHover={{ y: -4 }}
+                className="group rounded-(--radius-lg) border-bold border-line-strong bg-surface-raised p-(--space-6) transition-shadow hover:shadow-brutal"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-(--radius-sm) bg-brand-soft text-brand-hover mb-(--space-4)">
+                <div className="flex h-11 w-11 items-center justify-center rounded-(--radius-sm) bg-brand-soft text-brand-hover mb-(--space-4) transition-transform group-hover:scale-110">
                   <f.icon size={20} />
                 </div>
                 <h3 className="text-[16px] font-bold text-ink mb-(--space-2)">{f.title}</h3>
@@ -205,29 +214,50 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
             >
               آخر الأخبار
             </motion.h2>
-            <div className="grid md:grid-cols-3 gap-(--space-4)">
-              {news.map((n, i) => (
-                <motion.div
-                  key={n.id}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="rounded-(--radius-lg) border-bold border-line-strong bg-surface-raised overflow-hidden"
-                >
-                  {n.image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={n.image_url} alt={n.title} className="w-full h-40 object-cover border-b border-line" />
-                  )}
-                  <div className="p-(--space-4)">
-                    <h3 className="text-[15px] font-bold text-ink mb-(--space-2)">{n.title}</h3>
-                    {n.body && <p className="text-sm text-ink-muted leading-relaxed line-clamp-3">{n.body}</p>}
-                    <p className="text-[11px] text-ink-faint mt-(--space-3)">
-                      {new Date(n.published_at).toLocaleDateString("ar-SA")}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-(--space-4)">
+              {news.map((n, i) => {
+                const style = NEWS_STYLES[i % NEWS_STYLES.length];
+                const Icon = style.icon;
+                return (
+                  <motion.div
+                    key={n.id}
+                    initial={{ opacity: 0, y: 28 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ y: -4 }}
+                    className="group rounded-(--radius-lg) border-bold border-line-strong bg-surface-raised overflow-hidden shadow-brutal-sm transition-shadow hover:shadow-brutal"
+                  >
+                    {n.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={n.image_url}
+                        alt={n.title}
+                        className="w-full h-40 object-cover border-b border-line-strong transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className={`relative h-28 ${style.bg} flex items-center justify-center overflow-hidden`}>
+                        <div className="absolute -left-4 -bottom-6 h-20 w-20 rounded-full bg-white/10" />
+                        <div className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-white/10" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+                          <Icon size={22} className="text-white" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-(--space-4)">
+                      <span className={`inline-flex items-center gap-1 rounded-full ${style.soft} ${style.fg} px-(--space-2) py-0.5 text-[11px] font-bold mb-(--space-2)`}>
+                        <Star size={10} className="fill-current" />
+                        {style.label}
+                      </span>
+                      <h3 className="text-[15px] font-bold text-ink mb-(--space-2)">{n.title}</h3>
+                      {n.body && <p className="text-sm text-ink-muted leading-relaxed line-clamp-3">{n.body}</p>}
+                      <p className="text-[11px] text-ink-faint mt-(--space-3)">
+                        {new Date(n.published_at).toLocaleDateString("ar-SA")}
+                      </p>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -235,7 +265,7 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
 
       <footer className="border-t border-line py-(--space-8) px-(--space-4)">
         <div className="max-w-[1100px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-(--space-3) text-[13px] text-ink-muted">
-          <p>© {new Date().getFullYear()} حلقات ابن الجوزي الصيفي — مسجد الطرباق</p>
+          <p>© {new Date().getFullYear()} حلقات ابن الجوزي — مسجد الطرباق</p>
           <Link href="/admin/login" className="hover:text-ink">
             دخول فريق الإدارة
           </Link>

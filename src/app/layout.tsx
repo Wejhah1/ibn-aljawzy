@@ -19,8 +19,8 @@ const yearOfHandicrafts = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "حلقات ابن الجوزي الصيفي",
-  description: "نظام إدارة برنامج حلقات ابن الجوزي الصيفي — مسجد الطرباق",
+  title: "حلقات ابن الجوزي",
+  description: "نظام إدارة برنامج حلقات ابن الجوزي — مسجد الطرباق",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icons/icon-192.png",

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { parentLogoutAction, sendParentNoteAction, deleteParentNoteAction } from "./actions";
+import { PushNotificationToggleCompact } from "@/components/push-notification-toggle";
 import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList, MessageSquare, Send, Trash2 } from "lucide-react";
 
 interface ParentNote {
@@ -46,11 +47,14 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
             </div>
             <p className="text-sm font-bold text-ink">بوابة ولي الأمر</p>
           </div>
-          <form action={parentLogoutAction}>
-            <button type="submit" className="flex items-center gap-1 text-[13px] font-semibold text-ink-muted hover:text-danger">
-              <LogOut size={14} /> خروج
-            </button>
-          </form>
+          <div className="flex items-center gap-(--space-3)">
+            <PushNotificationToggleCompact />
+            <form action={parentLogoutAction}>
+              <button type="submit" className="flex items-center gap-1 text-[13px] font-semibold text-ink-muted hover:text-danger">
+                <LogOut size={14} /> خروج
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 

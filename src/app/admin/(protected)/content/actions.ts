@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/types";
+import { notifyNewsPublished } from "@/app/admin/notifications-actions";
 
 export type FormState = { error?: string; success?: boolean } | null;
 
@@ -50,9 +51,12 @@ export async function createNewsPostAction(_prev: FormState, formData: FormData)
 
 export async function toggleNewsPublishedAction(id: string, isPublished: boolean) {
   const supabase = await createClient();
-  await supabase.from("news_posts").update({ is_published: isPublished }).eq("id", id);
+  const { data: post } = await supabase.from("news_posts").update({ is_published: isPublished }).eq("id", id).select("title, body").single();
   revalidatePath("/admin/content");
   revalidatePath("/");
+  if (isPublished && post) {
+    notifyNewsPublished(post.title, post.body ?? "", id).catch((e) => console.error("فشل إشعار الخبر:", e));
+  }
 }
 
 export async function deleteNewsPostAction(id: string) {

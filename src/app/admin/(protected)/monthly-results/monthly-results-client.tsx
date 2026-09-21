@@ -10,10 +10,15 @@ import {
   importMonthlyResultsAction,
   togglePublishPeriodAction,
   getStudentsForTemplateAction,
+  deletePeriodAction,
+  getPeriodResultRowsAction,
+  updateResultPercentageAction,
   type MonthlyResultRow,
   type ImportSummary,
+  type PeriodResultRow,
 } from "./actions";
-import { UploadCloud, CheckCircle2, Eye, EyeOff, AlertTriangle, CalendarDays } from "lucide-react";
+import { WhatsappExportModal } from "./whatsapp-export-modal";
+import { UploadCloud, CheckCircle2, Eye, EyeOff, AlertTriangle, CalendarDays, Pencil, Trash2, MessageCircle, Loader2 } from "lucide-react";
 
 interface Period {
   label: string;
@@ -27,10 +32,14 @@ export function MonthlyResultsClient({
   seasonId,
   seasonName,
   periods,
+  programName,
+  mosqueName,
 }: {
   seasonId: string;
   seasonName: string;
   periods: Period[];
+  programName: string;
+  mosqueName: string;
 }) {
   const [periodLabel, setPeriodLabel] = useState("");
   const [examDate, setExamDate] = useState("");
@@ -39,6 +48,39 @@ export function MonthlyResultsClient({
   const [importing, setImporting] = useState(false);
   const [summary, setSummary] = useState<ImportSummary | null>(null);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
+
+  const [editingPeriod, setEditingPeriod] = useState<string | null>(null);
+  const [editRows, setEditRows] = useState<PeriodResultRow[]>([]);
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const [savingRowId, setSavingRowId] = useState<string | null>(null);
+  const [deletingPeriod, setDeletingPeriod] = useState<string | null>(null);
+  const [whatsappPeriod, setWhatsappPeriod] = useState<string | null>(null);
+
+  const openEdit = async (label: string) => {
+    if (editingPeriod === label) {
+      setEditingPeriod(null);
+      return;
+    }
+    setEditingPeriod(label);
+    setLoadingEdit(true);
+    const data = await getPeriodResultRowsAction(seasonId, label);
+    setEditRows(data);
+    setLoadingEdit(false);
+  };
+
+  const saveRow = async (resultId: string, percentage: number) => {
+    setSavingRowId(resultId);
+    await updateResultPercentageAction(resultId, percentage);
+    setSavingRowId(null);
+  };
+
+  const removePeriod = async (label: string) => {
+    if (!window.confirm(`هل أنت متأكد من حذف نتائج فترة "${label}" لجميع الطلاب؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
+    setDeletingPeriod(label);
+    await deletePeriodAction(seasonId, label);
+    setDeletingPeriod(null);
+    if (editingPeriod === label) setEditingPeriod(null);
+  };
 
   const handleFile = async (file: File) => {
     setFileName(file.name);
@@ -90,31 +132,101 @@ export function MonthlyResultsClient({
       {periods.length > 0 && (
         <div className="mb-(--space-6) space-y-(--space-2)">
           {periods.map((p) => (
-            <Card key={p.label} className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-ink">{p.label}</p>
-                <p className="text-[12px] text-ink-muted">
-                  {p.count} طالب · متوسط {p.avg}%
-                  {p.examDate && (
-                    <span className="inline-flex items-center gap-1 mr-2">
-                      <CalendarDays size={11} /> {new Date(p.examDate).toLocaleDateString("ar-SA")}
-                    </span>
+            <Card key={p.label}>
+              <div className="flex items-center justify-between flex-wrap gap-(--space-2)">
+                <div>
+                  <p className="text-sm font-bold text-ink">{p.label}</p>
+                  <p className="text-[12px] text-ink-muted">
+                    {p.count} طالب · متوسط {p.avg}%
+                    {p.examDate && (
+                      <span className="inline-flex items-center gap-1 mr-2">
+                        <CalendarDays size={11} /> {new Date(p.examDate).toLocaleDateString("ar-SA")}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-(--space-2)">
+                  {p.isPublished ? <Badge tone="success">منشور لأولياء الأمور</Badge> : <Badge tone="neutral">غير منشور</Badge>}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => togglePublishPeriodAction(seasonId, p.label, !p.isPublished)}
+                    title={p.isPublished ? "إخفاء عن أولياء الأمور" : "نشر لأولياء الأمور"}
+                  >
+                    {p.isPublished ? <EyeOff size={13} /> : <Eye size={13} />}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setWhatsappPeriod(p.label)} title="مشاركة عبر واتساب">
+                    <MessageCircle size={13} />
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => openEdit(p.label)} title="تعديل النتائج">
+                    <Pencil size={13} />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => removePeriod(p.label)}
+                    disabled={deletingPeriod === p.label}
+                    title="حذف الفترة"
+                  >
+                    {deletingPeriod === p.label ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} className="text-danger" />}
+                  </Button>
+                </div>
+              </div>
+
+              {editingPeriod === p.label && (
+                <div className="mt-(--space-4) pt-(--space-4) border-t border-line">
+                  {loadingEdit ? (
+                    <div className="flex items-center justify-center gap-2 py-(--space-4) text-ink-muted">
+                      <Loader2 size={16} className="animate-spin" /> جارِ التحميل...
+                    </div>
+                  ) : (
+                    <div className="space-y-(--space-2) max-h-[360px] overflow-y-auto">
+                      {editRows.map((r) => (
+                        <div key={r.resultId} className="flex items-center justify-between gap-(--space-2)">
+                          <div className="min-w-0">
+                            <p className="text-sm text-ink truncate">{r.name}</p>
+                            <p className="text-[11px] text-ink-muted">{r.code}</p>
+                          </div>
+                          <div className="flex items-center gap-(--space-1) shrink-0">
+                            <Input
+                              type="number"
+                              min={0}
+                              max={100}
+                              value={r.percentage}
+                              onChange={(e) =>
+                                setEditRows((prev) =>
+                                  prev.map((row) => (row.resultId === r.resultId ? { ...row, percentage: Number(e.target.value) } : row))
+                                )
+                              }
+                              className="w-20"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => saveRow(r.resultId, r.percentage)}
+                              disabled={savingRowId === r.resultId}
+                            >
+                              {savingRowId === r.resultId ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                </p>
-              </div>
-              <div className="flex items-center gap-(--space-2)">
-                {p.isPublished ? <Badge tone="success">منشور لأولياء الأمور</Badge> : <Badge tone="neutral">غير منشور</Badge>}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => togglePublishPeriodAction(seasonId, p.label, !p.isPublished)}
-                >
-                  {p.isPublished ? <EyeOff size={13} /> : <Eye size={13} />}
-                </Button>
-              </div>
+                </div>
+              )}
             </Card>
           ))}
         </div>
+      )}
+
+      {whatsappPeriod && (
+        <WhatsappExportModal
+          seasonId={seasonId}
+          periodLabel={whatsappPeriod}
+          programName={programName}
+          mosqueName={mosqueName}
+          onClose={() => setWhatsappPeriod(null)}
+        />
       )}
 
       <Card>

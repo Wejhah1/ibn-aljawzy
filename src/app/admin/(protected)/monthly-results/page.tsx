@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getProgramInfo } from "@/lib/settings";
 import { MonthlyResultsClient } from "./monthly-results-client";
 
 export default async function MonthlyResultsPage() {
@@ -34,5 +35,15 @@ export default async function MonthlyResultsPage() {
     examDate: v.examDate,
   }));
 
-  return <MonthlyResultsClient seasonId={currentSeason.id} seasonName={currentSeason.name} periods={periods} />;
+  const programInfo = await getProgramInfo(supabase);
+
+  return (
+    <MonthlyResultsClient
+      seasonId={currentSeason.id}
+      seasonName={currentSeason.name}
+      periods={periods}
+      programName={programInfo.program_name}
+      mosqueName={programInfo.mosque_name}
+    />
+  );
 }
