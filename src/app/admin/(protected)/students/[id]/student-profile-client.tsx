@@ -35,6 +35,9 @@ import {
   MessageSquare,
   Send,
   Trash2,
+  Coins,
+  Plus,
+  Minus,
 } from "lucide-react";
 
 const ID_TYPE_OPTIONS: { value: string; label: string }[] = [
@@ -81,6 +84,22 @@ interface ParentNote {
   is_read_by_admin: boolean;
 }
 
+interface PointTransaction {
+  id: string;
+  points: number;
+  source: string;
+  reason: string | null;
+  created_at: string;
+  season_id: string;
+  profiles: { full_name: string } | { full_name: string }[] | null;
+}
+
+const SOURCE_LABEL: Record<string, string> = {
+  manual: "يدوي",
+  auto_attendance: "تلقائي (حضور)",
+  achievement: "إنجاز",
+};
+
 function one<T>(v: T | T[] | null): T | null {
   if (!v) return null;
   return Array.isArray(v) ? v[0] ?? null : v;
@@ -101,6 +120,7 @@ export function StudentProfileClient({
   allFlags,
   studentFlags,
   parentNotes,
+  pointTransactions,
 }: {
   student: Student;
   enrollments: Enrollment[];
@@ -123,6 +143,7 @@ export function StudentProfileClient({
     flags: { name: string; severity: string } | { name: string; severity: string }[] | null;
   }[];
   parentNotes: ParentNote[];
+  pointTransactions: PointTransaction[];
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [dropoutOpen, setDropoutOpen] = useState(false);
@@ -268,6 +289,7 @@ export function StudentProfileClient({
             const att = attendanceBySeasonStatus[e.season_id] ?? {};
             const seasonAchievements = achievements.filter((a) => a.season_id === e.season_id);
             const seasonBadges = badges.filter((b) => b.season_id === e.season_id);
+            const seasonPointTransactions = pointTransactions.filter((t) => t.season_id === e.season_id);
 
             return (
               <Card key={e.id}>
@@ -313,6 +335,8 @@ export function StudentProfileClient({
                     })}
                   </div>
                 )}
+
+                <SeasonPointsLog transactions={seasonPointTransactions} />
               </Card>
             );
           })}
@@ -409,6 +433,68 @@ function ParentNotesThread({ studentId, notes: initialNotes }: { studentId: stri
           <Send size={14} /> إرسال
         </Button>
       </div>
+    </div>
+  );
+}
+
+function SeasonPointsLog({ transactions }: { transactions: PointTransaction[] }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="mt-(--space-3) pt-(--space-3) border-t border-line">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-[12px] font-bold text-ink-muted hover:text-ink"
+      >
+        <Coins size={13} /> سجل النقاط لهذا الموسم ({transactions.length}) {open ? "▲" : "▼"}
+      </button>
+      {open && (
+        <div className="mt-(--space-3)">
+          <PointsLog transactions={transactions} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PointsLog({ transactions }: { transactions: PointTransaction[] }) {
+  if (transactions.length === 0) {
+    return <CardDescription>لا يوجد سجل نقاط لهذا الموسم بعد.</CardDescription>;
+  }
+
+  return (
+    <div className="space-y-(--space-2) max-h-[400px] overflow-y-auto">
+      {transactions.map((t) => {
+        const profile = one(t.profiles);
+        const positive = t.points > 0;
+        return (
+          <div key={t.id} className="flex items-start justify-between gap-(--space-3) py-(--space-2) border-b border-line last:border-b-0">
+            <div className="flex items-start gap-(--space-2)">
+              <span
+                className={`flex h-7 w-7 items-center justify-center rounded-full shrink-0 mt-0.5 ${
+                  positive ? "bg-brand-soft text-brand-hover" : "bg-danger-soft text-danger"
+                }`}
+              >
+                {positive ? <Plus size={13} /> : <Minus size={13} />}
+              </span>
+              <div>
+                <p className="text-sm text-ink">
+                  {t.reason || SOURCE_LABEL[t.source] || t.source}
+                </p>
+                <p className="text-[11px] text-ink-faint">
+                  {new Date(t.created_at).toLocaleString("ar-SA")}
+                  {profile?.full_name ? ` · ${profile.full_name}` : ""}
+                  {t.source !== "manual" ? ` · ${SOURCE_LABEL[t.source] ?? t.source}` : ""}
+                </p>
+              </div>
+            </div>
+            <span className={`text-sm font-bold shrink-0 ${positive ? "text-brand-hover" : "text-danger"}`}>
+              {positive ? "+" : ""}
+              {t.points}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

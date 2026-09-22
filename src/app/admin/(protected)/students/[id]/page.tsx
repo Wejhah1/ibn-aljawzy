@@ -23,6 +23,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
     { data: allBadges },
     { data: allFlags },
     { data: studentFlags },
+    { data: pointTransactions },
   ] = await Promise.all([
     supabase
       .from("student_season_enrollments")
@@ -45,6 +46,12 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
       .select("id, flag_id, is_resolved, note, set_at, flags(name, severity)")
       .eq("student_id", id)
       .order("set_at", { ascending: false }),
+    supabase
+      .from("point_transactions")
+      .select("id, points, source, reason, created_at, season_id, profiles(full_name)")
+      .eq("student_id", id)
+      .order("created_at", { ascending: false })
+      .limit(100),
   ]);
 
   const attendanceBySeasonStatus: Record<string, Record<string, number>> = {};
@@ -73,6 +80,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
       allFlags={allFlags ?? []}
       studentFlags={studentFlags ?? []}
       parentNotes={parentNotes ?? []}
+      pointTransactions={pointTransactions ?? []}
     />
   );
 }

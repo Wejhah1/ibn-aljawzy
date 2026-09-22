@@ -122,6 +122,7 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [badgeModalOpen, setBadgeModalOpen] = useState(false);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [pointsModalOpen, setPointsModalOpen] = useState(false);
 
   const reload = async () => {
     const d = await getStudentQuickCardAction(studentId);
@@ -147,11 +148,11 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
     });
   };
 
-  const addPoints = (amount: number) => {
+  const addPoints = (amount: number, reason?: string) => {
     if (!data?.seasonId) return;
     setData((prev) => (prev ? { ...prev, totalPoints: prev.totalPoints + amount } : prev));
     flash(amount > 0 ? `+${amount} نقطة` : `${amount} نقطة`);
-    quickAddPointsAction(studentId, data.seasonId, amount).then((res) => {
+    quickAddPointsAction(studentId, data.seasonId, amount, reason).then((res) => {
       if (res.data) setData(res.data);
     });
   };
@@ -247,6 +248,15 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
           }}
         />
       )}
+      {pointsModalOpen && (
+        <QuickPointsModal
+          onClose={() => setPointsModalOpen(false)}
+          onSubmit={(amount, reason) => {
+            addPoints(amount, reason || undefined);
+            setPointsModalOpen(false);
+          }}
+        />
+      )}
 
       <Card className="mb-(--space-4)">
         <p className="text-[13px] font-bold text-ink mb-(--space-3)">حضور اليوم</p>
@@ -311,9 +321,58 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
               </button>
             ))}
           </div>
+          <button
+            onClick={() => setPointsModalOpen(true)}
+            className="mt-(--space-2) w-full min-h-[44px] rounded-(--radius-sm) border-bold border-line-strong bg-surface-raised text-ink font-bold text-sm hover:bg-surface-sunken transition-colors"
+          >
+            نقاط مخصصة وسبب...
+          </button>
         </Card>
       )}
     </main>
+  );
+}
+
+function QuickPointsModal({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void;
+  onSubmit: (amount: number, reason: string) => void;
+}) {
+  const [amountText, setAmountText] = useState("");
+  const [reason, setReason] = useState("");
+
+  const amount = Number(amountText);
+  const isValid = amountText.trim() !== "" && Number.isFinite(amount) && Number.isInteger(amount) && amount !== 0;
+
+  return (
+    <Modal title="نقاط مخصصة" onClose={onClose}>
+      <div className="space-y-(--space-4)">
+        <div>
+          <label className="block text-[13px] font-bold text-ink mb-(--space-2)">عدد النقاط (استخدم إشارة سالبة للخصم)</label>
+          <Input
+            type="number"
+            value={amountText}
+            onChange={(e) => setAmountText(e.target.value)}
+            placeholder="مثال: 15 أو -5"
+            autoFocus
+          />
+        </div>
+        <div>
+          <label className="block text-[13px] font-bold text-ink mb-(--space-2)">السبب (يظهر لولي الأمر)</label>
+          <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} placeholder="اكتب سبب إضافة/خصم النقاط..." />
+        </div>
+        <div className="flex justify-end gap-(--space-2)">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            إلغاء
+          </Button>
+          <Button type="button" disabled={!isValid} onClick={() => onSubmit(amount, reason.trim())}>
+            حفظ
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
