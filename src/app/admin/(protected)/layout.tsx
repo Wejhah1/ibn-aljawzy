@@ -1,9 +1,17 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { CommandPalette } from "@/components/search/command-palette";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+
+// مؤقّتة لعمر الطلب الواحد فقط: تمنع تكرار استعلام profiles أكثر من مرة إذا استدعاه
+// أكثر من مقطع (segment) خلال نفس التنقّل، لكنها لا تنجو بين الطلبات.
+const getProfile = cache(async (supabase: Awaited<ReturnType<typeof createClient>>, userId: string) => {
+  const { data } = await supabase.from("profiles").select("full_name, role").eq("id", userId).single();
+  return data;
+});
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -18,11 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!user) redirect("/admin/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name, role")
-    .eq("id", user.id)
-    .single();
+  const profile = await getProfile(supabase, user.id);
 
   return (
     <div className="flex min-h-screen bg-surface">

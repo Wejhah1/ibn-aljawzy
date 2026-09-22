@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardDescription } from "@/components/ui/card";
@@ -91,6 +92,35 @@ export function StudentsListClient({
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [qInput, setQInput] = useState(q);
+  const [isPending, startTransition] = useTransition();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setQInput(q);
+  }, [q]);
+
+  const updateParams = (next: { q?: string; status?: string; circle?: string }) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const merged = { q, status, circle, ...next };
+    for (const [key, value] of Object.entries(merged)) {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    }
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  };
+
+  const onSearchChange = (value: string) => {
+    setQInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => updateParams({ q: value }), 300);
+  };
+
   const toggle = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -132,38 +162,38 @@ export function StudentsListClient({
         </div>
       </div>
 
-      <form method="get" className="mb-(--space-4)">
-        <Card className="flex flex-col sm:flex-row gap-(--space-3)">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint" />
-            <Input name="q" defaultValue={q} placeholder="الاسم أو الكود أو جوال ولي الأمر" className="pr-9" />
-          </div>
-          <select
-            name="status"
-            defaultValue={status}
-            className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm font-medium text-ink"
-          >
-            <option value="active">نشط فقط</option>
-            <option value="dropped_out">المنقطعون فقط</option>
-            <option value="all">الكل</option>
-          </select>
-          <select
-            name="circle"
-            defaultValue={circle}
-            className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm font-medium text-ink"
-          >
-            <option value="">كل الحلقات</option>
-            {circles.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <Button type="submit" variant="secondary">
-            تصفية
-          </Button>
-        </Card>
-      </form>
+      <Card className="mb-(--space-4) flex flex-col sm:flex-row gap-(--space-3)">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint" />
+          <Input
+            value={qInput}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="الاسم أو الكود أو جوال ولي الأمر"
+            className="pr-9"
+          />
+        </div>
+        <select
+          value={status}
+          onChange={(e) => updateParams({ status: e.target.value })}
+          className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm font-medium text-ink"
+        >
+          <option value="active">نشط فقط</option>
+          <option value="dropped_out">المنقطعون فقط</option>
+          <option value="all">الكل</option>
+        </select>
+        <select
+          value={circle}
+          onChange={(e) => updateParams({ circle: e.target.value })}
+          className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm font-medium text-ink"
+        >
+          <option value="">كل الحلقات</option>
+          {circles.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </Card>
 
       {selectMode && (
         <button
@@ -179,6 +209,8 @@ export function StudentsListClient({
           <CardDescription>لا يوجد طلاب مطابقون.</CardDescription>
         </Card>
       )}
+
+      <div className={isPending ? "opacity-60 transition-opacity" : "transition-opacity"}>
 
       {/* ---------- سطح المكتب: جدول حقيقي يضمن محاذاة الأعمدة عبر كل الصفوف ---------- */}
       {rows.length > 0 && (
@@ -410,6 +442,8 @@ export function StudentsListClient({
           );
         })}
       </motion.div>
+
+      </div>
 
       <AnimatePresence>
         {selectMode && selected.size > 0 && (
