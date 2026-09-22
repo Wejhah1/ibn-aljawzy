@@ -196,6 +196,13 @@ function Podium({ entries }: { entries: DisplayEntry[] }) {
   const slot = (entry: DisplayEntry | undefined, rank: 1 | 2 | 3, height: number) => {
     if (!entry) return <div className="flex-1" />;
     const medalColor = rank === 1 ? "#e6b400" : rank === 2 ? "#9aa0a6" : "#b3742e";
+    const podiumBg = entry.accent
+      ? `${entry.accent}22`
+      : rank === 1
+        ? "#e6b40026"
+        : rank === 2
+          ? "#9aa0a626"
+          : "#b3742e26";
     return (
       <motion.div
         key={entry.id}
@@ -216,10 +223,10 @@ function Podium({ entries }: { entries: DisplayEntry[] }) {
         </div>
         <p className="font-bold text-brand mb-(--space-2) text-[11px]">{entry.valueLabel}</p>
         <div
-          className="w-full rounded-t-(--radius-md) border-bold border-line-strong border-b-0 flex items-start justify-center pt-(--space-2)"
-          style={{ height, backgroundColor: entry.accent ? `${entry.accent}22` : "var(--color-accent-soft)", boxShadow: "var(--shadow-brutal-sm)" }}
+          className="w-full rounded-t-(--radius-md) border-bold border-line-strong border-b-0 flex items-center justify-center"
+          style={{ height, backgroundColor: podiumBg, boxShadow: "var(--shadow-brutal-sm)" }}
         >
-          <Trophy size={18} style={{ color: entry.accent ?? "var(--color-accent)" }} />
+          <Trophy size={18} style={{ color: entry.accent ?? medalColor }} />
         </div>
       </motion.div>
     );

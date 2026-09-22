@@ -219,14 +219,21 @@ export function LeaderboardClient({
           </div>
           <p className="text-[28px] font-bold text-brand mb-8">{currentTab.label}</p>
           <div className="flex flex-col gap-4">
-            {top10.map((e, i) => (
+            {top10.map((e, i) => {
+              const medalColor = i === 0 ? "#e6b400" : i === 1 ? "#9aa0a6" : i === 2 ? "#b3742e" : null;
+              return (
               <div
                 key={e.id}
                 className="flex items-center justify-between rounded-2xl border-[2px] border-ink px-8 py-5"
-                style={{ backgroundColor: i < 3 ? "#fbf3e6" : "#ffffff" }}
+                style={{ backgroundColor: medalColor ? `${medalColor}26` : "#ffffff" }}
               >
                 <div className="flex items-center gap-6">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full text-[24px] font-bold border-[2px] border-ink bg-brand-soft text-brand-hover">
+                  <span
+                    className={`flex h-14 w-14 items-center justify-center rounded-full text-[24px] font-bold border-[2px] border-ink ${
+                      medalColor ? "" : "bg-brand-soft text-brand-hover"
+                    }`}
+                    style={medalColor ? { backgroundColor: medalColor, color: "#171b18" } : undefined}
+                  >
                     {i + 1}
                   </span>
                   <div>
@@ -236,7 +243,8 @@ export function LeaderboardClient({
                 </div>
                 <p className="text-[30px] font-bold text-brand">{e.valueLabel}</p>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -251,6 +259,13 @@ function Podium({ entries, large }: { entries: DisplayEntry[]; large: boolean })
   const slot = (entry: DisplayEntry | undefined, rank: 1 | 2 | 3, height: number) => {
     if (!entry) return <div className="flex-1" />;
     const medalColor = rank === 1 ? "#e6b400" : rank === 2 ? "#9aa0a6" : "#b3742e";
+    const podiumBg = entry.accent
+      ? `${entry.accent}22`
+      : rank === 1
+        ? "#e6b40026"
+        : rank === 2
+          ? "#9aa0a626"
+          : "#b3742e26";
     return (
       <motion.div
         key={entry.id}
@@ -273,10 +288,10 @@ function Podium({ entries, large }: { entries: DisplayEntry[]; large: boolean })
         </div>
         <p className={`font-bold text-brand mb-(--space-2) ${large ? "text-base" : "text-[11px]"}`}>{entry.valueLabel}</p>
         <div
-          className="w-full rounded-t-(--radius-md) border-bold border-line-strong border-b-0 flex items-start justify-center pt-(--space-2)"
-          style={{ height, backgroundColor: entry.accent ? `${entry.accent}22` : "var(--color-accent-soft)", boxShadow: "var(--shadow-brutal-sm)" }}
+          className="w-full rounded-t-(--radius-md) border-bold border-line-strong border-b-0 flex items-center justify-center"
+          style={{ height, backgroundColor: podiumBg, boxShadow: "var(--shadow-brutal-sm)" }}
         >
-          <Trophy size={large ? 26 : 18} style={{ color: entry.accent ?? "var(--color-accent)" }} />
+          <Trophy size={large ? 26 : 18} style={{ color: entry.accent ?? medalColor }} />
         </div>
       </motion.div>
     );
