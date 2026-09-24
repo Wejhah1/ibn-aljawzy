@@ -2,7 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const COOKIE_NAME = "parent_session";
-const MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 يوماً
+const MAX_AGE_SECONDS = 60 * 60 * 24 * 365; // سنة (تسجيل الدخول محفوظ على الجهاز)
 
 function sign(payload: string): string {
   const secret = process.env.PARENT_SESSION_SECRET!;
