@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPeriodResultsForExportAction, type CircleResultsGroup } from "./actions";
-import { Download, X, Loader2 } from "lucide-react";
+import { Download, X } from "lucide-react";
+import { LottieLoader } from "@/components/ui/lottie-loader";
 
 const BRAND = "#0e6b4f";
 const BRAND_HOVER = "#0b5640";
@@ -223,8 +224,8 @@ export function WhatsappExportModal({
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center gap-2 py-(--space-8) text-ink-muted">
-            <Loader2 size={18} className="animate-spin" /> جارِ تجهيز الصور...
+          <div className="flex items-center justify-center py-(--space-8)">
+            <LottieLoader size={80} label="جارِ تجهيز الصور..." />
           </div>
         ) : groups.length === 0 ? (
           <p className="text-sm text-ink-muted text-center py-(--space-8)">لا توجد نتائج لهذه الفترة.</p>

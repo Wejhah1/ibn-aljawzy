@@ -41,6 +41,7 @@ import {
   Download,
   X,
 } from "lucide-react";
+import { LottieLoader } from "@/components/ui/lottie-loader";
 
 type Status = "present" | "absent" | "late" | "excused" | null;
 
@@ -342,8 +343,8 @@ export function AttendanceClient({
       )}
 
       {dayPending && (
-        <div className="flex items-center justify-center gap-2 mb-(--space-3) text-sm font-semibold text-ink-muted">
-          <Loader2 size={16} className="animate-spin" /> جارِ تحميل اليوم...
+        <div className="flex items-center justify-center mb-(--space-3)">
+          <LottieLoader size={64} label="جارِ تحميل اليوم..." />
         </div>
       )}
 
@@ -531,7 +532,7 @@ function AutoPointsSettingsModal({ seasonId, onClose }: { seasonId: string; onCl
     <Modal title="النقاط التلقائية للحضور" onClose={onClose} maxWidth="480px">
       {!settings ? (
         <div className="flex items-center justify-center py-(--space-8)">
-          <span className="h-8 w-8 rounded-full border-[3px] border-brand-soft border-t-brand animate-spin" />
+          <LottieLoader size={72} />
         </div>
       ) : (
         <div className="space-y-(--space-4)">
@@ -878,8 +879,8 @@ function PrintAttendanceModal({
           </Button>
         </div>
         {!circles ? (
-          <div className="flex items-center justify-center gap-2 py-(--space-8) text-ink-muted">
-            <Loader2 size={18} className="animate-spin" /> جارِ التحميل...
+          <div className="flex items-center justify-center py-(--space-8)">
+            <LottieLoader size={80} label="جارِ التحميل..." />
           </div>
         ) : circles.length === 0 ? (
           <p className="text-sm text-ink-muted text-center py-(--space-8)">لا توجد حلقات.</p>

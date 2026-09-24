@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { getRosterAction } from "./actions";
 import type { ProgramInfo } from "@/lib/settings";
+import { LottieLoader } from "@/components/ui/lottie-loader";
 
 const TONE: Record<string, string> = {
   "group-1": "var(--color-group-1-fg)",
@@ -55,8 +56,8 @@ export function RosterPosterModal({
     <Modal title={`${kind === "circle" ? "حلقة" : "مجموعة"} ${name}`} onClose={onClose}>
       <div className="space-y-(--space-4)">
         {students === null ? (
-          <div className="flex items-center justify-center py-(--space-8) text-ink-faint">
-            <Loader2 size={20} className="animate-spin" />
+          <div className="flex items-center justify-center py-(--space-8)">
+            <LottieLoader size={80} />
           </div>
         ) : (
           <>

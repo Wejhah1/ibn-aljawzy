@@ -19,6 +19,7 @@ import {
 } from "./actions";
 import { WhatsappExportModal } from "./whatsapp-export-modal";
 import { UploadCloud, CheckCircle2, Eye, EyeOff, AlertTriangle, CalendarDays, Pencil, Trash2, MessageCircle, Loader2 } from "lucide-react";
+import { LottieLoader } from "@/components/ui/lottie-loader";
 
 interface Period {
   label: string;
@@ -185,8 +186,8 @@ export function MonthlyResultsClient({
               {editingPeriod === p.label && (
                 <div className="mt-(--space-4) pt-(--space-4) border-t border-line">
                   {loadingEdit ? (
-                    <div className="flex items-center justify-center gap-2 py-(--space-4) text-ink-muted">
-                      <Loader2 size={16} className="animate-spin" /> جارِ التحميل...
+                    <div className="flex items-center justify-center py-(--space-4)">
+                      <LottieLoader size={64} label="جارِ التحميل..." />
                     </div>
                   ) : (
                     <div className="space-y-(--space-2) max-h-[360px] overflow-y-auto">
