@@ -70,7 +70,7 @@ export default async function AttendancePage({
   const rows = (enrollments ?? [])
     .filter((e) => {
       const s = Array.isArray(e.students) ? e.students[0] : e.students;
-      return s && s.status === "active" && (!circle || e.circle_id === circle) && (!group || e.group_id === group);
+      return s && s.status === "active";
     })
     .map((e) => {
       const s = Array.isArray(e.students) ? e.students[0] : e.students;
@@ -81,6 +81,8 @@ export default async function AttendancePage({
         code: s!.code,
         fullName: s!.full_name,
         guardianPhone: s!.guardian_phone,
+        circleId: e.circle_id,
+        groupId: e.group_id,
         circleName: c?.name ?? null,
         groupName: g?.name ?? null,
         status: (attendanceMap[s!.id] ?? null) as "present" | "absent" | "late" | "excused" | null,

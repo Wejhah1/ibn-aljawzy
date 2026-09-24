@@ -49,6 +49,8 @@ interface Row {
   code: string;
   fullName: string;
   guardianPhone: string;
+  circleId: string | null;
+  groupId: string | null;
   circleName: string | null;
   groupName: string | null;
   status: Status;
@@ -90,14 +92,34 @@ export function AttendanceClient({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const applyFilter = (key: "day" | "circle" | "group", value: string) => {
+  const [circleFilter, setCircleFilter] = useState(selectedCircle);
+  const [groupFilter, setGroupFilter] = useState(selectedGroup);
+  const buildUrl = (day: string, circle: string, group: string) => {
     const params = new URLSearchParams();
-    const cur = { day: selectedDay?.id ?? "", circle: selectedCircle, group: selectedGroup, [key]: value };
-    for (const [k, v] of Object.entries(cur)) if (v) params.set(k, v);
+    if (day) params.set("day", day);
+    if (circle) params.set("circle", circle);
+    if (group) params.set("group", group);
     const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname);
+    return qs ? `${pathname}?${qs}` : pathname;
   };
-  const [rows, setRows] = useState(initialRows);
+  // الحلقة والمجموعة: تصفية فورية محلياً (كل الطلاب محمّلون مسبقاً) مع تحديث الرابط بدون طلب للسيرفر
+  const applyLocalFilter = (circle: string, group: string) => {
+    setCircleFilter(circle);
+    setGroupFilter(group);
+    window.history.replaceState(null, "", buildUrl(selectedDay?.id ?? "", circle, group));
+  };
+  // اليوم: يُجلب من السيرفر (حالة الحضور تتغير) مع مؤشر تحميل
+  const [dayPending, startDayTransition] = useTransition();
+  const changeDay = (dayId: string) => {
+    startDayTransition(() => {
+      router.replace(buildUrl(dayId, circleFilter, groupFilter));
+    });
+  };
+  const [allRows, setRows] = useState(initialRows);
+  const rows = useMemo(
+    () => allRows.filter((r) => (!circleFilter || r.circleId === circleFilter) && (!groupFilter || r.groupId === groupFilter)),
+    [allRows, circleFilter, groupFilter]
+  );
   // مفاتيح الطلاب الذين لهم طلب حفظ لم ينتهِ بعد — تُستخدم فقط لمؤشر بصري خفيف،
   // ولا تعطّل أي زر أبداً حتى لا يشعر المشرف بتعليق أثناء الضغط المتكرر السريع.
   const [saving, setSaving] = useState<Set<string>>(new Set());
@@ -146,7 +168,8 @@ export function AttendanceClient({
     const unmarkedIds = rows.filter((r) => !r.status).map((r) => r.studentId);
     if (unmarkedIds.length === 0) return;
     for (const id of unmarkedIds) lastLocalChange.current.set(id, Date.now());
-    setRows((prev) => prev.map((r) => (r.status ? r : { ...r, status: "present" })));
+    const idSet = new Set(unmarkedIds);
+    setRows((prev) => prev.map((r) => (idSet.has(r.studentId) ? { ...r, status: "present" } : r)));
     startTransition(async () => {
       await bulkMarkPresentAction(unmarkedIds, selectedDay.id);
     });
@@ -231,7 +254,7 @@ export function AttendanceClient({
             <select
               name="day"
               value={selectedDay?.id ?? ""}
-              onChange={(e) => applyFilter("day", e.target.value)}
+              onChange={(e) => changeDay(e.target.value)}
               className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               {programDays.map((d) => (
@@ -246,8 +269,8 @@ export function AttendanceClient({
             <label className="block text-[12px] font-semibold text-ink-muted mb-1">الحلقة</label>
             <select
               name="circle"
-              value={selectedCircle}
-              onChange={(e) => applyFilter("circle", e.target.value)}
+              value={circleFilter}
+              onChange={(e) => applyLocalFilter(e.target.value, groupFilter)}
               className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               <option value="">كل الحلقات</option>
@@ -262,8 +285,8 @@ export function AttendanceClient({
             <label className="block text-[12px] font-semibold text-ink-muted mb-1">المجموعة</label>
             <select
               name="group"
-              value={selectedGroup}
-              onChange={(e) => applyFilter("group", e.target.value)}
+              value={groupFilter}
+              onChange={(e) => applyLocalFilter(circleFilter, e.target.value)}
               className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               <option value="">كل المجموعات</option>
@@ -318,8 +341,14 @@ export function AttendanceClient({
         </Card>
       )}
 
+      {dayPending && (
+        <div className="flex items-center justify-center gap-2 mb-(--space-3) text-sm font-semibold text-ink-muted">
+          <Loader2 size={16} className="animate-spin" /> جارِ تحميل اليوم...
+        </div>
+      )}
+
       {/* جدول للشاشات الكبيرة */}
-      <div className="hidden md:block rounded-(--radius-md) border border-line overflow-hidden">
+      <div className={`hidden md:block rounded-(--radius-md) border border-line overflow-hidden ${dayPending ? "opacity-50 pointer-events-none" : ""}`}>
         <table className="w-full text-sm">
           <thead className="bg-surface-sunken">
             <tr>
@@ -391,7 +420,7 @@ export function AttendanceClient({
       </div>
 
       {/* بطاقات للجوال */}
-      <div className="md:hidden space-y-(--space-3)">
+      <div className={`md:hidden space-y-(--space-3) ${dayPending ? "opacity-50 pointer-events-none" : ""}`}>
         {filteredRows.map((r) => (
           <Card key={r.studentId}>
             <div className="flex items-center justify-between mb-(--space-3)">
