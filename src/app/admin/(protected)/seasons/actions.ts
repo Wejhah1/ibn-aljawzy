@@ -53,8 +53,9 @@ export async function createSeasonAction(
 
 /**
  * create_season ينسخ حلقة/مجموعة الطالب من الموسم السابق كما هي (تشير لحلقات الموسم القديم).
- * هنا: إن طُلب ترحيل الحلقات/المجموعات ننشئ نسخاً جديدة لها في الموسم الجديد ونربط الطلاب بها،
- * وإن لم يُطلب نفك الارتباط.
+ * هنا: إن طُلب ترحيل الحلقات ننشئ نسخاً جديدة لها في الموسم الجديد ونربط الطلاب بها.
+ * المجموعات عامة (مستقلة عن الحلقات ولا تخص موسماً) فترحيلها يعني إبقاء مجموعة الطالب كما هي.
+ * وإن لم يُطلب أيٌّ منهما نفك الارتباط.
  */
 async function carryStructureToSeason(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -70,7 +71,6 @@ async function carryStructureToSeason(
   if (!enrollments?.length) return null;
 
   const circleMap = new Map<string, string>();
-  const groupMap = new Map<string, string>();
 
   if (carryCircles) {
     const oldIds = [...new Set(enrollments.map((e) => e.circle_id).filter((x): x is string => !!x))];
@@ -98,32 +98,10 @@ async function carryStructureToSeason(
     }
   }
 
-  if (carryGroups) {
-    const oldIds = [...new Set(enrollments.map((e) => e.group_id).filter((x): x is string => !!x))];
-    if (oldIds.length) {
-      const { data: oldGroups, error } = await supabase.from("groups").select("*").in("id", oldIds);
-      if (error) return error.message;
-      for (const g of oldGroups ?? []) {
-        const { data: created, error: insErr } = await supabase
-          .from("groups")
-          .insert({
-            name: g.name,
-            color_token: g.color_token,
-            leader_name: g.leader_name,
-            leader_phone: g.leader_phone,
-            circle_id: g.circle_id ? circleMap.get(g.circle_id) ?? null : null,
-          })
-          .select("id")
-          .single();
-        if (insErr || !created) return insErr?.message ?? "insert group failed";
-        groupMap.set(g.id, created.id);
-      }
-    }
-  }
-
   for (const e of enrollments) {
     const newCircle = e.circle_id ? circleMap.get(e.circle_id) ?? null : null;
-    const newGroup = e.group_id ? groupMap.get(e.group_id) ?? null : null;
+    // المجموعات عامة وغير مرتبطة بالحلقات: تبقى كما هي إن طُلب ترحيلها
+    const newGroup = carryGroups ? e.group_id : null;
     const { error } = await supabase
       .from("student_season_enrollments")
       .update({ circle_id: newCircle, group_id: newGroup })

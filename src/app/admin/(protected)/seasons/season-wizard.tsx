@@ -146,7 +146,7 @@ export function SeasonWizard({ onClose, hasCurrentSeason }: { onClose: () => voi
               </label>
               <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
                 <input type="checkbox" checked={carryGroups} onChange={(e) => setCarryGroups(e.target.checked)} className="h-5 w-5" />
-                ترحيل المجموعات (إنشاء نفس مجموعات الطلاب في الموسم الجديد ووضعهم فيها)
+                ترحيل المجموعات (يبقى كل طالب في مجموعته الحالية)
               </label>
             </div>
           )}

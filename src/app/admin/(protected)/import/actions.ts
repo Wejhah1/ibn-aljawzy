@@ -80,35 +80,29 @@ async function resolveCircleId(
   return created.id;
 }
 
+// المجموعات كيان مستقل عن الحلقات: نطابق بالاسم فقط على مستوى الموقع كله
 async function resolveGroupId(
   supabase: SupabaseClient<Database>,
   name: string | undefined,
-  circleId: string | null,
   cache: Map<string, string>,
   counter: { created: number }
 ): Promise<string | null> {
   const trimmed = name?.trim();
-  if (!trimmed || !circleId) return null;
-  const norm = normalizeName(trimmed);
-  const cacheKey = `${circleId}:${norm}`;
+  if (!trimmed) return null;
+  const cacheKey = normalizeName(trimmed);
   if (cache.has(cacheKey)) return cache.get(cacheKey)!;
 
-  const loadedKey = `${circleId}:__loaded__`;
-  if (!cache.has(loadedKey)) {
-    const { data: existingGroups } = await supabase.from("groups").select("id, name").eq("circle_id", circleId);
+  if (!cache.has("__loaded__")) {
+    const { data: existingGroups } = await supabase.from("groups").select("id, name");
     for (const g of (existingGroups ?? []) as NamedRow[]) {
-      const k = `${circleId}:${normalizeName(g.name)}`;
+      const k = normalizeName(g.name);
       if (!cache.has(k)) cache.set(k, g.id);
     }
-    cache.set(loadedKey, "1");
+    cache.set("__loaded__", "1");
     if (cache.has(cacheKey)) return cache.get(cacheKey)!;
   }
 
-  const { data: created, error } = await supabase
-    .from("groups")
-    .insert({ name: trimmed, circle_id: circleId })
-    .select("id")
-    .single();
+  const { data: created, error } = await supabase.from("groups").insert({ name: trimmed }).select("id").single();
   if (error || !created) return null;
   cache.set(cacheKey, created.id);
   counter.created++;
@@ -201,7 +195,7 @@ export async function importStudentsAction(
 
     try {
       const circleId = await resolveCircleId(supabase, row.circle_name, seasonId, circleCache, circleCounter);
-      const groupId = await resolveGroupId(supabase, row.group_name, circleId, groupCache, groupCounter);
+      const groupId = await resolveGroupId(supabase, row.group_name, groupCache, groupCounter);
 
       const studentFields = {
         full_name: row.full_name,
