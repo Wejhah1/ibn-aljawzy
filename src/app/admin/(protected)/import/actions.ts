@@ -30,6 +30,20 @@ export interface ImportResult {
   errors: { row: number; message: string }[];
 }
 
+function normalizeName(s: string): string {
+  return s
+    .normalize("NFKC")
+    .replace(/[ً-ٰٟـ]/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+type NamedRow = { id: string; name: string };
+
 async function resolveCircleId(
   supabase: SupabaseClient<Database>,
   name: string | undefined,
@@ -39,15 +53,20 @@ async function resolveCircleId(
 ): Promise<string | null> {
   const trimmed = name?.trim();
   if (!trimmed) return null;
-  const cacheKey = trimmed.toLowerCase();
+  const cacheKey = normalizeName(trimmed);
   if (cache.has(cacheKey)) return cache.get(cacheKey)!;
 
-  let query = supabase.from("circles").select("id").ilike("name", trimmed);
-  query = seasonId ? query.eq("season_id", seasonId) : query.is("season_id", null);
-  const { data: existing } = await query.maybeSingle();
-  if (existing) {
-    cache.set(cacheKey, existing.id);
-    return existing.id;
+  // نحمّل كل حلقات الموسم ونطابق محلياً بعد التطبيع (مسافات/همزات/تشكيل) بدل ilike الذي يتعامل مع % و _ كرموز بحث
+  if (cache.size === 0 || !cache.has("__loaded__")) {
+    let query = supabase.from("circles").select("id, name");
+    query = seasonId ? query.eq("season_id", seasonId) : query.is("season_id", null);
+    const { data: existingCircles } = await query;
+    for (const c of existingCircles ?? []) {
+      const k = normalizeName(c.name);
+      if (!cache.has(k)) cache.set(k, c.id);
+    }
+    cache.set("__loaded__", "1");
+    if (cache.has(cacheKey)) return cache.get(cacheKey)!;
   }
 
   const { data: created, error } = await supabase
@@ -70,18 +89,19 @@ async function resolveGroupId(
 ): Promise<string | null> {
   const trimmed = name?.trim();
   if (!trimmed || !circleId) return null;
-  const cacheKey = `${circleId}:${trimmed.toLowerCase()}`;
+  const norm = normalizeName(trimmed);
+  const cacheKey = `${circleId}:${norm}`;
   if (cache.has(cacheKey)) return cache.get(cacheKey)!;
 
-  const { data: existing } = await supabase
-    .from("groups")
-    .select("id")
-    .eq("circle_id", circleId)
-    .ilike("name", trimmed)
-    .maybeSingle();
-  if (existing) {
-    cache.set(cacheKey, existing.id);
-    return existing.id;
+  const loadedKey = `${circleId}:__loaded__`;
+  if (!cache.has(loadedKey)) {
+    const { data: existingGroups } = await supabase.from("groups").select("id, name").eq("circle_id", circleId);
+    for (const g of (existingGroups ?? []) as NamedRow[]) {
+      const k = `${circleId}:${normalizeName(g.name)}`;
+      if (!cache.has(k)) cache.set(k, g.id);
+    }
+    cache.set(loadedKey, "1");
+    if (cache.has(cacheKey)) return cache.get(cacheKey)!;
   }
 
   const { data: created, error } = await supabase
@@ -93,6 +113,66 @@ async function resolveGroupId(
   cache.set(cacheKey, created.id);
   counter.created++;
   return created.id;
+}
+
+export interface UpdateTemplateStudent {
+  code: string;
+  full_name: string;
+  guardian_phone: string;
+  guardian_name: string;
+  guardian_relation: string;
+  birth_date: string;
+  id_type: string;
+  national_id: string;
+  nationality: string;
+  personal_number: string;
+  circle_name: string;
+  group_name: string;
+  address: string;
+  notes: string;
+}
+
+const ID_TYPE_LABEL: Record<string, string> = { national_id: "هوية", iqama: "إقامة", passport: "جواز" };
+
+/** بيانات الطلاب المسجلين حالياً لتعبئة قالب التحديث */
+export async function getStudentsForUpdateTemplateAction(seasonId: string | null): Promise<UpdateTemplateStudent[]> {
+  const supabase = await createClient();
+  const { data: students } = await supabase
+    .from("students")
+    .select(
+      "id, code, full_name, guardian_phone, guardian_name, guardian_relation, birth_date, id_type, national_id, nationality, personal_number, address, notes"
+    )
+    .order("code");
+
+  const enrollByStudent = new Map<string, { circle: string; group: string }>();
+  if (seasonId) {
+    const { data: enrollments } = await supabase
+      .from("student_season_enrollments")
+      .select("student_id, circles(name), groups(name)")
+      .eq("season_id", seasonId);
+    for (const e of enrollments ?? []) {
+      const c = Array.isArray(e.circles) ? e.circles[0] : e.circles;
+      const g = Array.isArray(e.groups) ? e.groups[0] : e.groups;
+      enrollByStudent.set(e.student_id, { circle: c?.name ?? "", group: g?.name ?? "" });
+    }
+  }
+
+  return (students ?? []).map((s) => ({
+    code: s.code,
+    full_name: s.full_name,
+    guardian_phone: s.guardian_phone ?? "",
+    guardian_name: s.guardian_name ?? "",
+    guardian_relation: s.guardian_relation ?? "",
+    birth_date: s.birth_date ?? "",
+    id_type: ID_TYPE_LABEL[s.id_type ?? ""] ?? "",
+    national_id: s.national_id ?? "",
+    nationality: s.nationality ?? "",
+    personal_number: s.personal_number ?? "",
+    circle_name: enrollByStudent.get(s.id)?.circle ?? "",
+    group_name: enrollByStudent.get(s.id)?.group ?? "",
+    address: s.address ?? "",
+    notes: s.notes ?? "",
+  }));
 }
 
 export async function importStudentsAction(

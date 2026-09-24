@@ -24,6 +24,8 @@ export function SeasonWizard({ onClose, hasCurrentSeason }: { onClose: () => voi
   const [endDate, setEndDate] = useState("");
   const [offDays, setOffDays] = useState<number[]>([5]); // الجمعة افتراضياً
   const [carryOver, setCarryOver] = useState(false);
+  const [carryCircles, setCarryCircles] = useState(false);
+  const [carryGroups, setCarryGroups] = useState(false);
   const [setCurrent, setSetCurrent] = useState(!hasCurrentSeason);
 
   const [state, formAction, pending] = useActionState<SeasonActionState, FormData>(
@@ -92,6 +94,8 @@ export function SeasonWizard({ onClose, hasCurrentSeason }: { onClose: () => voi
             <input key={d} type="hidden" name="weekly_off_days" value={d} />
           ))}
           {carryOver && <input type="hidden" name="carry_over_points" value="on" />}
+          {carryCircles && <input type="hidden" name="carry_circles" value="on" />}
+          {carryGroups && <input type="hidden" name="carry_groups" value="on" />}
           {setCurrent && <input type="hidden" name="set_as_current" value="on" />}
 
           {step === 0 && (
@@ -135,6 +139,14 @@ export function SeasonWizard({ onClose, hasCurrentSeason }: { onClose: () => voi
               <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink pt-(--space-2)">
                 <input type="checkbox" checked={carryOver} onChange={(e) => setCarryOver(e.target.checked)} className="h-5 w-5" />
                 ترحيل نقاط الطلاب من الموسم السابق
+              </label>
+              <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
+                <input type="checkbox" checked={carryCircles} onChange={(e) => setCarryCircles(e.target.checked)} className="h-5 w-5" />
+                ترحيل الحلقات (إنشاء نفس حلقات الطلاب في الموسم الجديد ووضعهم فيها)
+              </label>
+              <label className="flex items-center gap-(--space-2) text-sm font-semibold text-ink">
+                <input type="checkbox" checked={carryGroups} onChange={(e) => setCarryGroups(e.target.checked)} className="h-5 w-5" />
+                ترحيل المجموعات (إنشاء نفس مجموعات الطلاب في الموسم الجديد ووضعهم فيها)
               </label>
             </div>
           )}

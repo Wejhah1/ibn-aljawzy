@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,8 @@ import {
   bulkSendWhatsappAction,
   getStudentAttendanceHistoryAction,
   getAutoPointsSettingsAction,
+  getAttendancePrintCirclesAction,
+  type AttendancePrintCircle,
   saveAutoPointsSettingsAction,
   type AttendanceHistoryEntry,
   type AutoPointsSettings,
@@ -34,6 +37,9 @@ import {
   Trophy,
   Settings2,
   Info,
+  Printer,
+  Download,
+  X,
 } from "lucide-react";
 
 type Status = "present" | "absent" | "late" | "excused" | null;
@@ -82,6 +88,15 @@ export function AttendanceClient({
   absentTemplate: string;
   lateTemplate: string;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const applyFilter = (key: "day" | "circle" | "group", value: string) => {
+    const params = new URLSearchParams();
+    const cur = { day: selectedDay?.id ?? "", circle: selectedCircle, group: selectedGroup, [key]: value };
+    for (const [k, v] of Object.entries(cur)) if (v) params.set(k, v);
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  };
   const [rows, setRows] = useState(initialRows);
   // مفاتيح الطلاب الذين لهم طلب حفظ لم ينتهِ بعد — تُستخدم فقط لمؤشر بصري خفيف،
   // ولا تعطّل أي زر أبداً حتى لا يشعر المشرف بتعليق أثناء الضغط المتكرر السريع.
@@ -209,13 +224,14 @@ export function AttendanceClient({
         </div>
       </div>
 
-      <form method="get" className="mb-(--space-4)">
+      <div className="mb-(--space-4)">
         <Card className="flex flex-wrap gap-(--space-3) items-end">
           <div>
             <label className="block text-[12px] font-semibold text-ink-muted mb-1">اليوم</label>
             <select
               name="day"
-              defaultValue={selectedDay?.id}
+              value={selectedDay?.id ?? ""}
+              onChange={(e) => applyFilter("day", e.target.value)}
               className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               {programDays.map((d) => (
@@ -230,7 +246,8 @@ export function AttendanceClient({
             <label className="block text-[12px] font-semibold text-ink-muted mb-1">الحلقة</label>
             <select
               name="circle"
-              defaultValue={selectedCircle}
+              value={selectedCircle}
+              onChange={(e) => applyFilter("circle", e.target.value)}
               className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               <option value="">كل الحلقات</option>
@@ -245,7 +262,8 @@ export function AttendanceClient({
             <label className="block text-[12px] font-semibold text-ink-muted mb-1">المجموعة</label>
             <select
               name="group"
-              defaultValue={selectedGroup}
+              value={selectedGroup}
+              onChange={(e) => applyFilter("group", e.target.value)}
               className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               <option value="">كل المجموعات</option>
@@ -256,14 +274,11 @@ export function AttendanceClient({
               ))}
             </select>
           </div>
-          <Button type="submit" variant="secondary">
-            تطبيق
-          </Button>
           <Button type="button" variant="outline" onClick={markAllPresent} disabled={!selectedDay || selectedDay.is_holiday}>
             تعليم الجميع حاضر
           </Button>
         </Card>
-      </form>
+      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-(--space-2) mb-(--space-4)">
         <StatChip label="حاضر" count={stats.present} tone="success" />
@@ -445,6 +460,8 @@ export function AttendanceClient({
       {summaryOpen && (
         <EndDayModal
           rows={rows}
+          seasonId={seasonId}
+          dayId={selectedDay?.id ?? null}
           onClose={() => setSummaryOpen(false)}
           programInfo={programInfo}
           absentTemplate={absentTemplate}
@@ -632,6 +649,8 @@ function StatChip({ label, count, tone }: { label: string; count: number; tone: 
 
 function EndDayModal({
   rows,
+  seasonId,
+  dayId,
   onClose,
   programInfo,
   absentTemplate,
@@ -639,6 +658,8 @@ function EndDayModal({
   dayLabel,
 }: {
   rows: Row[];
+  seasonId: string;
+  dayId: string | null;
   onClose: () => void;
   programInfo: ProgramInfo;
   absentTemplate: string;
@@ -647,6 +668,7 @@ function EndDayModal({
 }) {
   const absentRows = rows.filter((r) => r.status === "absent");
   const lateRows = rows.filter((r) => r.status === "late");
+  const [printOpen, setPrintOpen] = useState(false);
   const [sent, setSent] = useState<Set<string>>(new Set());
   const [autoSendState, setAutoSendState] = useState<"idle" | "sending" | "fallback" | "done">("idle");
   const [autoFailed, setAutoFailed] = useState<{ studentId: string; error: string }[]>([]);
@@ -758,10 +780,103 @@ function EndDayModal({
           </div>
         )}
 
-        <div className="flex justify-end pt-(--space-2)">
+        <div className="flex items-center justify-between pt-(--space-2)">
+          <Button variant="outline" onClick={() => setPrintOpen(true)} disabled={!dayId}>
+            <Printer size={16} /> طباعة حضور اليوم
+          </Button>
           <Button onClick={onClose}>تم</Button>
         </div>
       </div>
+      {printOpen && dayId && <PrintAttendanceModal seasonId={seasonId} dayId={dayId} dayLabel={dayLabel} onClose={() => setPrintOpen(false)} />}
     </Modal>
+  );
+}
+
+function PrintAttendanceModal({
+  seasonId,
+  dayId,
+  dayLabel,
+  onClose,
+}: {
+  seasonId: string;
+  dayId: string;
+  dayLabel: string;
+  onClose: () => void;
+}) {
+  const [circles, setCircles] = useState<AttendancePrintCircle[] | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    getAttendancePrintCirclesAction(seasonId).then(setCircles);
+  }, [seasonId]);
+
+  const download = async (c: AttendancePrintCircle) => {
+    const key = c.circleId ?? "none";
+    setBusy(key);
+    try {
+      const res = await fetch(`/api/print/attendance?dayId=${dayId}&circleId=${key}`);
+      if (!res.ok) throw new Error("failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `حضور_${c.circleName}_${dayLabel}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.alert(`تعذّر إنشاء ملف حلقة ${c.circleName}`);
+    }
+    setBusy(null);
+  };
+
+  const downloadAll = async () => {
+    for (const c of circles ?? []) await download(c);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-ink/60 flex items-center justify-center p-(--space-4)" onClick={onClose}>
+      <div
+        className="bg-surface-raised rounded-(--radius-lg) border-bold border-line-strong max-w-[560px] w-full max-h-[85vh] overflow-y-auto p-(--space-6)"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-(--space-4)">
+          <div>
+            <p className="text-[16px] font-bold text-ink">طباعة حضور اليوم</p>
+            <CardDescription>{dayLabel} — ملف PDF (A4) منفصل لكل حلقة</CardDescription>
+          </div>
+          <Button size="sm" variant="outline" onClick={onClose}>
+            <X size={14} />
+          </Button>
+        </div>
+        {!circles ? (
+          <div className="flex items-center justify-center gap-2 py-(--space-8) text-ink-muted">
+            <Loader2 size={18} className="animate-spin" /> جارِ التحميل...
+          </div>
+        ) : circles.length === 0 ? (
+          <p className="text-sm text-ink-muted text-center py-(--space-8)">لا توجد حلقات.</p>
+        ) : (
+          <>
+            <div className="flex justify-end mb-(--space-3)">
+              <Button size="sm" onClick={downloadAll} disabled={busy !== null}>
+                <Download size={14} /> تحميل كل الملفات
+              </Button>
+            </div>
+            <div className="space-y-(--space-2)">
+              {circles.map((c) => (
+                <div key={c.circleId ?? "none"} className="flex items-center justify-between rounded-(--radius-sm) border border-line px-(--space-3) py-(--space-2)">
+                  <div>
+                    <p className="text-sm font-bold text-ink">{c.circleName}</p>
+                    <p className="text-[12px] text-ink-muted">{c.count} طالب</p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => download(c)} disabled={busy !== null}>
+                    {busy === (c.circleId ?? "none") ? <Loader2 size={13} className="animate-spin" /> : <Download size={13} />} تحميل PDF
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

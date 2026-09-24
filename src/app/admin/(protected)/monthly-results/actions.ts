@@ -7,7 +7,8 @@ import { notifyMonthlyResultsPublished } from "@/app/admin/notifications-actions
 export interface MonthlyResultRow {
   code?: string;
   name?: string;
-  percentage: number;
+  percentage: number | null;
+  statusText?: string;
 }
 
 export interface ImportSummary {
@@ -45,7 +46,7 @@ export async function importMonthlyResultsAction(
     const { error } = await supabase
       .from("monthly_results")
       .upsert(
-        { student_id: studentId, season_id: seasonId, period_label: periodLabel, percentage: row.percentage, exam_date: examDate || null },
+        { student_id: studentId, season_id: seasonId, period_label: periodLabel, percentage: row.percentage, status_text: row.percentage === null ? row.statusText ?? null : null, exam_date: examDate || null },
         { onConflict: "student_id,season_id,period_label" }
       );
     if (!error) summary.saved++;
@@ -93,14 +94,15 @@ export interface PeriodResultRow {
   studentId: string;
   name: string;
   code: string;
-  percentage: number;
+  percentage: number | null;
+  statusText: string | null;
 }
 
 export async function getPeriodResultRowsAction(seasonId: string, periodLabel: string): Promise<PeriodResultRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("monthly_results")
-    .select("id, percentage, students(id, full_name, code)")
+    .select("id, percentage, status_text, students(id, full_name, code)")
     .eq("season_id", seasonId)
     .eq("period_label", periodLabel);
 
@@ -108,21 +110,23 @@ export async function getPeriodResultRowsAction(seasonId: string, periodLabel: s
     .map((r) => {
       const s = Array.isArray(r.students) ? r.students[0] : r.students;
       if (!s) return null;
-      return { resultId: r.id, studentId: s.id, name: s.full_name, code: s.code, percentage: r.percentage };
+      return { resultId: r.id, studentId: s.id, name: s.full_name, code: s.code, percentage: r.percentage, statusText: r.status_text };
     })
     .filter((r): r is PeriodResultRow => !!r)
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
 }
 
-export async function updateResultPercentageAction(resultId: string, percentage: number) {
+export async function updateResultPercentageAction(resultId: string, percentage: number | null, statusText?: string) {
   const supabase = await createClient();
-  await supabase.from("monthly_results").update({ percentage }).eq("id", resultId);
+  await supabase
+    .from("monthly_results")
+    .update({ percentage, status_text: percentage === null ? statusText?.trim() || "لم يختبر" : null }).eq("id", resultId);
   revalidatePath("/admin/monthly-results");
 }
 
 export interface CircleResultsGroup {
   circleName: string;
-  students: { name: string; percentage: number }[];
+  students: { name: string; percentage: number | null; statusText: string | null }[];
 }
 
 export async function getPeriodResultsForExportAction(
@@ -132,7 +136,7 @@ export async function getPeriodResultsForExportAction(
   const supabase = await createClient();
   const { data: results } = await supabase
     .from("monthly_results")
-    .select("student_id, percentage, exam_date, students(full_name)")
+    .select("student_id, percentage, status_text, exam_date, students(full_name)")
     .eq("season_id", seasonId)
     .eq("period_label", periodLabel);
 
@@ -147,7 +151,7 @@ export async function getPeriodResultsForExportAction(
     if (circle) circleByStudent.set(e.student_id, circle.name);
   }
 
-  const groupMap = new Map<string, { name: string; percentage: number }[]>();
+  const groupMap = new Map<string, { name: string; percentage: number | null; statusText: string | null }[]>();
   let examDate: string | null = null;
   for (const r of results ?? []) {
     const s = Array.isArray(r.students) ? r.students[0] : r.students;
@@ -155,13 +159,13 @@ export async function getPeriodResultsForExportAction(
     if (r.exam_date) examDate = r.exam_date;
     const circleName = circleByStudent.get(r.student_id) ?? "بدون حلقة";
     if (!groupMap.has(circleName)) groupMap.set(circleName, []);
-    groupMap.get(circleName)!.push({ name: s.full_name, percentage: r.percentage });
+    groupMap.get(circleName)!.push({ name: s.full_name, percentage: r.percentage, statusText: r.status_text });
   }
 
   const groups = Array.from(groupMap.entries())
     .map(([circleName, students]) => ({
       circleName,
-      students: students.sort((a, b) => b.percentage - a.percentage),
+      students: students.sort((a, b) => (b.percentage ?? -1) - (a.percentage ?? -1)),
     }))
     .sort((a, b) => a.circleName.localeCompare(b.circleName, "ar"));
 

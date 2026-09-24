@@ -2,7 +2,7 @@ import "server-only";
 
 export async function renderHtmlToPdf(
   html: string,
-  options: { width: string; height: string; landscape?: boolean }
+  options: { width: string; height: string; landscape?: boolean; margin?: string }
 ): Promise<Buffer> {
   let browser;
 
@@ -28,6 +28,7 @@ export async function renderHtmlToPdf(
       landscape: options.landscape ?? false,
       printBackground: true,
       preferCSSPageSize: false,
+      ...(options.margin ? { margin: { top: options.margin, bottom: options.margin, left: options.margin, right: options.margin } } : {}),
     });
     return Buffer.from(pdf);
   } finally {

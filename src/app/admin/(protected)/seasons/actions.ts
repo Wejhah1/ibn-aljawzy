@@ -15,6 +15,8 @@ export async function createSeasonAction(
   const weeklyOffDays = formData.getAll("weekly_off_days").map((v) => Number(v));
   const carryOverPoints = formData.get("carry_over_points") === "on";
   const setAsCurrent = formData.get("set_as_current") === "on";
+  const carryCircles = formData.get("carry_circles") === "on";
+  const carryGroups = formData.get("carry_groups") === "on";
 
   if (!name || !startDate || !endDate) {
     return { error: "الرجاء تعبئة اسم الموسم وفترته." };
@@ -24,7 +26,7 @@ export async function createSeasonAction(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("create_season", {
+  const { data: newSeasonId, error } = await supabase.rpc("create_season", {
     p_name: name,
     p_start_date: startDate,
     p_end_date: endDate,
@@ -37,9 +39,98 @@ export async function createSeasonAction(
     return { error: "تعذّر إنشاء الموسم: " + error.message };
   }
 
+  if (newSeasonId) {
+    const carryError = await carryStructureToSeason(supabase, newSeasonId, carryCircles, carryGroups);
+    if (carryError) return { error: "أُنشئ الموسم لكن تعذّر ترحيل الحلقات/المجموعات: " + carryError };
+  }
+
   revalidatePath("/admin/seasons");
+  revalidatePath("/admin/circles");
+  revalidatePath("/admin/students");
   revalidatePath("/admin");
   return { success: true };
+}
+
+/**
+ * create_season ينسخ حلقة/مجموعة الطالب من الموسم السابق كما هي (تشير لحلقات الموسم القديم).
+ * هنا: إن طُلب ترحيل الحلقات/المجموعات ننشئ نسخاً جديدة لها في الموسم الجديد ونربط الطلاب بها،
+ * وإن لم يُطلب نفك الارتباط.
+ */
+async function carryStructureToSeason(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  seasonId: string,
+  carryCircles: boolean,
+  carryGroups: boolean
+): Promise<string | null> {
+  const { data: enrollments, error: enrollError } = await supabase
+    .from("student_season_enrollments")
+    .select("id, circle_id, group_id")
+    .eq("season_id", seasonId);
+  if (enrollError) return enrollError.message;
+  if (!enrollments?.length) return null;
+
+  const circleMap = new Map<string, string>();
+  const groupMap = new Map<string, string>();
+
+  if (carryCircles) {
+    const oldIds = [...new Set(enrollments.map((e) => e.circle_id).filter((x): x is string => !!x))];
+    if (oldIds.length) {
+      const { data: oldCircles, error } = await supabase.from("circles").select("*").in("id", oldIds);
+      if (error) return error.message;
+      for (const c of oldCircles ?? []) {
+        const { data: created, error: insErr } = await supabase
+          .from("circles")
+          .insert({
+            name: c.name,
+            color_token: c.color_token,
+            leader_name: c.leader_name,
+            leader_phone: c.leader_phone,
+            teacher_name: c.teacher_name,
+            teacher_phone: c.teacher_phone,
+            is_active: c.is_active,
+            season_id: seasonId,
+          })
+          .select("id")
+          .single();
+        if (insErr || !created) return insErr?.message ?? "insert circle failed";
+        circleMap.set(c.id, created.id);
+      }
+    }
+  }
+
+  if (carryGroups) {
+    const oldIds = [...new Set(enrollments.map((e) => e.group_id).filter((x): x is string => !!x))];
+    if (oldIds.length) {
+      const { data: oldGroups, error } = await supabase.from("groups").select("*").in("id", oldIds);
+      if (error) return error.message;
+      for (const g of oldGroups ?? []) {
+        const { data: created, error: insErr } = await supabase
+          .from("groups")
+          .insert({
+            name: g.name,
+            color_token: g.color_token,
+            leader_name: g.leader_name,
+            leader_phone: g.leader_phone,
+            circle_id: g.circle_id ? circleMap.get(g.circle_id) ?? null : null,
+          })
+          .select("id")
+          .single();
+        if (insErr || !created) return insErr?.message ?? "insert group failed";
+        groupMap.set(g.id, created.id);
+      }
+    }
+  }
+
+  for (const e of enrollments) {
+    const newCircle = e.circle_id ? circleMap.get(e.circle_id) ?? null : null;
+    const newGroup = e.group_id ? groupMap.get(e.group_id) ?? null : null;
+    const { error } = await supabase
+      .from("student_season_enrollments")
+      .update({ circle_id: newCircle, group_id: newGroup })
+      .eq("id", e.id);
+    if (error) return error.message;
+  }
+  return null;
 }
 
 export async function setCurrentSeasonAction(seasonId: string) {

@@ -68,9 +68,9 @@ export function MonthlyResultsClient({
     setLoadingEdit(false);
   };
 
-  const saveRow = async (resultId: string, percentage: number) => {
+  const saveRow = async (resultId: string, percentage: number | null, statusText: string | null) => {
     setSavingRowId(resultId);
-    await updateResultPercentageAction(resultId, percentage);
+    await updateResultPercentageAction(resultId, percentage, statusText ?? undefined);
     setSavingRowId(null);
   };
 
@@ -94,10 +94,19 @@ export function MonthlyResultsClient({
       .map((r) => {
         const code = String(r["كود"] ?? r["الكود"] ?? "").trim();
         const name = String(r["الاسم"] ?? r["اسم الطالب"] ?? "").trim();
-        const percentage = Number(r["النسبة"] ?? r["النسبة المئوية"] ?? 0);
-        return { code: code || undefined, name: name || undefined, percentage };
+        const rawVal = String(r["النسبة"] ?? r["النسبة المئوية"] ?? "").trim().replace("%", "").trim();
+        // ثلاث حالات: رقم | نص (مثل لم يختبر) | فارغ (يُتجاهل)
+        const num = rawVal !== "" && !Number.isNaN(Number(rawVal)) ? Number(rawVal) : null;
+        return {
+          code: code || undefined,
+          name: name || undefined,
+          percentage: num,
+          statusText: num === null && rawVal !== "" ? rawVal : undefined,
+          hasValue: rawVal !== "",
+        };
       })
-      .filter((r) => (r.code || r.name) && !Number.isNaN(r.percentage));
+      .filter((r) => (r.code || r.name) && r.hasValue)
+      .map((r) => ({ code: r.code, name: r.name, percentage: r.percentage, statusText: r.statusText }));
 
     setRows(parsed);
   };
@@ -189,20 +198,21 @@ export function MonthlyResultsClient({
                           </div>
                           <div className="flex items-center gap-(--space-1) shrink-0">
                             <Input
-                              type="number"
-                              min={0}
-                              max={100}
-                              value={r.percentage}
-                              onChange={(e) =>
+                              value={r.percentage ?? r.statusText ?? ""}
+                              onChange={(e) => {
+                                const v = e.target.value.trim();
+                                const num = v !== "" && !Number.isNaN(Number(v)) ? Number(v) : null;
                                 setEditRows((prev) =>
-                                  prev.map((row) => (row.resultId === r.resultId ? { ...row, percentage: Number(e.target.value) } : row))
-                                )
-                              }
-                              className="w-20"
+                                  prev.map((row) =>
+                                    row.resultId === r.resultId ? { ...row, percentage: num, statusText: num === null ? e.target.value : null } : row
+                                  )
+                                );
+                              }}
+                              className="w-28"
                             />
                             <Button
                               size="sm"
-                              onClick={() => saveRow(r.resultId, r.percentage)}
+                              onClick={() => saveRow(r.resultId, r.percentage, r.statusText)}
                               disabled={savingRowId === r.resultId}
                             >
                               {savingRowId === r.resultId ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
@@ -254,7 +264,7 @@ export function MonthlyResultsClient({
 
         {rows.length > 0 && (
           <div className="mt-(--space-4)">
-            <CardDescription className="mb-(--space-2)">{rows.length} صف جاهز للاستيراد.</CardDescription>
+            <CardDescription className="mb-(--space-2)">{rows.length} صف جاهز للاستيراد (الخانات الفارغة تُتجاهل).</CardDescription>
             <Button onClick={runImport} disabled={importing || !periodLabel.trim()}>
               {importing ? "جارِ الحفظ..." : "حفظ النتائج"}
             </Button>

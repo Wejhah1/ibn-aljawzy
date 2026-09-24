@@ -148,3 +148,28 @@ export async function bulkSendWhatsappAction(items: BulkWhatsappItem[]): Promise
 
   return { fallback: false, sent, failed };
 }
+
+export interface AttendancePrintCircle {
+  circleId: string | null;
+  circleName: string;
+  count: number;
+}
+
+export async function getAttendancePrintCirclesAction(seasonId: string): Promise<AttendancePrintCircle[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("student_season_enrollments")
+    .select("circle_id, circles(name)")
+    .eq("season_id", seasonId)
+    .eq("status", "active");
+
+  const map = new Map<string, AttendancePrintCircle>();
+  for (const e of data ?? []) {
+    const c = Array.isArray(e.circles) ? e.circles[0] : e.circles;
+    const key = e.circle_id ?? "none";
+    const cur = map.get(key) ?? { circleId: e.circle_id, circleName: c?.name ?? "بدون حلقة", count: 0 };
+    cur.count++;
+    map.set(key, cur);
+  }
+  return Array.from(map.values()).sort((a, b) => a.circleName.localeCompare(b.circleName, "ar"));
+}

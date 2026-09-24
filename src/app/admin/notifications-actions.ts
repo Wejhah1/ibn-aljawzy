@@ -62,7 +62,7 @@ export async function notifyMonthlyResultsPublished(seasonId: string, periodLabe
   const admin = createAdminClient();
   const { data: results } = await admin
     .from("monthly_results")
-    .select("percentage, students(id, full_name, guardian_phone)")
+    .select("percentage, status_text, students(id, full_name, guardian_phone)")
     .eq("season_id", seasonId)
     .eq("period_label", periodLabel)
     .eq("is_published", true);
@@ -75,7 +75,7 @@ export async function notifyMonthlyResultsPublished(seasonId: string, periodLabe
       [student.guardian_phone],
       {
         title: `📊 نتائج ${periodLabel} متاحة`,
-        body: `نتيجة ${student.full_name}: ${row.percentage}%`,
+        body: `نتيجة ${student.full_name}: ${row.percentage !== null ? row.percentage + "%" : row.status_text}`,
         data: { url: "/portal", type: "result" },
       },
       { notificationType: "result", studentId: student.id }

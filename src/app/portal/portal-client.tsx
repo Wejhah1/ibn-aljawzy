@@ -24,12 +24,27 @@ interface StudentData {
   status: string;
   circleName: string | null;
   groupName: string | null;
+  circleColor: string | null;
+  groupColor: string | null;
   totalPoints: number;
   attendance: { present: number; late: number; absent: number; excused: number };
   achievements: { name: string }[];
   badges: { name: string }[];
-  monthlyResults: { periodLabel: string; percentage: number }[];
+  monthlyResults: { periodLabel: string; percentage: number | null; statusText: string | null }[];
   notes: ParentNote[];
+}
+
+function ColorTag({ label, token }: { label: string; token: string | null }) {
+  const valid = token && /^group-[1-6]$/.test(token) ? token : null;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-(--radius-xs) px-2 py-1 text-[12px] font-semibold"
+      style={valid ? { color: `var(--color-${valid}-fg)`, backgroundColor: `var(--color-${valid}-bg)` } : undefined}
+    >
+      {valid && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: `var(--color-${valid}-fg)` }} />}
+      {label}
+    </span>
+  );
 }
 
 export function PortalClient({ students, seasonName }: { students: StudentData[]; seasonName: string | null }) {
@@ -88,11 +103,11 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
                 {selected.fullName.charAt(0)}
               </div>
               <h1 className="text-[20px] font-bold text-ink">{selected.fullName}</h1>
-              <p className="text-sm text-ink-muted mt-1">
+              <div className="flex items-center justify-center flex-wrap gap-(--space-2) mt-2">
                 <Badge tone="neutral">#{selected.code}</Badge>
-                {selected.circleName && <span className="mr-2">{selected.circleName}</span>}
-                {selected.groupName && <span> · {selected.groupName}</span>}
-              </p>
+                {selected.circleName && <ColorTag label={selected.circleName} token={selected.circleColor} />}
+                {selected.groupName && <ColorTag label={selected.groupName} token={selected.groupColor} />}
+              </div>
               {seasonName && <p className="text-[12px] text-ink-faint mt-1">{seasonName}</p>}
               <div className="mt-(--space-4) inline-flex items-center gap-2 rounded-(--radius-sm) bg-brand text-on-brand px-(--space-4) py-(--space-2) border-bold border-line-strong shadow-brutal-sm">
                 <Trophy size={20} />
@@ -113,11 +128,13 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
               </div>
             </Card>
 
-            {(selected.achievements.length > 0 || selected.badges.length > 0) && (
-              <Card className="mb-(--space-6)">
+            <Card className="mb-(--space-6)">
                 <CardTitle className="mb-(--space-3) flex items-center gap-2">
                   <Award size={18} className="text-accent" /> الإنجازات والأوسمة
                 </CardTitle>
+                {selected.achievements.length === 0 && selected.badges.length === 0 ? (
+                  <CardDescription>لا توجد إنجازات أو أوسمة حتى الآن.</CardDescription>
+                ) : (
                 <div className="flex flex-wrap gap-(--space-2)">
                   {selected.achievements.map((a, i) => (
                     <Badge key={`a-${i}`} tone="accent">
@@ -130,24 +147,26 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
                     </Badge>
                   ))}
                 </div>
+                )}
               </Card>
-            )}
 
-            {selected.monthlyResults.length > 0 && (
-              <Card className="mb-(--space-6)">
+            <Card className="mb-(--space-6)">
                 <CardTitle className="mb-(--space-3) flex items-center gap-2">
                   <ClipboardList size={18} className="text-info" /> النتائج الشهرية
                 </CardTitle>
+                {selected.monthlyResults.length === 0 ? (
+                  <CardDescription>لا توجد نتائج شهرية حتى الآن.</CardDescription>
+                ) : (
                 <div className="space-y-(--space-2)">
                   {selected.monthlyResults.map((m, i) => (
                     <div key={i} className="flex items-center justify-between rounded-(--radius-sm) bg-surface-sunken px-(--space-3) py-(--space-2)">
                       <span className="text-sm font-semibold text-ink">{m.periodLabel}</span>
-                      <span className="text-sm font-bold text-brand">{m.percentage}%</span>
+                      <span className="text-sm font-bold text-brand">{m.percentage !== null ? `${m.percentage}%` : m.statusText}</span>
                     </div>
                   ))}
                 </div>
+                )}
               </Card>
-            )}
 
             <Card>
               <CardTitle className="mb-(--space-3) flex items-center gap-2">

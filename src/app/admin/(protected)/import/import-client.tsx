@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { importStudentsAction, type ImportRow, type ImportResult } from "./actions";
+import { importStudentsAction, getStudentsForUpdateTemplateAction, type ImportRow, type ImportResult } from "./actions";
 import { UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Download, UserPlus, RefreshCw } from "lucide-react";
 
 type Mode = "new" | "update";
@@ -103,7 +103,7 @@ export function ImportClient({ currentSeason }: { currentSeason: { id: string; n
     setImporting(false);
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
     const header = [
       ...(mode === "update" ? ["كود"] : []),
       "الاسم",
@@ -120,23 +120,15 @@ export function ImportClient({ currentSeason }: { currentSeason: { id: string; n
       "العنوان",
       "ملاحظات",
     ];
-    const sample = [
-      ...(mode === "update" ? ["012"] : []),
-      "أحمد محمد السيد",
-      "0512345678",
-      "محمد السيد",
-      "الأب",
-      "2014-05-10",
-      "هوية",
-      "",
-      "سعودي",
-      "",
-      "حلقة عبدالعزيز بن باز",
-      "النقاء",
-      "",
-      "",
-    ];
-    const ws = XLSX.utils.aoa_to_sheet([header, sample]);
+    const existing = mode === "update" ? await getStudentsForUpdateTemplateAction(currentSeason?.id ?? null) : [];
+    const dataRows =
+      mode === "update"
+        ? existing.map((s) => [
+            s.code, s.full_name, s.guardian_phone, s.guardian_name, s.guardian_relation, s.birth_date,
+            s.id_type, s.national_id, s.nationality, s.personal_number, s.circle_name, s.group_name, s.address, s.notes,
+          ])
+        : [];
+    const ws = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "الطلاب");
     XLSX.writeFile(wb, mode === "new" ? "قالب_استيراد_طلاب_جدد.xlsx" : "قالب_تحديث_طلاب.xlsx");
@@ -176,7 +168,7 @@ export function ImportClient({ currentSeason }: { currentSeason: { id: string; n
         <div className="flex items-center justify-between mb-(--space-4)">
           <CardTitle>1. رفع الملف</CardTitle>
           <Button size="sm" variant="outline" onClick={downloadTemplate}>
-            <Download size={14} /> تحميل قالب فارغ
+            <Download size={14} /> {mode === "update" ? "تحميل قالب بيانات الطلاب" : "تحميل قالب فارغ"}
           </Button>
         </div>
         <label className="flex flex-col items-center justify-center gap-(--space-2) rounded-(--radius-md) border-bold border-dashed border-line-strong bg-surface-sunken h-32 cursor-pointer hover:bg-brand-soft transition-colors">

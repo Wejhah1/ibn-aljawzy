@@ -19,17 +19,20 @@ export default async function MonthlyResultsPage() {
     .select("period_label, is_published, percentage, exam_date")
     .eq("season_id", currentSeason.id);
 
-  const periodMap = new Map<string, { count: number; avg: number; isPublished: boolean; examDate: string | null }>();
+  const periodMap = new Map<string, { total: number; count: number; avg: number; isPublished: boolean; examDate: string | null }>();
   for (const r of results ?? []) {
-    if (!periodMap.has(r.period_label)) periodMap.set(r.period_label, { count: 0, avg: 0, isPublished: r.is_published, examDate: r.exam_date });
+    if (!periodMap.has(r.period_label)) periodMap.set(r.period_label, { total: 0, count: 0, avg: 0, isPublished: r.is_published, examDate: r.exam_date });
     const p = periodMap.get(r.period_label)!;
-    p.avg = (p.avg * p.count + r.percentage) / (p.count + 1);
-    p.count++;
+    p.total++;
+    if (r.percentage !== null) {
+      p.avg = (p.avg * p.count + r.percentage) / (p.count + 1);
+      p.count++;
+    }
     if (r.exam_date) p.examDate = r.exam_date;
   }
   const periods = Array.from(periodMap.entries()).map(([label, v]) => ({
     label,
-    count: v.count,
+    count: v.total,
     avg: Math.round(v.avg),
     isPublished: v.isPublished,
     examDate: v.examDate,

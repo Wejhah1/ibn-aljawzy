@@ -16,23 +16,36 @@ const STATUS_LABEL: Record<string, { label: string; tone: "success" | "danger" |
 export default async function AbsenceSearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; id?: string }>;
 }) {
-  const { q = "" } = await searchParams;
+  const { q = "", id = "" } = await searchParams;
   const supabase = await createClient();
 
   let student: { id: string; full_name: string; code: string } | null = null;
   let records: { day_date: string; status: string; season_name: string }[] = [];
 
-  if (q.trim()) {
+  let candidates: { id: string; full_name: string; code: string }[] = [];
+
+  if (id) {
+    const { data } = await supabase.from("students").select("id, full_name, code").eq("id", id).maybeSingle();
+    student = data ?? null;
+  } else if (q.trim()) {
+    const safe = q.trim().replace(/[%,()*\\]/g, " ").trim();
     const { data: students } = await supabase
       .from("students")
       .select("id, full_name, code")
-      .or(`full_name.ilike.%${q}%,code.eq.${q}`)
-      .limit(1);
-    student = students?.[0] ?? null;
+      .or(`full_name.ilike.%${safe}%,code.eq.${safe}`)
+      .order("code")
+      .limit(30);
+    const found = students ?? [];
+    const exactCode = found.find((s) => s.code === safe);
+    if (exactCode) student = exactCode;
+    else if (found.length === 1) student = found[0];
+    else candidates = found;
+  }
 
-    if (student) {
+  if (student) {
+    {
       const { data } = await supabase
         .from("attendance_records")
         .select("status, program_days(day_date), seasons(name)")
@@ -62,7 +75,21 @@ export default async function AbsenceSearchPage({
         </Card>
       </form>
 
-      {q.trim() && !student && (
+      {candidates.length > 1 && (
+        <div className="space-y-(--space-2) mb-(--space-4)">
+          <CardDescription>وُجد {candidates.length} طالب مطابق، اختر الطالب:</CardDescription>
+          {candidates.map((c) => (
+            <Link key={c.id} href={`/admin/absence-search?q=${encodeURIComponent(q)}&id=${c.id}`}>
+              <Card className="flex items-center justify-between py-(--space-3) hover:bg-surface-sunken transition-colors">
+                <p className="font-bold text-ink">{c.full_name}</p>
+                <Badge tone="neutral">#{c.code}</Badge>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {(q.trim() || id) && !student && candidates.length === 0 && (
         <Card>
           <CardDescription>لم يُعثر على طالب مطابق.</CardDescription>
         </Card>

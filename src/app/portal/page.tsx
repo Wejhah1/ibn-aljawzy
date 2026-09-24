@@ -27,7 +27,7 @@ export default async function ParentPortalPage() {
       currentSeason
         ? admin
             .from("student_season_enrollments")
-            .select("student_id, total_points, circles(name), groups(name)")
+            .select("student_id, total_points, circles(name, color_token), groups(name, color_token)")
             .in("student_id", studentIds)
             .eq("season_id", currentSeason.id)
         : Promise.resolve({ data: [] }),
@@ -51,7 +51,7 @@ export default async function ParentPortalPage() {
       currentSeason
         ? admin
             .from("monthly_results")
-            .select("student_id, period_label, percentage")
+            .select("student_id, period_label, percentage, status_text")
             .in("student_id", studentIds)
             .eq("season_id", currentSeason.id)
             .eq("is_published", true)
@@ -85,6 +85,8 @@ export default async function ParentPortalPage() {
       status: s.status,
       circleName: circle?.name ?? null,
       groupName: group?.name ?? null,
+      circleColor: circle?.color_token ?? null,
+      groupColor: group?.color_token ?? null,
       totalPoints: enrollment?.total_points ?? 0,
       attendance: {
         present: att.filter((a) => a.status === "present").length,
@@ -106,7 +108,7 @@ export default async function ParentPortalPage() {
         }),
       monthlyResults: (monthlyResults ?? [])
         .filter((m) => m.student_id === s.id)
-        .map((m) => ({ periodLabel: m.period_label, percentage: m.percentage })),
+        .map((m) => ({ periodLabel: m.period_label, percentage: m.percentage, statusText: m.status_text })),
       notes: (parentNotes ?? [])
         .filter((n) => n.student_id === s.id)
         .map((n) => ({ id: n.id, sender: n.sender, message: n.message, createdAt: n.created_at })),

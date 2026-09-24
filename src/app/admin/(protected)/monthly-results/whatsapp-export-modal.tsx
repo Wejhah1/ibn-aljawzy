@@ -52,7 +52,7 @@ function drawCircleImage(
     circleName: string;
     periodLabel: string;
     examDate: string | null;
-    students: { name: string; percentage: number }[];
+    students: { name: string; percentage: number | null; statusText: string | null }[];
   }
 ) {
   const { programName, mosqueName, circleName, periodLabel, examDate, students } = opts;
@@ -130,13 +130,13 @@ function drawCircleImage(
     const pillH = 36;
     const pillX = tableX + 20;
     const pillY = rowY + (rowHeight - pillH) / 2 + 6;
-    ctx.fillStyle = percentageColor(s.percentage);
+    ctx.fillStyle = s.percentage === null ? INK_MUTED : percentageColor(s.percentage);
     drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
     ctx.fill();
     ctx.fillStyle = "#ffffff";
     ctx.font = `700 18px ${FONT}`;
     ctx.textAlign = "center";
-    ctx.fillText(`${s.percentage}%`, pillX + pillW / 2, pillY + pillH / 2 + 6);
+    ctx.fillText(s.percentage === null ? (s.statusText ?? "—") : `${s.percentage}%`, pillX + pillW / 2, pillY + pillH / 2 + 6);
   });
 
   // footer

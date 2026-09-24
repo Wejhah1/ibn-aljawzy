@@ -437,9 +437,10 @@ export type Database = {
           exam_date: string | null
           id: string
           is_published: boolean
-          percentage: number
+          percentage: number | null
           period_label: string
           season_id: string
+          status_text: string | null
           student_id: string
           uploaded_at: string
           uploaded_by: string | null
@@ -448,9 +449,10 @@ export type Database = {
           exam_date?: string | null
           id?: string
           is_published?: boolean
-          percentage: number
+          percentage?: number | null
           period_label: string
           season_id: string
+          status_text?: string | null
           student_id: string
           uploaded_at?: string
           uploaded_by?: string | null
@@ -459,7 +461,8 @@ export type Database = {
           exam_date?: string | null
           id?: string
           is_published?: boolean
-          percentage?: number
+          percentage?: number | null
+          status_text?: string | null
           period_label?: string
           season_id?: string
           student_id?: string
