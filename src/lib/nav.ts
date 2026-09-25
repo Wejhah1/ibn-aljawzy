@@ -55,5 +55,4 @@ export const BOTTOM_NAV: NavItem[] = [
   { href: "/admin/quick-ops", label: "عمليات", icon: ScanLine },
   { href: "/admin/attendance", label: "الحضور", icon: ClipboardList },
   { href: "/admin/students", label: "الطلاب", icon: Users },
-  { href: "/admin/settings", label: "المزيد", icon: Settings },
 ];

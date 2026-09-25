@@ -158,15 +158,15 @@ export function SeasonWizard({ onClose, hasCurrentSeason }: { onClose: () => voi
                 <div className="grid grid-cols-3 gap-(--space-3) text-center">
                   <div>
                     <p className="text-[24px] font-bold text-brand">{preview?.programDays ?? 0}</p>
-                    <p className="text-[11px] text-ink-muted font-medium">يوم برنامج</p>
+                    <p className="text-xs text-ink-muted font-medium">يوم برنامج</p>
                   </div>
                   <div>
                     <p className="text-[24px] font-bold text-ink">{preview?.total ?? 0}</p>
-                    <p className="text-[11px] text-ink-muted font-medium">إجمالي الأيام</p>
+                    <p className="text-xs text-ink-muted font-medium">إجمالي الأيام</p>
                   </div>
                   <div>
                     <p className="text-[24px] font-bold text-ink-muted">{preview?.offCount ?? 0}</p>
-                    <p className="text-[11px] text-ink-muted font-medium">أيام إجازة</p>
+                    <p className="text-xs text-ink-muted font-medium">أيام إجازة</p>
                   </div>
                 </div>
               </div>

@@ -45,6 +45,14 @@
   --color-accent-solid: #bc9b6a;
   --color-on-accent: var(--color-ink);
 
+  /* ألوان الميداليات (لوحة المتصدرين) */
+  --color-medal-gold: #e6b400;
+  --color-medal-gold-soft: #f7e7b0;
+  --color-medal-silver: #a7adb3;
+  --color-medal-silver-soft: #e6e8ea;
+  --color-medal-bronze: #c07f3c;
+  --color-medal-bronze-soft: #f1dcc4;
+
   /* ألوان شارات المجموعات */
   --color-group-1-fg: #6b3fb0;
   --color-group-1-bg: #efe7fb;
@@ -141,6 +149,13 @@
   --color-accent-solid: var(--color-accent-solid);
   --color-on-accent: var(--color-on-accent);
 
+  --color-medal-gold: var(--color-medal-gold);
+  --color-medal-gold-soft: var(--color-medal-gold-soft);
+  --color-medal-silver: var(--color-medal-silver);
+  --color-medal-silver-soft: var(--color-medal-silver-soft);
+  --color-medal-bronze: var(--color-medal-bronze);
+  --color-medal-bronze-soft: var(--color-medal-bronze-soft);
+
   --color-group-1-fg: var(--color-group-1-fg);
   --color-group-1-bg: var(--color-group-1-bg);
   --color-group-2-fg: var(--color-group-2-fg);
@@ -179,8 +194,14 @@ body {
   font-family: var(--font-sans);
 }
 
-* {
-  border-color: var(--color-line);
+/* داخل طبقة base حتى تتغلب عليه أدوات الألوان مثل border-line-strong و border-danger */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop {
+    border-color: var(--color-line);
+  }
 }
 
 ::selection {
@@ -194,19 +215,12 @@ body {
   border-radius: var(--radius-xs);
 }
 
-.shadow-brutal-sm {
-  box-shadow: var(--shadow-brutal-sm);
-}
-.shadow-brutal {
-  box-shadow: var(--shadow-brutal);
-}
-.shadow-brutal-press {
-  box-shadow: var(--shadow-brutal-press);
-}
-.border-bold {
+/* أدوات مخصصة ضمن طبقة utilities: تعمل معها الحالات (hover:, active:, md:) وتُلغى بـ border-b-0 وأمثالها.
+   ظلال shadow-brutal* تولّدها Tailwind تلقائياً من متغيرات --shadow-brutal* في @theme. */
+@utility border-bold {
   border-width: var(--border-bold);
 }
-.border-brutal {
+@utility border-brutal {
   border-width: var(--border-brutal);
 }
 .font-script {

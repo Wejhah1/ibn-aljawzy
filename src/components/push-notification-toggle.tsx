@@ -15,7 +15,7 @@ import {
  * الصفحة (إن لم يُسأل المستخدم من قبل)، وتبقى ظاهرة دائماً بنصها بدل
  * الاعتماد على tooltip مخفي.
  */
-export function PushNotificationToggleCompact({ className }: { className?: string }) {
+export function PushNotificationToggleCompact({ className, compact = false }: { className?: string; compact?: boolean }) {
   const { isEnabled, isLoading, error, permission, toggle } = usePushToggle({ autoPrompt: true });
 
   const label = isLoading
@@ -32,6 +32,8 @@ export function PushNotificationToggleCompact({ className }: { className?: strin
         type="button"
         onClick={toggle}
         disabled={isLoading}
+        aria-label={compact ? label : undefined}
+        title={compact ? label : undefined}
         className={cn(
           "flex items-center gap-1.5 h-9 px-3 rounded-(--radius-sm) border-bold border-line-strong text-[12px] font-bold transition-colors disabled:opacity-(--opacity-disabled)",
           isEnabled
@@ -49,10 +51,10 @@ export function PushNotificationToggleCompact({ className }: { className?: strin
         ) : (
           <BellOff size={15} />
         )}
-        {label}
+        <span className={compact ? "hidden sm:inline" : undefined}>{label}</span>
       </button>
       {error && permission === "denied" && (
-        <p className="text-[11px] text-danger max-w-[180px] text-left leading-tight">
+        <p className="text-xs text-danger max-w-[180px] text-left leading-tight">
           فعّلها يدوياً من إعدادات الموقع بالمتصفح (أيقونة القفل بجانب الرابط)
         </p>
       )}

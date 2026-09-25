@@ -139,6 +139,7 @@ export function CirclesPageClient({
                     onClick={() => setDeleteCircle(circle)}
                     className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-danger hover:bg-danger-soft"
                     title="حذف الحلقة"
+                    aria-label="حذف الحلقة"
                   >
                     <Trash2 size={15} />
                   </button>

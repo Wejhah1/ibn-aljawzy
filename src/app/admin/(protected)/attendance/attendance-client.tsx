@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { formatDate, weekdayShortFormat } from "@/lib/format";
 import { useRouter, usePathname } from "next/navigation";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +43,7 @@ import {
   Printer,
   Download,
   X,
+  CheckCheck,
 } from "lucide-react";
 import { LottieLoader } from "@/components/ui/lottie-loader";
 
@@ -155,7 +159,13 @@ export function AttendanceClient({
     lastLocalChange.current.set(studentId, Date.now());
     setRows((prev) => prev.map((r) => (r.studentId === studentId ? { ...r, status } : r)));
     setSaving((prev) => new Set(prev).add(studentId));
-    setAttendanceAction(studentId, selectedDay.id, status).finally(() => {
+    // اهتزاز خفيف يؤكد التسجيل دون الحاجة للنظر إلى الشاشة
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(10);
+    setAttendanceAction(studentId, selectedDay.id, status)
+      .then((res) => {
+        if (res?.error) toast.error("تعذّر حفظ الحضور، حاول مرة أخرى");
+      })
+      .finally(() => {
       setSaving((prev) => {
         const next = new Set(prev);
         next.delete(studentId);
@@ -173,6 +183,7 @@ export function AttendanceClient({
     setRows((prev) => prev.map((r) => (idSet.has(r.studentId) ? { ...r, status: "present" } : r)));
     startTransition(async () => {
       await bulkMarkPresentAction(unmarkedIds, selectedDay.id);
+      toast.success(`سُجّل ${unmarkedIds.length} طالباً حاضرين`);
     });
   };
 
@@ -249,18 +260,18 @@ export function AttendanceClient({
       </div>
 
       <div className="mb-(--space-4)">
-        <Card className="flex flex-wrap gap-(--space-3) items-end">
-          <div>
+        <Card className="grid grid-cols-2 sm:flex sm:flex-wrap gap-(--space-3) items-end">
+          <div className="col-span-2 sm:col-span-1">
             <label className="block text-[12px] font-semibold text-ink-muted mb-1">اليوم</label>
             <select
               name="day"
               value={selectedDay?.id ?? ""}
               onChange={(e) => changeDay(e.target.value)}
-              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+              className="h-11 w-full sm:w-auto rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               {programDays.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {new Date(d.day_date).toLocaleDateString("ar-SA", { weekday: "short", day: "numeric", month: "short" })}
+                  {formatDate(d.day_date, weekdayShortFormat)}
                   {d.is_holiday ? " — عطلة" : ""}
                 </option>
               ))}
@@ -272,7 +283,7 @@ export function AttendanceClient({
               name="circle"
               value={circleFilter}
               onChange={(e) => applyLocalFilter(e.target.value, groupFilter)}
-              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+              className="h-11 w-full sm:w-auto rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               <option value="">كل الحلقات</option>
               {circles.map((c) => (
@@ -288,7 +299,7 @@ export function AttendanceClient({
               name="group"
               value={groupFilter}
               onChange={(e) => applyLocalFilter(circleFilter, e.target.value)}
-              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
+              className="h-11 w-full sm:w-auto rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
             >
               <option value="">كل المجموعات</option>
               {groups.map((g) => (
@@ -298,8 +309,8 @@ export function AttendanceClient({
               ))}
             </select>
           </div>
-          <Button type="button" variant="outline" onClick={markAllPresent} disabled={!selectedDay || selectedDay.is_holiday}>
-            تعليم الجميع حاضر
+          <Button type="button" variant="outline" className="col-span-2 sm:col-span-1" onClick={markAllPresent} disabled={!selectedDay || selectedDay.is_holiday}>
+            <CheckCheck size={16} /> تعليم الجميع حاضر
           </Button>
         </Card>
       </div>
@@ -388,6 +399,7 @@ export function AttendanceClient({
                           disabled={!selectedDay || selectedDay.is_holiday}
                           onClick={() => setStatus(r.studentId, key)}
                           title={meta.label}
+                          aria-label={meta.label}
                           className="h-10 w-10 rounded-(--radius-sm) border-bold flex items-center justify-center transition-colors"
                           style={
                             active
@@ -409,6 +421,7 @@ export function AttendanceClient({
                   <button
                     onClick={() => setHistoryFor(r)}
                     title="مسيرة الحضور هذا الموسم"
+                    aria-label="مسيرة الحضور هذا الموسم"
                     className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-surface-sunken hover:text-brand"
                   >
                     <History size={16} />
@@ -419,6 +432,27 @@ export function AttendanceClient({
           </tbody>
         </table>
       </div>
+
+      {/* شريط تقدم ثابت للجوال: كم سُجّل من الطلاب المعروضين */}
+      {selectedDay && !selectedDay.is_holiday && filteredRows.length > 0 && (
+        <div className="md:hidden sticky top-[calc(env(safe-area-inset-top)+56px)] z-20 -mx-(--space-4) mb-(--space-3) px-(--space-4) py-(--space-2) bg-surface/95 backdrop-blur border-b border-line">
+          <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+            <span className="text-ink">
+              سُجّل {filteredRows.filter((r) => r.status).length} من {filteredRows.length}
+            </span>
+            <span className="text-ink-muted">
+              {filteredRows.every((r) => r.status) ? "اكتمل التحضير ✓" : `متبقٍّ ${filteredRows.filter((r) => !r.status).length}`}
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-surface-sunken overflow-hidden border border-line">
+            <motion.div
+              className="h-full bg-brand rounded-full"
+              animate={{ width: `${(filteredRows.filter((r) => r.status).length / filteredRows.length) * 100}%` }}
+              transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* بطاقات للجوال */}
       <div className={`md:hidden space-y-(--space-3) ${dayPending ? "opacity-50 pointer-events-none" : ""}`}>
@@ -450,7 +484,8 @@ export function AttendanceClient({
                 )}
                 <button
                   onClick={() => setHistoryFor(r)}
-                  className="flex h-8 w-8 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-surface-sunken hover:text-brand"
+                  aria-label="مسيرة الحضور هذا الموسم"
+                  className="flex h-10 w-10 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-surface-sunken hover:text-brand"
                 >
                   <History size={15} />
                 </button>
@@ -466,7 +501,8 @@ export function AttendanceClient({
                     key={key}
                     disabled={!selectedDay || selectedDay.is_holiday}
                     onClick={() => setStatus(r.studentId, key)}
-                    className="min-h-[48px] rounded-(--radius-sm) border-bold flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors"
+                    aria-pressed={active}
+                    className="min-h-[52px] rounded-(--radius-sm) border-bold flex flex-col items-center justify-center gap-0.5 text-xs font-bold transition-[colors,transform] duration-150 active:scale-95"
                     style={
                       active
                         ? {
@@ -672,7 +708,7 @@ function StatChip({ label, count, tone }: { label: string; count: number; tone: 
       <p className="text-[20px] font-bold" style={{ color: tone === "neutral" ? "var(--color-ink-muted)" : `var(--color-${tone})` }}>
         {count}
       </p>
-      <p className="text-[11px] font-semibold text-ink-muted">{label}</p>
+      <p className="text-xs font-semibold text-ink-muted">{label}</p>
     </div>
   );
 }
@@ -854,7 +890,7 @@ function PrintAttendanceModal({
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      window.alert(`تعذّر إنشاء ملف حلقة ${c.circleName}`);
+      toast.error(`تعذّر إنشاء ملف حلقة ${c.circleName}`);
     }
     setBusy(null);
   };

@@ -32,6 +32,7 @@ export function ColorTokenPicker({ name, defaultValue }: { name: string; default
               transform: value === t ? "scale(1.1)" : undefined,
             }}
             title={t}
+            aria-label={t}
           />
         ))}
       </div>

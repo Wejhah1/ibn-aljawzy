@@ -96,6 +96,7 @@ export function SeasonsPageClient({ seasons, dayCounts }: { seasons: Season[]; d
                   onClick={() => setDeleteSeason(s)}
                   className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-danger hover:bg-danger-soft"
                   title="حذف الموسم نهائياً"
+                  aria-label="حذف الموسم نهائياً"
                 >
                   <Trash2 size={15} />
                 </button>

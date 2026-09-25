@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ import {
   Coins,
   Plus,
   Minus,
+  MoreHorizontal,
 } from "lucide-react";
 
 const ID_TYPE_OPTIONS: { value: string; label: string }[] = [
@@ -189,24 +190,18 @@ export function StudentProfileClient({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-(--space-2)">
-            <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+          <div className="flex items-center gap-(--space-2) w-full sm:w-auto">
+            <Button size="sm" variant="outline" className="flex-1 sm:flex-none" onClick={() => setEditOpen(true)}>
               <Pencil size={14} /> تعديل
             </Button>
             {student.status === "active" ? (
-              <Button size="sm" variant="danger" onClick={() => setDropoutOpen(true)}>
-                <UserX size={14} /> منقطع
+              <Button size="sm" variant="secondary" className="flex-1 sm:flex-none text-danger" onClick={() => setDropoutOpen(true)}>
+                <UserX size={14} /> تسجيل انقطاع
               </Button>
             ) : (
               <ReturnButton studentId={student.id} />
             )}
-            <button
-              onClick={() => setDeleteOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-danger hover:bg-danger-soft"
-              title="حذف الطالب نهائياً"
-            >
-              <Trash2 size={15} />
-            </button>
+            <MoreActionsMenu onDelete={() => setDeleteOpen(true)} />
           </div>
         </div>
 
@@ -397,7 +392,7 @@ function ParentNotesThread({ studentId, notes: initialNotes }: { studentId: stri
           >
             <p className="text-sm text-ink">{n.message}</p>
             <div className="flex items-center justify-between gap-(--space-2) mt-1">
-              <p className="text-[11px] text-ink-faint">
+              <p className="text-xs text-ink-faint">
                 {n.sender === "admin" ? "الإدارة" : "ولي الأمر"} · {new Date(n.created_at).toLocaleString("ar-SA")}
               </p>
               {n.sender === "admin" && (
@@ -405,6 +400,7 @@ function ParentNotesThread({ studentId, notes: initialNotes }: { studentId: stri
                   onClick={() => deleteNote(n.id)}
                   disabled={deletingId === n.id}
                   title="حذف الرسالة"
+                  aria-label="حذف الرسالة"
                   className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-raised border border-danger text-danger shrink-0 active:scale-95 transition-transform disabled:opacity-50"
                 >
                   <Trash2 size={12} />
@@ -481,7 +477,7 @@ function PointsLog({ transactions }: { transactions: PointTransaction[] }) {
                 <p className="text-sm text-ink">
                   {t.reason || SOURCE_LABEL[t.source] || t.source}
                 </p>
-                <p className="text-[11px] text-ink-faint">
+                <p className="text-xs text-ink-faint">
                   {new Date(t.created_at).toLocaleString("ar-SA")}
                   {profile?.full_name ? ` · ${profile.full_name}` : ""}
                   {t.source !== "manual" ? ` · ${SOURCE_LABEL[t.source] ?? t.source}` : ""}
@@ -670,12 +666,65 @@ function DeleteStudentModal({ studentId, studentName, onClose }: { studentId: st
   );
 }
 
+// الإجراءات الخطيرة (الحذف النهائي) في قائمة منفصلة بعيداً عن زر التعديل
+function MoreActionsMenu({ onDelete }: { onDelete: () => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent | KeyboardEvent) => {
+      if (e instanceof KeyboardEvent ? e.key === "Escape" : !ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("keydown", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("keydown", close);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="إجراءات أخرى"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) border-bold border-line-strong bg-surface-raised text-ink-muted hover:bg-surface-sunken"
+      >
+        <MoreHorizontal size={17} />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute left-0 top-full mt-1.5 z-30 w-52 rounded-(--radius-md) border-bold border-line-strong bg-surface-raised shadow-brutal p-1"
+        >
+          <button
+            role="menuitem"
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onDelete();
+            }}
+            className="flex w-full items-center gap-2 rounded-(--radius-sm) px-(--space-3) h-10 text-sm font-semibold text-danger hover:bg-danger-soft"
+          >
+            <Trash2 size={15} /> حذف الطالب نهائياً
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ReturnButton({ studentId }: { studentId: string }) {
   const [pending, setPending] = useState(false);
   return (
     <Button
       size="sm"
       variant="secondary"
+      className="flex-1 sm:flex-none"
       disabled={pending}
       onClick={async () => {
         setPending(true);

@@ -22,7 +22,7 @@ export function BadgeStrip({
 
   const shown = badges.slice(0, max);
   const extra = badges.length - shown.length;
-  const dim = size === "sm" ? "h-5 w-5 text-[11px]" : "h-7 w-7 text-[15px]";
+  const dim = size === "sm" ? "h-5 w-5 text-xs" : "h-7 w-7 text-[15px]";
 
   return (
     <>
@@ -37,6 +37,7 @@ export function BadgeStrip({
               setOpen(b);
             }}
             title={b.name}
+            aria-label={b.name}
             className={`flex items-center justify-center rounded-full bg-accent-soft border border-accent-solid shrink-0 leading-none hover:scale-110 transition-transform ${dim}`}
           >
             {b.icon || "🏅"}

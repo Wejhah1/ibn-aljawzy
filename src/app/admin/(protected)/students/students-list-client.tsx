@@ -217,7 +217,7 @@ export function StudentsListClient({
         <div className="hidden md:block overflow-x-auto rounded-(--radius-md) border-bold border-line bg-surface-raised">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-line text-[11px] font-bold text-ink-faint uppercase tracking-wide">
+              <tr className="border-b border-line text-xs font-bold text-ink-faint uppercase tracking-wide">
                 {selectMode && <th className="w-11 px-(--space-2) py-(--space-3)" />}
                 <th className="text-right px-(--space-3) py-(--space-3) font-bold">اسم الطالب</th>
                 <th className="text-right px-(--space-3) py-(--space-3) font-bold">الحلقة</th>
@@ -276,7 +276,7 @@ export function StudentsListClient({
                               </Badge>
                             )}
                           </div>
-                          <p className="text-[11px] text-ink-faint truncate">#{s.code}</p>
+                          <p className="text-xs text-ink-faint truncate">#{s.code}</p>
                         </div>
                       </div>
                     </td>
@@ -322,6 +322,7 @@ export function StudentsListClient({
                         onClick={() => setDeleteTarget(s)}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-(--radius-sm) border border-line text-danger hover:bg-danger-soft transition-colors"
                         title="حذف"
+                        aria-label="حذف"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -372,7 +373,7 @@ export function StudentsListClient({
                       {s.fullName.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] text-ink-faint font-mono">#{s.code}</p>
+                      <p className="text-xs text-ink-faint font-mono">#{s.code}</p>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <p className="text-[15px] font-bold text-ink truncate">{s.fullName}</p>
                         <BadgeStrip badges={s.badges} max={2} />

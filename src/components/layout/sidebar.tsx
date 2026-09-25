@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 import { PRIMARY_NAV, STUDENTS_NAV, REPORTS_NAV, ADMIN_NAV, type NavItem } from "@/lib/nav";
 import { logoutAction } from "@/app/admin/login/actions";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { LogOut } from "lucide-react";
+import { LogOut, Search } from "lucide-react";
+import { OPEN_COMMAND_PALETTE_EVENT } from "@/components/search/command-palette";
 
 function NavGroup({ title, items, pathname }: { title: string; items: NavItem[]; pathname: string }) {
   return (
@@ -53,10 +54,22 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
           </div>
           <div className="min-w-0 text-center">
             <p className="text-[13px] font-bold text-ink truncate">حلقات ابن الجوزي</p>
-            <p className="text-[11px] text-ink-muted truncate">مسجد الطرباق</p>
+            <p className="text-xs text-ink-muted truncate">مسجد الطرباق</p>
           </div>
         </div>
         <NotificationBell />
+      </div>
+
+      <div className="px-(--space-3) pt-(--space-4)">
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event(OPEN_COMMAND_PALETTE_EVENT))}
+          className="flex w-full items-center gap-(--space-2) h-10 rounded-(--radius-sm) border border-line bg-surface px-(--space-3) text-[13px] text-ink-faint hover:border-line-strong hover:text-ink-muted transition-colors"
+        >
+          <Search size={15} />
+          <span className="flex-1 text-right">بحث عن طالب أو صفحة</span>
+          <kbd className="text-xs border border-line rounded px-1.5 py-0.5 font-sans" dir="ltr">Ctrl K</kbd>
+        </button>
       </div>
 
       <nav className="flex-1 px-(--space-3) py-(--space-4)">
@@ -73,13 +86,13 @@ export function Sidebar({ userName, userRole }: { userName: string; userRole: st
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold text-ink truncate">{userName}</p>
-            <p className="text-[11px] text-ink-muted truncate">{roleLabel(userRole)}</p>
+            <p className="text-xs text-ink-muted truncate">{roleLabel(userRole)}</p>
           </div>
           <form action={logoutAction}>
             <button
               type="submit"
               className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-danger-soft hover:text-danger transition-colors"
-              title="تسجيل الخروج"
+              title="تسجيل الخروج" aria-label="تسجيل الخروج"
             >
               <LogOut size={16} />
             </button>

@@ -1,5 +1,8 @@
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getProgramInfo } from "@/lib/settings";
+import { verifyParentToken, PARENT_COOKIE_NAME } from "@/lib/parent-session";
 import { PublicLeaderboardClient } from "./public-leaderboard-client";
 
 interface PublicLeaderboardResult {
@@ -18,9 +21,24 @@ interface PublicLeaderboardResult {
   circles: { id: string; name: string; color_token: string; total_points: number }[];
 }
 
-export default async function PublicLeaderboardPage() {
+// إن كان الزائر ولي أمر مسجّل الدخول، نعرف أبناءه لنبرز ترتيبهم في اللوحة
+async function getParentStudentIds(): Promise<string[]> {
+  const cookieStore = await cookies();
+  const session = verifyParentToken(cookieStore.get(PARENT_COOKIE_NAME)?.value);
+  if (!session) return [];
+  const admin = createAdminClient();
+  const { data } = await admin.from("students").select("id").eq("guardian_phone", session.phone);
+  return (data ?? []).map((s) => s.id);
+}
+
+export default async function PublicLeaderboardPage({ searchParams }: PageProps<"/leaderboard">) {
+  const { tv } = await searchParams;
   const supabase = await createClient();
-  const [{ data }, programInfo] = await Promise.all([supabase.rpc("public_leaderboard"), getProgramInfo(supabase)]);
+  const [{ data }, programInfo, myStudentIds] = await Promise.all([
+    supabase.rpc("public_leaderboard"),
+    getProgramInfo(supabase),
+    getParentStudentIds(),
+  ]);
   const result = (data ?? { season_name: null, students: [], groups: [], circles: [] }) as unknown as PublicLeaderboardResult;
 
   const entries = result.students.map((s) => ({
@@ -42,6 +60,8 @@ export default async function PublicLeaderboardPage() {
       groupEntries={groupEntries}
       circleEntries={circleEntries}
       programInfo={programInfo}
+      tvMode={tv === "1"}
+      myStudentIds={myStudentIds}
     />
   );
 }

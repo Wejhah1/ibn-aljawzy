@@ -8,6 +8,9 @@ import { PRIMARY_NAV, STUDENTS_NAV, REPORTS_NAV, ADMIN_NAV } from "@/lib/nav";
 
 const ALL_NAV = [...PRIMARY_NAV, ...STUDENTS_NAV, ...REPORTS_NAV, ...ADMIN_NAV];
 
+// يُطلَق من زر البحث في شريط الجوال، لأن اختصار Ctrl+K غير متاح هناك
+export const OPEN_COMMAND_PALETTE_EVENT = "open-command-palette";
+
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -23,8 +26,13 @@ export function CommandPalette() {
       }
       if (e.key === "Escape") setOpen(false);
     };
+    const openHandler = () => setOpen(true);
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener(OPEN_COMMAND_PALETTE_EVENT, openHandler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener(OPEN_COMMAND_PALETTE_EVENT, openHandler);
+    };
   }, []);
 
   useEffect(() => {
@@ -62,16 +70,25 @@ export function CommandPalette() {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ابحث عن طالب أو صفحة... (Ctrl+K)"
+            placeholder="ابحث عن طالب أو صفحة..."
+            aria-label="بحث عن طالب أو صفحة"
+            enterKeyHint="search"
             className="flex-1 bg-transparent outline-none text-sm text-ink placeholder:text-ink-faint"
           />
-          <kbd className="text-[11px] text-ink-faint border border-line rounded px-1.5 py-0.5">Esc</kbd>
+          <kbd className="hidden md:inline text-xs text-ink-faint border border-line rounded px-1.5 py-0.5">Esc</kbd>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="md:hidden h-9 px-2 text-[13px] font-semibold text-ink-muted"
+          >
+            إلغاء
+          </button>
         </div>
 
         <div className="max-h-[400px] overflow-y-auto py-(--space-2)">
           {students.length > 0 && (
             <div className="px-(--space-2) mb-(--space-2)">
-              <p className="px-(--space-2) text-[11px] font-semibold text-ink-faint mb-1">الطلاب</p>
+              <p className="px-(--space-2) text-xs font-semibold text-ink-faint mb-1">الطلاب</p>
               {students.map((s) => (
                 <button
                   key={s.id}
@@ -91,7 +108,7 @@ export function CommandPalette() {
 
           {filteredNav.length > 0 && (
             <div className="px-(--space-2)">
-              <p className="px-(--space-2) text-[11px] font-semibold text-ink-faint mb-1">الصفحات</p>
+              <p className="px-(--space-2) text-xs font-semibold text-ink-faint mb-1">الصفحات</p>
               {filteredNav.map((n) => (
                 <button
                   key={n.href}

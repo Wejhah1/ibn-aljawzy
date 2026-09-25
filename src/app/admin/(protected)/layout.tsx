@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { CommandPalette } from "@/components/search/command-palette";
-import { NotificationBell } from "@/components/notifications/notification-bell";
+import { MobileTopBar } from "@/components/layout/mobile-top-bar";
 
 // مؤقّتة لعمر الطلب الواحد فقط: تمنع تكرار استعلام profiles أكثر من مرة إذا استدعاه
 // أكثر من مقطع (segment) خلال نفس التنقّل، لكنها لا تنجو بين الطلبات.
@@ -33,12 +33,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="print:hidden contents">
         <Sidebar userName={profile?.full_name ?? user.email ?? "مستخدم"} userRole={profile?.role ?? "data_entry"} />
       </div>
-      <div className="md:hidden print:hidden fixed top-0 inset-x-0 z-40 flex justify-end px-(--space-3) pt-[calc(env(safe-area-inset-top)+8px)] pb-(--space-2) pointer-events-none">
-        <div className="pointer-events-auto">
-          <NotificationBell />
-        </div>
+      <MobileTopBar />
+      <div className="flex-1 min-w-0 pb-[calc(env(safe-area-inset-bottom)+80px)] md:pb-0 print:pb-0 pt-[calc(env(safe-area-inset-top)+56px)] md:pt-0 print:pt-0">
+        {children}
       </div>
-      <div className="flex-1 min-w-0 pb-20 md:pb-0 print:pb-0 pt-14 md:pt-0">{children}</div>
       <div className="print:hidden contents">
         <BottomNav />
         <CommandPalette />

@@ -79,6 +79,7 @@ export function NotificationBell() {
           flash ? "animate-pulse border-brand text-brand" : ""
         }`}
         title="الإشعارات"
+        aria-label="الإشعارات"
       >
         <Bell size={18} />
         {notes.length > 0 && (
@@ -107,7 +108,7 @@ export function NotificationBell() {
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-bold text-ink truncate">{n.studentName}</p>
                     <p className="text-[12px] text-ink-muted line-clamp-2">{n.message}</p>
-                    <p className="text-[11px] text-ink-faint mt-1">{new Date(n.createdAt).toLocaleString("ar-SA")}</p>
+                    <p className="text-xs text-ink-faint mt-1">{new Date(n.createdAt).toLocaleString("ar-SA")}</p>
                   </div>
                 </button>
               ))}

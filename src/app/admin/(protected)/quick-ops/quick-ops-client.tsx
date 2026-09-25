@@ -1,7 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -119,7 +119,6 @@ export function QuickOpsClient() {
 
 function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: () => void }) {
   const [data, setData] = useState<QuickCardData | null>(null);
-  const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [badgeModalOpen, setBadgeModalOpen] = useState(false);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [pointsModalOpen, setPointsModalOpen] = useState(false);
@@ -135,8 +134,9 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
   }, [studentId]);
 
   const flash = (msg: string) => {
-    setFlashMessage(msg);
-    setTimeout(() => setFlashMessage(null), 1500);
+    toast.success(msg, { duration: 1600 });
+    // اهتزاز خفيف يؤكد العملية للمشرف دون الحاجة للنظر إلى الشاشة
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(12);
   };
 
   const markAttendance = (status: "present" | "late" | "excused" | "absent") => {
@@ -214,19 +214,6 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
         </div>
       </Card>
 
-      <AnimatePresence>
-        {flashMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-ink text-surface px-(--space-4) py-(--space-2) rounded-(--radius-sm) text-sm font-bold shadow-brutal"
-          >
-            {flashMessage}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {badgeModalOpen && (
         <QuickBadgeModal

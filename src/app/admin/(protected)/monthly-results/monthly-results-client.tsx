@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import * as XLSX from "xlsx";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +58,7 @@ export function MonthlyResultsClient({
   const [savingRowId, setSavingRowId] = useState<string | null>(null);
   const [deletingPeriod, setDeletingPeriod] = useState<string | null>(null);
   const [whatsappPeriod, setWhatsappPeriod] = useState<string | null>(null);
+  const [confirmDeletePeriod, setConfirmDeletePeriod] = useState<string | null>(null);
 
   const openEdit = async (label: string) => {
     if (editingPeriod === label) {
@@ -76,10 +79,11 @@ export function MonthlyResultsClient({
   };
 
   const removePeriod = async (label: string) => {
-    if (!window.confirm(`هل أنت متأكد من حذف نتائج فترة "${label}" لجميع الطلاب؟ لا يمكن التراجع عن هذا الإجراء.`)) return;
     setDeletingPeriod(label);
     await deletePeriodAction(seasonId, label);
     setDeletingPeriod(null);
+    setConfirmDeletePeriod(null);
+    toast.success(`حُذفت نتائج فترة «${label}»`);
     if (editingPeriod === label) setEditingPeriod(null);
   };
 
@@ -174,7 +178,7 @@ export function MonthlyResultsClient({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => removePeriod(p.label)}
+                    onClick={() => setConfirmDeletePeriod(p.label)}
                     disabled={deletingPeriod === p.label}
                     title="حذف الفترة"
                   >
@@ -195,7 +199,7 @@ export function MonthlyResultsClient({
                         <div key={r.resultId} className="flex items-center justify-between gap-(--space-2)">
                           <div className="min-w-0">
                             <p className="text-sm text-ink truncate">{r.name}</p>
-                            <p className="text-[11px] text-ink-muted">{r.code}</p>
+                            <p className="text-xs text-ink-muted">{r.code}</p>
                           </div>
                           <div className="flex items-center gap-(--space-1) shrink-0">
                             <Input
@@ -289,6 +293,17 @@ export function MonthlyResultsClient({
           </div>
         )}
       </Card>
+
+      {confirmDeletePeriod && (
+        <ConfirmDialog
+          title="حذف نتائج الفترة"
+          message={`هل تريد حذف نتائج فترة «${confirmDeletePeriod}» لجميع الطلاب؟ لا يمكن التراجع عن هذا الإجراء.`}
+          confirmLabel="حذف النتائج"
+          pending={deletingPeriod === confirmDeletePeriod}
+          onConfirm={() => removePeriod(confirmDeletePeriod)}
+          onCancel={() => setConfirmDeletePeriod(null)}
+        />
+      )}
     </main>
   );
 }

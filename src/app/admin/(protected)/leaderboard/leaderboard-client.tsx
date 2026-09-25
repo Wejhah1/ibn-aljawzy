@@ -286,7 +286,7 @@ function Podium({ entries, large }: { entries: DisplayEntry[]; large: boolean })
           <p className={`font-bold text-ink text-center leading-tight ${large ? "text-lg" : "text-[12px]"}`}>{entry.title}</p>
           <BadgeStrip badges={entry.badges} max={2} size={large ? "md" : "sm"} />
         </div>
-        <p className={`font-bold text-brand mb-(--space-2) ${large ? "text-base" : "text-[11px]"}`}>{entry.valueLabel}</p>
+        <p className={`font-bold text-brand mb-(--space-2) ${large ? "text-base" : "text-xs"}`}>{entry.valueLabel}</p>
         <div
           className="w-full rounded-t-(--radius-md) border-bold border-line-strong border-b-0 flex items-center justify-center"
           style={{ height, backgroundColor: podiumBg, boxShadow: "var(--shadow-brutal-sm)" }}

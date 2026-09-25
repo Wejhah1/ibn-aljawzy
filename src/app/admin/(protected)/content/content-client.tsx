@@ -120,7 +120,7 @@ function NewsSection({ initial }: { initial: NewsPost[] }) {
                 <Badge tone="neutral">{n.category}</Badge>
               </div>
               {n.body && <p className="text-[12px] text-ink-muted mt-1 line-clamp-2">{n.body}</p>}
-              <p className="text-[11px] text-ink-faint mt-1">{new Date(n.published_at).toLocaleDateString("ar-SA")}</p>
+              <p className="text-xs text-ink-faint mt-1">{new Date(n.published_at).toLocaleDateString("ar-SA")}</p>
             </div>
             <div className="flex items-center gap-(--space-1) shrink-0">
               <button
@@ -130,6 +130,7 @@ function NewsSection({ initial }: { initial: NewsPost[] }) {
                 }}
                 className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-surface-sunken"
                 title={n.is_published ? "إخفاء" : "نشر"}
+                aria-label={n.is_published ? "إخفاء" : "نشر"}
               >
                 {n.is_published ? <Eye size={15} /> : <EyeOff size={15} />}
               </button>
@@ -140,6 +141,7 @@ function NewsSection({ initial }: { initial: NewsPost[] }) {
                 }}
                 className="flex h-9 w-9 items-center justify-center rounded-(--radius-sm) text-danger hover:bg-danger-soft"
                 title="حذف"
+                aria-label="حذف"
               >
                 <Trash2 size={15} />
               </button>

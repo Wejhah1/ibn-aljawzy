@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
+import { AppProviders } from "@/components/providers/app-providers";
 
 const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   variable: "--font-ibm-plex-sans-arabic",
@@ -40,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${ibmPlexSansArabic.variable} ${yearOfHandicrafts.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <AppProviders>{children}</AppProviders>
         <ServiceWorkerRegistration />
       </body>
     </html>
