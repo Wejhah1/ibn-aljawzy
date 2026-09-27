@@ -267,3 +267,52 @@ export async function resolveStudentFlagAction(studentFlagId: string, studentId:
   revalidatePath(`/admin/students/${studentId}`);
   revalidatePath("/admin");
 }
+
+export async function bulkTransferStudentsAction(
+  studentIds: string[],
+  target: "circle" | "group",
+  targetId: string
+) {
+  if (studentIds.length === 0 || !targetId) return { error: "لم يتم تحديد الطلاب أو الوجهة." };
+
+  const supabase = await createClient();
+  const { data: currentSeason } = await supabase
+    .from("seasons")
+    .select("id")
+    .eq("status", "current")
+    .maybeSingle();
+  if (!currentSeason) return { error: "لا يوجد موسم حالي لنقل الطلاب إليه." };
+
+  const patch = target === "circle" ? { circle_id: targetId } : { group_id: targetId };
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("student_season_enrollments")
+    .select("student_id")
+    .eq("season_id", currentSeason.id)
+    .in("student_id", studentIds);
+  if (fetchError) return { error: "تعذّر قراءة تسجيلات الطلاب: " + fetchError.message };
+
+  const enrolledIds = new Set((existing ?? []).map((e) => e.student_id));
+
+  if (enrolledIds.size > 0) {
+    const { error } = await supabase
+      .from("student_season_enrollments")
+      .update(patch)
+      .eq("season_id", currentSeason.id)
+      .in("student_id", Array.from(enrolledIds));
+    if (error) return { error: "تعذّر نقل الطلاب: " + error.message };
+  }
+
+  const missing = studentIds.filter((id) => !enrolledIds.has(id));
+  if (missing.length > 0) {
+    const { error } = await supabase
+      .from("student_season_enrollments")
+      .insert(missing.map((id) => ({ student_id: id, season_id: currentSeason.id, ...patch })));
+    if (error) return { error: "تعذّر تسجيل بعض الطلاب في الموسم: " + error.message };
+  }
+
+  revalidatePath("/admin/students");
+  revalidatePath("/admin/circles");
+  for (const id of studentIds) revalidatePath(`/admin/students/${id}`);
+  return { success: true };
+}

@@ -12,7 +12,7 @@ import { Modal } from "@/components/ui/modal";
 import { BadgeStrip, type BadgeStripItem } from "@/components/badges/badge-strip";
 import { buildWaMeLink, fillTemplate } from "@/lib/whatsapp";
 import type { ProgramInfo } from "@/lib/settings";
-import { bulkDropoutAction, bulkDeleteStudentsAction, deleteStudentAction } from "./actions";
+import { bulkDropoutAction, bulkDeleteStudentsAction, bulkTransferStudentsAction, deleteStudentAction } from "./actions";
 import {
   Search,
   Plus,
@@ -26,6 +26,9 @@ import {
   CalendarCheck,
   CalendarX,
   Trophy,
+  ArrowLeftRight,
+  BookOpen,
+  Users,
 } from "lucide-react";
 
 interface Row {
@@ -72,6 +75,7 @@ function ColorTag({ label, token }: { label: string; token: string | null }) {
 export function StudentsListClient({
   rows,
   circles,
+  groups,
   q,
   status,
   circle,
@@ -79,7 +83,8 @@ export function StudentsListClient({
   template,
 }: {
   rows: Row[];
-  circles: { id: string; name: string }[];
+  circles: { id: string; name: string; color_token: string | null }[];
+  groups: { id: string; name: string; color_token: string | null }[];
   q: string;
   status: string;
   circle: string;
@@ -90,6 +95,7 @@ export function StudentsListClient({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDropoutOpen, setBulkDropoutOpen] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkTransferOpen, setBulkTransferOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Row | null>(null);
 
   const router = useRouter();
@@ -456,6 +462,9 @@ export function StudentsListClient({
           >
             <p className="text-sm font-bold text-ink">{selected.size} محدد</p>
             <div className="flex items-center gap-(--space-2)">
+              <Button size="sm" variant="secondary" onClick={() => setBulkTransferOpen(true)}>
+                <ArrowLeftRight size={14} /> نقل
+              </Button>
               <Button size="sm" variant="danger" onClick={() => setBulkDropoutOpen(true)}>
                 <UserX size={14} /> منقطع
               </Button>
@@ -474,6 +483,20 @@ export function StudentsListClient({
           onConfirm={async (reason) => {
             await bulkDropoutAction(Array.from(selected), reason);
             setBulkDropoutOpen(false);
+            exitSelectMode();
+          }}
+        />
+      )}
+      {bulkTransferOpen && (
+        <BulkTransferModal
+          count={selected.size}
+          circles={circles}
+          groups={groups}
+          onCancel={() => setBulkTransferOpen(false)}
+          onConfirm={async (target, targetId) => {
+            const res = await bulkTransferStudentsAction(Array.from(selected), target, targetId);
+            if (res.error) return res.error;
+            setBulkTransferOpen(false);
             exitSelectMode();
           }}
         />
@@ -613,6 +636,127 @@ function BulkDeleteModal({ count, onCancel, onConfirm }: { count: number; onCanc
           >
             {pending ? "جارِ الحذف..." : "حذف نهائياً"}
           </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function BulkTransferModal({
+  count,
+  circles,
+  groups,
+  onCancel,
+  onConfirm,
+}: {
+  count: number;
+  circles: { id: string; name: string; color_token: string | null }[];
+  groups: { id: string; name: string; color_token: string | null }[];
+  onCancel: () => void;
+  onConfirm: (target: "circle" | "group", targetId: string) => Promise<string | void>;
+}) {
+  const [target, setTarget] = useState<"circle" | "group" | null>(null);
+  const [targetId, setTargetId] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const options = target === "circle" ? circles : target === "group" ? groups : [];
+  const targetLabel = target === "circle" ? "الحلقة" : "المجموعة";
+
+  return (
+    <Modal title={`نقل ${count} طالب`} onClose={onCancel}>
+      <div className="space-y-(--space-4)">
+        {!target ? (
+          <>
+            <p className="text-sm font-semibold text-ink-muted">إلى أين تريد نقل الطلاب المحددين؟</p>
+            <div className="grid grid-cols-2 gap-(--space-3)">
+              <button
+                type="button"
+                onClick={() => setTarget("circle")}
+                className="flex flex-col items-center justify-center gap-(--space-2) rounded-(--radius-md) border-bold border-line bg-surface-raised py-(--space-6) text-ink font-bold hover:bg-brand-soft hover:text-brand transition-colors"
+              >
+                <BookOpen size={24} /> إلى حلقة
+              </button>
+              <button
+                type="button"
+                onClick={() => setTarget("group")}
+                className="flex flex-col items-center justify-center gap-(--space-2) rounded-(--radius-md) border-bold border-line bg-surface-raised py-(--space-6) text-ink font-bold hover:bg-brand-soft hover:text-brand transition-colors"
+              >
+                <Users size={24} /> إلى مجموعة
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-ink-muted">اختر {targetLabel} الجديدة</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setTarget(null);
+                  setTargetId("");
+                  setError(null);
+                }}
+                className="text-[13px] font-bold text-brand hover:underline"
+              >
+                تغيير الوجهة
+              </button>
+            </div>
+            {options.length === 0 ? (
+              <p className="text-sm text-ink-faint">لا توجد {target === "circle" ? "حلقات" : "مجموعات"} بعد.</p>
+            ) : (
+              <div className="max-h-[320px] overflow-y-auto space-y-(--space-2)">
+                {options.map((o) => {
+                  const active = targetId === o.id;
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => setTargetId(o.id)}
+                      className={`w-full flex items-center justify-between gap-(--space-2) rounded-(--radius-sm) border px-(--space-3) py-(--space-3) text-right transition-colors ${
+                        active ? "border-brand bg-brand-soft" : "border-line hover:bg-surface-sunken"
+                      }`}
+                    >
+                      <ColorTag label={o.name} token={o.color_token} />
+                      {active ? <CheckSquare size={18} className="text-brand shrink-0" /> : <Square size={18} className="text-ink-faint shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-[12px] text-ink-faint">
+              سيُنقل الطلاب من {target === "circle" ? "حلقاتهم" : "مجموعاتهم"} الحالية في الموسم الحالي إلى {targetLabel} المختارة.
+            </p>
+          </>
+        )}
+
+        {error && (
+          <div className="rounded-(--radius-sm) bg-danger-soft border border-danger px-(--space-3) py-(--space-2) text-[13px] font-semibold text-danger">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-end gap-(--space-2)">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            إلغاء
+          </Button>
+          {target && (
+            <Button
+              type="button"
+              disabled={!targetId || pending}
+              onClick={async () => {
+                setPending(true);
+                setError(null);
+                const err = await onConfirm(target, targetId);
+                if (err) {
+                  setError(err);
+                  setPending(false);
+                }
+              }}
+            >
+              <ArrowLeftRight size={14} /> {pending ? "جارِ النقل..." : "نقل"}
+            </Button>
+          )}
         </div>
       </div>
     </Modal>

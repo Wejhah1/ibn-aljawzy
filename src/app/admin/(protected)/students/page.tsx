@@ -18,6 +18,7 @@ export default async function StudentsPage({
     .maybeSingle();
 
   const { data: circles } = await supabase.from("circles").select("id, name, color_token").order("name");
+  const { data: groups } = await supabase.from("groups").select("id, name, color_token").order("name");
   const circleColorById = new Map((circles ?? []).map((c) => [c.id, c.color_token]));
 
   let query = supabase
@@ -116,6 +117,7 @@ export default async function StudentsPage({
     <StudentsListClient
       rows={rows}
       circles={circles ?? []}
+      groups={groups ?? []}
       q={q}
       status={status}
       circle={circle}
