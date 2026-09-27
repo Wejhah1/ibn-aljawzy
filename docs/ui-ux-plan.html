@@ -1,0 +1,669 @@
+<title>خطة واجهة ابن الجوزي</title>
+<meta name="description" content="مراجعة واجهة موقع حلقات ابن الجوزي مع نماذج قبل وبعد للجوال والكمبيوتر">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f7f7f3; --raised:#ffffff; --sunken:#eef0e9; --line:#e2e5dc; --ink:#171b18; --muted:#5c6862; --faint:#7a8076;
+  --brand:#0e6b4f; --brand-soft:#e4f3ec; --warn:#9a5b09; --warn-soft:#fbf0dd; --bad:#c4362a; --bad-soft:#fbeae7; --info:#2a5caa;
+  --frame:#171b18;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121614; --raised:#1a201d; --sunken:#212824; --line:#2e3632; --ink:#e8ece9; --muted:#a3ada8; --faint:#87918c;
+    --brand:#4fb58f; --brand-soft:#173a2e; --warn:#e0a24a; --warn-soft:#3a2c14; --bad:#ef7a6e; --bad-soft:#3d1f1b; --info:#8fb0e6;
+    --frame:#3a433e;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121614; --raised:#1a201d; --sunken:#212824; --line:#2e3632; --ink:#e8ece9; --muted:#a3ada8; --faint:#87918c;
+  --brand:#4fb58f; --brand-soft:#173a2e; --warn:#e0a24a; --warn-soft:#3a2c14; --bad:#ef7a6e; --bad-soft:#3d1f1b; --info:#8fb0e6;
+  --frame:#3a433e;
+}
+*{box-sizing:border-box}
+html{direction:rtl}
+body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;font-size:16px;line-height:1.75;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;line-height:1.35;margin:0}
+h1{font-size:30px;font-weight:700}
+h2{font-size:23px;font-weight:700}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+.prose{max-width:66ch}
+.muted{color:var(--muted)}
+header.top{padding-block:40px 28px;border-bottom:1px solid var(--line);display:grid;gap:12px}
+header.top .meta{font-size:14px;color:var(--muted)}
+section{padding-block:40px;border-bottom:1px solid var(--line);display:grid;gap:20px}
+section:last-of-type{border-bottom:0}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--brand-soft);color:var(--brand);vertical-align:middle}
+.tag.w{background:var(--warn-soft);color:var(--warn)}
+.tag.m{background:var(--sunken);color:var(--muted)}
+ol.items,ul.items{margin:0;padding-inline-start:22px;display:grid;gap:10px;max-width:72ch}
+ol.items li::marker{font-weight:700;color:var(--brand)}
+.items b{font-weight:700}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--raised)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--sunken);font-weight:600;color:var(--muted);font-size:13px}
+tr:last-child td{border-bottom:0}
+td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric:tabular-nums}
+.compare{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.col{display:grid;gap:10px;justify-items:start}
+.col .lbl{font-size:13px;font-weight:700;color:var(--muted)}
+.col .lbl.after{color:var(--brand)}
+.why{display:grid;gap:14px;flex:1 1 300px;min-width:0}
+.note{font-size:14px;color:var(--muted);background:var(--sunken);border-radius:10px;padding:12px 14px;max-width:72ch}
+.formula{font-size:15px;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-width:72ch;display:grid;gap:6px}
+.formula code{font-family:inherit;font-weight:700}
+
+/* ============ phone mockups: fixed light theme = لقطة من الموقع ============ */
+.phone{--s:#f7f7f3;--r:#ffffff;--k:#eef0e9;--l:#e2e5dc;--i:#171b18;--mu:#5c6862;--fa:#7a8076;--b:#0e6b4f;--bs:#e4f3ec;--bh:#0b5640;
+  --ok:#0e6b4f;--oks:#e4f3ec;--wa:#9a5b09;--was:#fbf0dd;--ex:#2a5caa;--exs:#e7eef9;--ab:#c4362a;--abs:#fbeae7;--ns:#eceee8;--ac:#8a6a34;--acs:#fbf3e6;
+  color-scheme:light;width:300px;max-width:100%;height:600px;border:8px solid var(--frame);border-radius:30px;overflow:hidden;background:var(--s);color:var(--i);
+  display:flex;flex-direction:column;font-size:12px;line-height:1.5;position:relative;flex:none}
+.phone.tall{height:640px}
+.phone *{border-color:var(--l)}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden}
+.pad{padding:12px}
+.stack{display:grid;gap:10px}
+.row{display:flex;align-items:center;gap:6px}
+.between{justify-content:space-between}
+.pt{font-size:17px;font-weight:700}
+.sub{font-size:11px;color:var(--mu)}
+.card{background:var(--r);border:1.5px solid var(--l);border-radius:10px;padding:10px}
+.cardS{background:var(--r);border:1.5px solid var(--i);border-radius:10px;padding:10px;box-shadow:3px 3px 0 var(--i)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:30px;padding:0 10px;border-radius:8px;border:1.5px solid var(--i);font-weight:600;font-size:11px;background:var(--r);color:var(--i);white-space:nowrap}
+.btn.p{background:var(--b);color:#fff;box-shadow:3px 3px 0 var(--i)}
+.btn.o{background:transparent}
+.btn.g{border-color:transparent;background:transparent}
+.sel{height:30px;border:1px solid var(--l);border-radius:8px;background:var(--r);padding:0 8px;display:flex;align-items:center;justify-content:space-between;font-size:11px;min-width:84px}
+.sel::after{content:"▾";color:var(--fa);margin-inline-start:6px}
+.flab{font-size:10px;color:var(--mu);font-weight:600;margin-bottom:2px}
+.badge{display:inline-flex;align-items:center;gap:3px;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:600;background:var(--ns);color:var(--mu);white-space:nowrap}
+.search{height:30px;border:1px solid var(--l);border-radius:8px;background:var(--r);display:flex;align-items:center;padding:0 10px;color:var(--fa);font-size:11px}
+.stat{border:1.5px solid var(--i);border-radius:8px;text-align:center;padding:6px 2px}
+.stat b{display:block;font-size:17px}
+.stat span{font-size:10px;color:var(--mu);font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.sbtn{min-height:40px;border:1.5px solid var(--i);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--r)}
+.ic{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;display:inline-block}
+.bell{position:absolute;top:8px;left:10px;width:30px;height:30px;border:1.5px solid var(--i);border-radius:8px;background:var(--r);display:flex;align-items:center;justify-content:center;z-index:2}
+.bell::before{content:"";width:10px;height:11px;border:2px solid var(--mu);border-radius:6px 6px 2px 2px}
+.bnav{display:flex;border-top:1.5px solid var(--i);background:var(--r);height:52px;flex:none}
+.bnav div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:600;color:var(--mu)}
+.bnav i{width:16px;height:16px;border:2px solid currentColor;border-radius:4px;display:block}
+.bnav .on{color:var(--b)}
+/* after-only pieces */
+.tbar{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--r);border-bottom:1px solid var(--l);flex:none}
+.tbar .t{font-size:15px;font-weight:700}
+.tbar .acts{display:flex;gap:6px}
+.icb{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mu);position:relative}
+.icb.srch::before{content:"";width:10px;height:10px;border:2px solid currentColor;border-radius:50%}
+.icb.bl::before{content:"";width:10px;height:11px;border:2px solid currentColor;border-radius:6px 6px 2px 2px}
+.dot{position:absolute;top:5px;left:5px;width:7px;height:7px;border-radius:50%;background:var(--ab)}
+.days{display:flex;gap:6px;overflow:hidden;padding:0 12px}
+.day{flex:none;width:44px;border:1.5px solid var(--l);border-radius:10px;background:var(--r);text-align:center;padding:4px 0;line-height:1.3}
+.day b{display:block;font-size:14px}
+.day span{font-size:9px;color:var(--mu)}
+.day.on{background:var(--b);border-color:var(--b);color:#fff}
+.day.on span{color:#dfeee8}
+.day.off{background:repeating-linear-gradient(135deg,var(--k) 0 4px,var(--r) 4px 8px);color:var(--fa)}
+.day.done{box-shadow:inset 0 -3px 0 var(--ok)}
+.chips{display:flex;gap:5px;overflow:hidden;padding:0 12px}
+.chip{flex:none;height:26px;padding:0 10px;border-radius:13px;border:1px solid var(--l);background:var(--r);display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--mu)}
+.chip.on{background:var(--i);border-color:var(--i);color:#fff}
+.chip .cd{width:7px;height:7px;border-radius:50%}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--ns)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10.5px;color:var(--mu)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend b{color:var(--i);font-variant-numeric:tabular-nums}
+.legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.list{background:var(--r);border-top:1px solid var(--l);border-bottom:1px solid var(--l)}
+.li{padding:9px 12px;border-bottom:1px solid var(--l);display:grid;gap:7px}
+.li:last-child{border-bottom:0}
+.nm{font-size:12.5px;font-weight:700}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--l);border-radius:8px;overflow:hidden;background:var(--k)}
+.seg div{height:30px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--mu);border-inline-start:1px solid var(--l)}
+.seg div:first-child{border-inline-start:0}
+.seg .pr{background:var(--ok);color:#fff}
+.seg .lt{background:var(--wa);color:#fff}
+.seg .ex{background:var(--ex);color:#fff}
+.seg .ab{background:var(--ab);color:#fff}
+.dock{flex:none;background:var(--r);border-top:1px solid var(--l);padding:8px 12px;display:flex;gap:6px;align-items:center}
+.dock .btn{height:34px;flex:1}
+.bnav2{display:flex;background:var(--r);border-top:1px solid var(--l);height:52px;flex:none}
+.bnav2 div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:600;color:var(--mu)}
+.bnav2 i{width:16px;height:16px;border:2px solid currentColor;border-radius:4px;display:block}
+.bnav2 .on{color:var(--b)}
+.bnav2 .on i{outline:5px solid var(--bs);background:var(--bs)}
+/* portal */
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--bs);color:var(--bh);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex:none}
+.gtag{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:600}
+.remote{background:var(--was);border:1.5px solid var(--wa);border-radius:10px;padding:10px;text-align:center;box-shadow:3px 3px 0 var(--i)}
+.remote .t{color:var(--wa);font-weight:700;font-size:13px}
+.score{display:flex;align-items:baseline;gap:4px}
+.score b{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.strip{display:grid;grid-template-columns:repeat(14,1fr);gap:3px}
+.strip i{aspect-ratio:1;border-radius:3px;display:block}
+.strip span{font-size:8px;color:var(--fa);text-align:center}
+.medals{display:flex;gap:8px;overflow:hidden}
+.medal{flex:none;width:58px;text-align:center;font-size:9.5px;line-height:1.3;color:var(--mu)}
+.medal .e{width:40px;height:40px;margin:0 auto 3px;border-radius:50%;background:var(--acs);border:1.5px solid #e8d9bd;display:flex;align-items:center;justify-content:center;font-size:19px}
+.mres{display:grid;gap:6px}
+.mres .r{display:grid;grid-template-columns:62px 1fr 34px;align-items:center;gap:6px;font-size:10.5px}
+.mres .tr{height:8px;border-radius:4px;background:var(--k);overflow:hidden}
+.mres .tr i{display:block;height:100%;background:var(--b);border-radius:4px}
+/* home */
+.blob{position:absolute;border-radius:50%;filter:blur(30px);opacity:.55}
+.newsrow{display:grid;grid-template-columns:1fr 56px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--l)}
+.newsrow:last-child{border-bottom:0}
+.thumb{width:56px;height:56px;border-radius:8px;background:linear-gradient(160deg,#cfe3d8,#9fc4b1)}
+.cat{font-size:10px;font-weight:700}
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(23,27,24,.45);z-index:3}
+.sheet{position:absolute;inset:auto 0 0 0;max-height:78%;background:var(--r);border-radius:16px 16px 0 0;z-index:4;overflow:hidden;display:flex;flex-direction:column}
+.sheet .hd{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid var(--l);font-weight:700;font-size:12px;flex:none}
+.tile{border:1.5px solid var(--i);border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9.5px;font-weight:600;color:var(--mu);text-align:center;padding:4px;background:var(--s)}
+.tile i{width:14px;height:14px;border:2px solid currentColor;border-radius:3px}
+.gh{font-size:10px;font-weight:600;color:var(--fa);margin:10px 0 4px}
+.mrow{display:flex;align-items:center;gap:10px;height:38px;font-size:12px;font-weight:600;border-bottom:1px solid var(--l)}
+.mrow i{width:14px;height:14px;border:2px solid var(--mu);border-radius:3px;flex:none}
+.mrow.on{color:var(--b)}
+.mrow.on i{border-color:var(--b)}
+/* desktop */
+.desk{--s:#f7f7f3;--r:#ffffff;--k:#eef0e9;--l:#e2e5dc;--i:#171b18;--mu:#5c6862;--fa:#7a8076;--b:#0e6b4f;--bs:#e4f3ec;
+  --ok:#0e6b4f;--wa:#9a5b09;--ex:#2a5caa;--ab:#c4362a;--ns:#eceee8;
+  color-scheme:light;background:var(--s);color:var(--i);border:6px solid var(--frame);border-radius:12px;min-width:760px;font-size:12px;line-height:1.5;display:flex}
+.desk .side{width:150px;background:var(--r);border-left:1px solid var(--l);padding:10px 8px;display:grid;gap:4px;align-content:start}
+.desk .side div{height:26px;border-radius:6px;padding:0 8px;display:flex;align-items:center;font-size:11px;color:var(--mu);font-weight:600}
+.desk .side .on{background:var(--b);color:#fff}
+.desk .main{flex:1;padding:14px 16px;display:grid;gap:10px;align-content:start}
+.desk .days{padding:0}
+.desk .chips{padding:0}
+.dtable{background:var(--r);border:1px solid var(--l);border-radius:8px;overflow:hidden}
+.dtr{display:grid;grid-template-columns:1.4fr 1fr 250px;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--l)}
+.dtr:last-child{border-bottom:0}
+.dtr.h{background:var(--k);color:var(--mu);font-weight:600;font-size:11px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <h1>خطة تحسين واجهة حلقات ابن الجوزي</h1>
+  <p class="prose muted">راجعت كل صفحات الموقع من الكود: الصفحة الرئيسية وآخر الأخبار، بوابة ولي الأمر، المتصدرون، لوحة الإشراف بكل صفحاتها، القائمة الجانبية والشريط السفلي. تركيزي الأول على الجوال. كل تغيير هنا مرقّم ومعه سببه، وما لا يحتاج تغييراً تركته كما هو.</p>
+  <p class="meta">النماذج مرسومة من الكود نفسه بألوان الموقع وخطه، والأسماء والأرقام فيها أمثلة للتوضيح وليست بيانات حقيقية. لم أعدّل أي شيء في الموقع حتى الآن.</p>
+</header>
+
+<section id="summary">
+  <h2>الملخص والأولويات</h2>
+  <p class="prose">رتبت التغييرات حسب أثرها على الاستخدام اليومي. اختر ما توافق عليه بالأرقام (مثلاً: «موافق على ح١ إلى ح٥، ب١ إلى ب٤، ر٢»).</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>رقم</th><th>الصفحة</th><th>التغيير</th><th>الأثر</th><th>الحجم</th></tr></thead>
+      <tbody>
+        <tr><td class="id">ح١–ح٥</td><td>كشف الحضور</td><td>شريط ملوّن بدل مربعات العدد، اختيار اليوم والحلقة والمجموعة بشرائح، صف أخف لكل طالب، زر «إنهاء اليوم» ثابت أسفل الشاشة</td><td><span class="tag">عالٍ</span></td><td>متوسط</td></tr>
+        <tr><td class="id">ب١–ب٥</td><td>بوابة ولي الأمر</td><td>درجة التزام من 100، آخر 14 يوماً بالألوان، الأوسمة بأيقوناتها، النتائج الشهرية كأشرطة، ترويسة الطالب أصغر</td><td><span class="tag">عالٍ</span></td><td>متوسط</td></tr>
+        <tr><td class="id">ق١–ق٤</td><td>الشريط السفلي والقائمة</td><td>شريط علوي فيه اسم الصفحة والبحث والتنبيهات، قائمة «المزيد» كقائمة لا كمربعات، البحث متاح في الجوال</td><td><span class="tag">عالٍ</span></td><td>صغير</td></tr>
+        <tr><td class="id">ر١–ر٥</td><td>الرئيسية وآخر الأخبار</td><td>إزالة ما يعطي انطباع «موقع مولّد»، خبر يمكن قراءته كاملاً، ترويسة أبسط في الجوال</td><td><span class="tag w">متوسط</span></td><td>صغير</td></tr>
+        <tr><td class="id">إ١–إ٢</td><td>رئيسية الإشراف</td><td>بطاقة «حضور اليوم» أولاً مع رابط مباشر للكشف</td><td><span class="tag w">متوسط</span></td><td>صغير</td></tr>
+        <tr><td class="id">ص١–ص٦</td><td>المتصدرون والعمليات السريعة وعام</td><td>إصلاحات صغيرة: اتجاه سهم، تبويبات في سطر واحد، تقليل الحركة، توحيد الأرقام</td><td><span class="tag m">تحسين</span></td><td>صغير</td></tr>
+        <tr><td class="id">ك١–ك٤</td><td>الكمبيوتر</td><td>نفس التحسينات بتخطيط يناسب الشاشة الواسعة</td><td><span class="tag w">متوسط</span></td><td>صغير</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="ai-look">
+  <h2>ما الذي يجعل الموقع يبدو كأنه مولّد بالذكاء الاصطناعي</h2>
+  <p class="prose">بحثت في مهارة التصميم المثبتة عندك (frontend-design) وفي الأنماط المعروفة. هذه هي العلامات الموجودة فعلاً في موقعك، ومكان كل واحدة:</p>
+  <ul class="items">
+    <li><b>بقع لونية ضبابية خلف العنوان</b> في الصفحة الرئيسية (دائرتان خضراء وذهبية مع blur). من أشهر علامات القوالب المولّدة.</li>
+    <li><b>شارة صغيرة فوق العنوان</b> («الموسم الحالي: …») بإطار وظل، ثم عنوان ووصف وزرّان، والكل في المنتصف.</li>
+    <li><b>قسم «لماذا حلقات ابن الجوزي؟»</b> بثلاث بطاقات متطابقة، كل واحدة فيها أيقونة داخل مربع ملوّن ثم عنوان ثم سطرين. هذا هو قالب صفحات SaaS بالحرف.</li>
+    <li><b>ظهور كل قسم بحركة انزلاق وتلاشٍ</b> عند التمرير، وارتفاع كل بطاقة عند المرور عليها. حركة في كل مكان بدون سبب.</li>
+    <li><b>صورة بديلة مزخرفة للأخبار</b> بلا صورة: مستطيل ملوّن فيه دوائر شفافة وأيقونة في المنتصف، ونجمة بجانب التصنيف.</li>
+    <li><b>نفس الإطار والظل الأسود على كل شيء</b>: الأزرار والبطاقات والتبويبات والإحصاءات. حين يكون كل شيء بارزاً لا يبرز شيء.</li>
+    <li><b>مربعات الأرقام الكبيرة</b> (طالب مسجّل، حلقة تحفيظ) كأول محتوى بعد العنوان.</li>
+  </ul>
+  <p class="note">هوية الموقع الحالية (الأخضر الداكن، خط IBM Plex Sans Arabic، الحدود الواضحة) جيدة ومناسبة ولن أغيّرها. التغيير هو تقليل التكرار وإزالة الزخارف التي لا تؤدي وظيفة.</p>
+</section>
+
+<!-- ======================= ATTENDANCE ======================= -->
+<section id="attendance">
+  <h2>كشف الحضور (الجوال)</h2>
+  <div class="compare">
+    <div class="col">
+      <span class="lbl">الحالي: أول شاشة</span>
+      <div class="phone">
+        <div class="bell"></div>
+        <div class="scroll"><div class="pad stack" style="padding-top:46px">
+          <div><div class="pt">كشف الحضور</div><div class="sub">موسم ١٤٤٧ · الأحد، ٢١ ربيع الأول</div></div>
+          <div class="row"><span class="btn o">⚙ النقاط التلقائية</span><span class="btn p">إنهاء اليوم</span></div>
+          <div class="card" style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end">
+            <div><div class="flab">اليوم</div><div class="sel">أحد ٢١ ربيع…</div></div>
+            <div><div class="flab">الحلقة</div><div class="sel">كل الحلقات</div></div>
+            <div><div class="flab">المجموعة</div><div class="sel">كل المجموعات</div></div>
+            <span class="btn o">تعليم الجميع حاضر</span>
+          </div>
+          <div class="g2">
+            <div class="stat" style="background:var(--oks)"><b style="color:var(--ok)">18</b><span>حاضر</span></div>
+            <div class="stat" style="background:var(--was)"><b style="color:var(--wa)">3</b><span>متأخر</span></div>
+            <div class="stat" style="background:var(--exs)"><b style="color:var(--ex)">1</b><span>بعذر</span></div>
+            <div class="stat" style="background:var(--abs)"><b style="color:var(--ab)">2</b><span>غائب</span></div>
+            <div class="stat" style="background:var(--ns)"><b style="color:var(--mu)">6</b><span>غير مسجّل</span></div>
+          </div>
+          <div class="search">ابحث باسم الطالب أو كوده...</div>
+          <div class="card">
+            <div class="row between" style="margin-bottom:8px">
+              <div><div class="row"><b>محمد العتيبي</b><span class="badge">#1042</span></div><div class="sub">الفرقان · الصقور</div></div>
+              <span class="badge" style="background:var(--oks);color:var(--bh)">حاضر</span>
+            </div>
+            <div class="g4">
+              <div class="sbtn" style="background:var(--ok);color:#fff"><span class="ic"></span>حاضر</div>
+              <div class="sbtn"><span class="ic"></span>متأخر</div>
+              <div class="sbtn"><span class="ic"></span>بعذر</div>
+              <div class="sbtn"><span class="ic"></span>غائب</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="row between" style="margin-bottom:8px">
+              <div><div class="row"><b>عبدالله الشهري</b><span class="badge">#1043</span></div><div class="sub">الفرقان · النجوم</div></div>
+              <span class="badge">○ غير مسجّل</span>
+            </div>
+            <div class="g4"><div class="sbtn">حاضر</div><div class="sbtn">متأخر</div><div class="sbtn">بعذر</div><div class="sbtn">غائب</div></div>
+          </div>
+        </div></div>
+        <div class="bnav"><div><i></i>الرئيسية</div><div><i></i>عمليات</div><div class="on"><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <span class="lbl after">المقترح: أول شاشة</span>
+      <div class="phone">
+        <div class="tbar"><span class="t">كشف الحضور</span><div class="acts"><span class="icb srch"></span><span class="icb bl"><span class="dot"></span></span><span class="icb" style="font-weight:700">⋮</span></div></div>
+        <div class="scroll"><div class="stack" style="padding-block:10px 0">
+          <div class="days">
+            <div class="day done"><span>خميس</span><b>١٨</b></div>
+            <div class="day off"><span>جمعة</span><b>١٩</b></div>
+            <div class="day done"><span>سبت</span><b>٢٠</b></div>
+            <div class="day on"><span>اليوم</span><b>٢١</b></div>
+            <div class="day"><span>اثنين</span><b>٢٢</b></div>
+            <div class="day"><span>ثلاثاء</span><b>٢٣</b></div>
+          </div>
+          <div class="chips">
+            <div class="chip on">كل الحلقات</div><div class="chip">الفرقان</div><div class="chip">النور</div><div class="chip">الهدى</div>
+          </div>
+          <div class="chips">
+            <div class="chip on">كل المجموعات</div><div class="chip"><span class="cd" style="background:#6b3fb0"></span>الصقور</div><div class="chip"><span class="cd" style="background:#12766b"></span>النجوم</div><div class="chip"><span class="cd" style="background:#b0316f"></span>الفرسان</div>
+          </div>
+          <div style="padding:0 12px" class="stack">
+            <div class="row between"><b style="font-size:12px">24 من 30 مسجّل</b><span class="sub">اضغط لون لعرض طلابه</span></div>
+            <div class="bar">
+              <i style="width:60%;background:var(--ok)"></i><i style="width:10%;background:var(--wa)"></i><i style="width:3.3%;background:var(--ex)"></i><i style="width:6.7%;background:var(--ab)"></i>
+            </div>
+            <div class="legend">
+              <span><i style="background:var(--ok)"></i>حاضر <b>18</b></span>
+              <span><i style="background:var(--wa)"></i>متأخر <b>3</b></span>
+              <span><i style="background:var(--ex)"></i>بعذر <b>1</b></span>
+              <span><i style="background:var(--ab)"></i>غائب <b>2</b></span>
+              <span><i style="background:#c9cdc4"></i>باقٍ <b>6</b></span>
+            </div>
+          </div>
+          <div style="padding:0 12px"><div class="search">ابحث بالاسم أو الكود</div></div>
+          <div class="list">
+            <div class="li"><div class="row between"><div><span class="nm">محمد العتيبي</span> <span class="sub">#1042</span></div><span class="sub">الفرقان، الصقور</span></div>
+              <div class="seg"><div class="pr">حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
+            <div class="li"><div class="row between"><div><span class="nm">عبدالله الشهري</span> <span class="sub">#1043</span></div><span class="sub">الفرقان، النجوم</span></div>
+              <div class="seg"><div>حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
+            <div class="li"><div class="row between"><div><span class="nm">سعد القحطاني</span> <span class="sub">#1044</span></div><span class="sub">النور، الصقور</span></div>
+              <div class="seg"><div>حاضر</div><div class="lt">متأخر</div><div>بعذر</div><div>غائب</div></div></div>
+            <div class="li"><div class="row between"><div><span class="nm">فيصل الدوسري</span> <span class="sub">#1045</span></div><span class="sub">النور، الفرسان</span></div>
+              <div class="seg"><div>حاضر</div><div>متأخر</div><div>بعذر</div><div class="ab">غائب</div></div></div>
+          </div>
+        </div></div>
+        <div class="dock"><span class="btn o">الباقون حاضر (6)</span><span class="btn p" style="box-shadow:none">إنهاء اليوم</span></div>
+        <div class="bnav2"><div><i></i>الرئيسية</div><div><i></i>عمليات</div><div class="on"><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
+      </div>
+    </div>
+
+    <div class="why">
+      <h3>التغييرات</h3>
+      <ol class="items">
+        <li><b>ح١ شريط واحد بدل خمسة مربعات.</b> المربعات الآن تأخذ ثلاثة صفوف في الجوال (والخامس وحيد في صفه). الشريط يعطي نفس المعلومة في سطرين، ومعه «24 من 30 مسجّل» لتعرف كم بقي. والضغط على أي لون في الشرح يعرض طلاب تلك الحالة فقط، فتصل مثلاً للستة غير المسجّلين مباشرة.</li>
+        <li><b>ح٢ شريط أيام بدل قائمة منسدلة.</b> اليوم الحالي مظلل، والعطل مخططة ولا تُختار، والأيام التي اكتمل تحضيرها عليها خط أخضر صغير. تبديل اليوم بلمسة واحدة بدل فتح قائمة طويلة.</li>
+        <li><b>ح٣ الحلقة والمجموعة كشرائح أفقية.</b> لمسة واحدة للتصفية، والمجموعات تظهر بألوانها الموجودة في النظام أصلاً. إذا زادت الحلقات تتحرك الشرائح أفقياً.</li>
+        <li><b>ح٤ صف أخف لكل طالب.</b> حذفت شارة الحالة المكررة (الزر الملوّن يكفي)، ووضعت الأزرار الأربعة في شريط مقسّم واحد. النتيجة: يظهر 4 طلاب في أول شاشة بدل صفر. زر «مسيرة الحضور» يبقى بالضغط على اسم الطالب.</li>
+        <li><b>ح٥ «إنهاء اليوم» و«الباقون حاضر» ثابتان فوق الشريط السفلي.</b> لا تحتاج أن تصعد لأعلى الصفحة بعد تحضير 30 طالباً. زر «النقاط التلقائية» إعداد نادر الاستخدام فانتقل لقائمة ⋮ في الأعلى.</li>
+      </ol>
+      <p class="note">لا تغيير على طريقة الحفظ الفوري ولا على المزامنة بين الأجهزة ولا على نافذة إنهاء اليوم والواتساب. التغيير في الشكل وترتيب العناصر فقط.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PORTAL ======================= -->
+<section id="portal">
+  <h2>بوابة ولي الأمر</h2>
+  <div class="compare">
+    <div class="col">
+      <span class="lbl">الحالي</span>
+      <div class="phone tall">
+        <div class="tbar" style="height:50px"><div class="row"><span style="width:26px;height:26px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><b style="font-size:12px">بوابة ولي الأمر</b></div><span class="sub">🔔 خروج</span></div>
+        <div class="scroll"><div class="pad stack">
+          <div class="remote"><div class="t">▶ الدراسة اليوم عن بعد</div><div class="sub">رابط حلقة الفرقان — اضغط للدخول عبر Google Meet</div><span class="btn p" style="margin-top:8px;height:34px">دخول الحلقة الافتراضية</span></div>
+          <div class="card" style="text-align:center;box-shadow:3px 3px 0 var(--i);border-color:var(--l)">
+            <div class="avatar" style="width:56px;height:56px;margin:0 auto 6px;font-size:22px">م</div>
+            <b style="font-size:15px">محمد العتيبي</b>
+            <div class="row" style="justify-content:center;margin-top:4px;flex-wrap:wrap"><span class="badge">#1042</span><span class="gtag" style="background:#e2f6f3;color:#12766b">الفرقان</span><span class="gtag" style="background:#efe7fb;color:#6b3fb0">الصقور</span></div>
+            <div class="sub">موسم ١٤٤٧</div>
+            <span class="btn p" style="height:38px;font-size:18px;margin-top:6px">🏆 245 <small style="font-size:11px">نقطة</small></span>
+          </div>
+          <div class="card"><b style="font-size:13px">الحضور هذا الموسم</b>
+            <div class="g4" style="margin-top:8px">
+              <div class="stat" style="background:var(--oks)"><b style="color:var(--ok)">20</b><span>حاضر</span></div>
+              <div class="stat" style="background:var(--was)"><b style="color:var(--wa)">2</b><span>متأخر</span></div>
+              <div class="stat" style="background:var(--exs)"><b style="color:var(--ex)">1</b><span>بعذر</span></div>
+              <div class="stat" style="background:var(--abs)"><b style="color:var(--ab)">1</b><span>غائب</span></div>
+            </div></div>
+          <div class="card"><b style="font-size:13px">الإنجازات والأوسمة</b>
+            <div class="row" style="flex-wrap:wrap;margin-top:6px"><span class="badge" style="background:var(--acs);color:var(--ac)">ختم جزء عم</span><span class="badge" style="background:var(--acs);color:var(--ac)">المواظب</span><span class="badge" style="background:var(--acs);color:var(--ac)">نجم الأسبوع</span></div></div>
+          <div class="card"><b style="font-size:13px">النتائج الشهرية</b>
+            <div class="stack" style="margin-top:6px;gap:5px">
+              <div class="row between" style="background:var(--k);border-radius:6px;padding:4px 8px"><span>شهر صفر</span><b style="color:var(--b)">88%</b></div>
+              <div class="row between" style="background:var(--k);border-radius:6px;padding:4px 8px"><span>ربيع الأول</span><b style="color:var(--b)">94%</b></div>
+            </div></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <span class="lbl after">المقترح</span>
+      <div class="phone tall">
+        <div class="tbar" style="height:50px"><div class="row"><span style="width:26px;height:26px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><b style="font-size:12px">بوابة ولي الأمر</b></div><span class="sub">🔔 خروج</span></div>
+        <div class="scroll"><div class="pad stack">
+          <div class="remote"><div class="t">▶ الدراسة اليوم عن بعد</div><div class="sub">رابط حلقة الفرقان، اضغط للدخول عبر Google Meet</div><span class="btn p" style="margin-top:8px;height:34px">دخول الحلقة الافتراضية</span></div>
+          <div class="row" style="gap:10px;padding:2px 0">
+            <div class="avatar">م</div>
+            <div style="flex:1;min-width:0"><b style="font-size:14px">محمد العتيبي</b>
+              <div class="row" style="flex-wrap:wrap;gap:4px"><span class="gtag" style="background:#e2f6f3;color:#12766b">الفرقان</span><span class="gtag" style="background:#efe7fb;color:#6b3fb0">الصقور</span><span class="sub">#1042</span></div></div>
+            <div style="text-align:center;line-height:1.1"><b style="font-size:22px;color:var(--b)">245</b><div class="sub">نقطة</div></div>
+          </div>
+          <div class="card stack" style="gap:8px">
+            <div class="row between"><b style="font-size:13px">الحضور</b><span class="sub">آخر 14 يوم دراسي</span></div>
+            <div class="row between" style="align-items:flex-end">
+              <div class="score"><b>91</b><span class="sub">من 100</span></div>
+              <span class="badge" style="background:var(--oks);color:var(--bh);font-size:11px">ممتاز</span>
+            </div>
+            <div class="strip">
+              <i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--wa)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--ab)"></i>
+              <i style="background:var(--ok)"></i><i style="background:var(--ex)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--wa)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok);outline:2px solid var(--i);outline-offset:1px"></i>
+            </div>
+            <div class="row between"><span class="sub">٢ ربيع الأول</span><span class="sub">اليوم</span></div>
+            <div class="legend" style="border-top:1px solid var(--l);padding-top:6px">
+              <span><i style="background:var(--ok)"></i>حاضر <b>20</b></span><span><i style="background:var(--wa)"></i>متأخر <b>2</b></span><span><i style="background:var(--ex)"></i>بعذر <b>1</b></span><span><i style="background:var(--ab)"></i>غائب <b>1</b></span>
+            </div>
+          </div>
+          <div class="card stack" style="gap:8px">
+            <div class="row between"><b style="font-size:13px">الأوسمة والإنجازات</b><span class="sub">3</span></div>
+            <div class="medals">
+              <div class="medal"><div class="e">📖</div>ختم جزء عم</div>
+              <div class="medal"><div class="e">🎖️</div>المواظب</div>
+              <div class="medal"><div class="e">⭐</div>نجم الأسبوع</div>
+            </div>
+          </div>
+          <div class="card stack" style="gap:8px">
+            <b style="font-size:13px">النتائج الشهرية</b>
+            <div class="mres">
+              <div class="r"><span>شهر صفر</span><div class="tr"><i style="width:88%"></i></div><b>88%</b></div>
+              <div class="r"><span>ربيع الأول</span><div class="tr"><i style="width:94%"></i></div><b>94%</b></div>
+            </div>
+          </div>
+          <div class="card row between"><b style="font-size:13px">مراسلة الإدارة</b><span class="badge" style="background:var(--bs);color:var(--bh)">رد جديد</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="why">
+      <h3>التغييرات</h3>
+      <ol class="items">
+        <li><b>ب١ بطاقة «الدراسة عن بعد» تبقى كما هي</b> في مكانها أعلى الصفحة.</li>
+        <li><b>ب٢ ترويسة الطالب في سطر واحد.</b> الصورة الرمزية والاسم والحلقة والمجموعة، والنقاط على الطرف. البطاقة الحالية المتوسّطة تأخذ ربع الشاشة لمعلومات قليلة.</li>
+        <li><b>ب٣ الحضور: درجة التزام من 100 وآخر 14 يوماً.</b> مربع صغير لكل يوم بلون حالته، وآخرها اليوم. ولي الأمر يفهم الوضع بنظرة، ويرى هل الغياب قديم أم الأسبوع الحالي. أعداد الموسم تبقى في سطر صغير تحتها.</li>
+        <li><b>ب٤ الأوسمة بأيقوناتها.</b> كل وسام وإنجاز له أيقونة في قاعدة البيانات، لكن البوابة لا تعرضها حالياً. عرضها كميداليات يجعل القسم محفزاً للطالب نفسه.</li>
+        <li><b>ب٥ النتائج الشهرية كأشرطة</b> بطول النسبة، ليظهر التقدم من شهر لآخر. إذا كانت النتيجة نصاً بدل نسبة يظهر النص كما هو الآن.</li>
+        <li><b>ب٦ المراسلة في سطر قابل للفتح</b> مع تنبيه «رد جديد» إذا ردّت الإدارة. المحادثة نفسها كما هي عند فتحها.</li>
+      </ol>
+      <div class="formula">
+        <b>طريقة حساب درجة الالتزام (قابلة للتعديل)</b>
+        <span><code>(الحضور + نصف أيام التأخر) ÷ (الأيام المسجّلة − أيام العذر) × 100</code></span>
+        <span class="muted">مثال: 20 حاضر، 2 متأخر، 1 بعذر، 1 غائب ← (20 + 1) ÷ (24 − 1) = 91. التقدير: 90 فأعلى ممتاز، 75 إلى 89 جيد جداً، 60 إلى 74 جيد، أقل من 60 يحتاج متابعة.</span>
+        <span class="muted">تقنياً يحتاج هذا إضافة تاريخ اليوم لاستعلام الحضور في البوابة فقط. لا تغيير على قاعدة البيانات.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= HOME ======================= -->
+<section id="home">
+  <h2>الصفحة الرئيسية وآخر الأخبار</h2>
+  <div class="compare">
+    <div class="col">
+      <span class="lbl">الحالي</span>
+      <div class="phone tall">
+        <div class="tbar" style="height:50px;background:var(--s)"><span style="width:28px;height:28px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><div class="row"><span class="btn">بوابة ولي الأمر</span><span class="btn g">دخول الإدارة</span></div></div>
+        <div class="scroll"><div style="position:relative;overflow:hidden;padding:34px 14px 26px;text-align:center">
+            <div class="blob" style="width:170px;height:170px;background:#bfe3d2;top:-40px;left:-50px"></div>
+            <div class="blob" style="width:190px;height:190px;background:#f1dcb8;bottom:-60px;right:-40px"></div>
+            <div style="position:relative" class="stack">
+              <span class="btn" style="margin:0 auto;border-radius:20px;color:var(--b);box-shadow:3px 3px 0 var(--i)">📅 الموسم الحالي: ١٤٤٧</span>
+              <b style="font-size:24px">حلقات ابن الجوزي</b>
+              <span class="sub" style="font-size:12px">برنامج تحفيظ صيفي بمسجد الطرباق — يجمع بين حفظ القرآن الكريم، التحفيز بنظام النقاط، ومتابعة دقيقة لأولياء الأمور طوال الموسم.</span>
+              <div class="row" style="justify-content:center"><span class="btn p" style="height:36px">متابعة ابني ←</span><span class="btn" style="height:36px;box-shadow:3px 3px 0 var(--i)">🏆 لوحة المتصدرين</span></div>
+            </div>
+          </div>
+          <div class="pad stack">
+            <div class="g2"><div class="cardS" style="text-align:center"><b style="font-size:22px">120</b><div class="sub">طالب مسجّل</div></div><div class="cardS" style="text-align:center"><b style="font-size:22px">8</b><div class="sub">حلقة تحفيظ</div></div></div>
+            <b style="font-size:15px;text-align:center">لماذا حلقات ابن الجوزي؟</b>
+            <div class="cardS" style="box-shadow:none"><div style="width:30px;height:30px;border-radius:8px;background:var(--bs);margin-bottom:6px"></div><b>حفظ وتلاوة</b><div class="sub">برنامج يومي منظم لحفظ القرآن الكريم ومراجعته…</div></div>
+            <div class="cardS" style="box-shadow:none"><div style="width:30px;height:30px;border-radius:8px;background:var(--bs);margin-bottom:6px"></div><b>نظام نقاط وحوافز</b><div class="sub">تحفيز مستمر للطلاب عبر النقاط…</div></div>
+            <b style="font-size:15px;text-align:center">آخر الأخبار</b>
+            <div class="cardS" style="padding:0;overflow:hidden"><div style="height:70px;background:var(--b);display:flex;align-items:center;justify-content:center;position:relative"><span style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.25)"></span></div><div style="padding:8px"><span class="badge" style="background:var(--bs);color:var(--b)">★ إعلان</span><div><b>بدء التسجيل للموسم الجديد</b></div><div class="sub">يسر إدارة الحلقات الإعلان عن…</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <span class="lbl after">المقترح</span>
+      <div class="phone tall">
+        <div class="tbar" style="height:50px"><div class="row"><span style="width:28px;height:28px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><b style="font-size:12px">حلقات ابن الجوزي</b></div><span class="btn">بوابة ولي الأمر</span></div>
+        <div class="scroll">
+          <div style="padding:26px 16px 20px;background:var(--r);border-bottom:1px solid var(--l)" class="stack">
+            <span class="sub" style="font-size:11.5px;font-weight:600;color:var(--b)">مسجد الطرباق، موسم ١٤٤٧</span>
+            <b style="font-size:26px;line-height:1.3">حلقات ابن الجوزي</b>
+            <span style="font-size:12.5px;color:var(--mu)">برنامج صيفي لحفظ القرآن الكريم يضم هذا الموسم <b style="color:var(--i)">120 طالباً</b> في <b style="color:var(--i)">8 حلقات</b>.</span>
+            <span class="btn p" style="height:42px;font-size:13px;box-shadow:3px 3px 0 var(--i)">متابعة ابني</span>
+            <span style="font-size:12px;font-weight:600;color:var(--b);text-align:center">لوحة المتصدرين</span>
+          </div>
+          <div class="pad stack">
+            <b style="font-size:15px">آخر الأخبار</b>
+            <div class="card" style="padding:0;overflow:hidden">
+              <div style="height:110px;background:linear-gradient(160deg,#cfe3d8,#8fb9a4)"></div>
+              <div style="padding:10px" class="stack"><span class="cat" style="color:var(--b)">إعلان</span><b style="font-size:13px;margin-top:-6px">بدء التسجيل للموسم الجديد</b><span class="sub">يسر إدارة الحلقات الإعلان عن فتح باب التسجيل…</span><div class="row between"><span class="sub">١٥ ربيع الأول</span><span style="font-size:11px;font-weight:700;color:var(--b)">اقرأ الخبر</span></div></div>
+            </div>
+            <div>
+              <div class="newsrow"><div><span class="cat" style="color:var(--ex)">إنجاز</span><div><b>تكريم الحافظين لجزء عم</b></div><span class="sub">١٢ ربيع الأول</span></div><div class="thumb"></div></div>
+              <div class="newsrow"><div><span class="cat" style="color:var(--ac)">فعالية</span><div><b>رحلة الطلاب المتميزين</b></div><span class="sub">٨ ربيع الأول</span></div><div class="thumb" style="background:none;border:1px dashed var(--l)"></div></div>
+            </div>
+            <div class="stack" style="gap:6px;border-top:1px solid var(--l);padding-top:12px">
+              <b style="font-size:13px">عن البرنامج</b>
+              <span class="sub" style="font-size:11.5px">حفظ ومراجعة يومية بإشراف معلمين، ونقاط وأوسمة طوال الموسم، وبوابة لولي الأمر يتابع فيها الحضور والنتائج.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="why">
+      <h3>التغييرات</h3>
+      <ol class="items">
+        <li><b>ر١ إزالة البقع الضبابية والشارة فوق العنوان وحركات الظهور.</b> العنوان محاذى لليمين كقراءة عربية طبيعية، واسم المسجد والموسم فوقه كسطر نصي عادي.</li>
+        <li><b>ر٢ الأرقام داخل الجملة</b> («120 طالباً في 8 حلقات») بدل مربعين كبيرين. نفس المعلومة بمساحة أقل ولا تبدو لوحة تحكم.</li>
+        <li><b>ر٣ زر واحد رئيسي بعرض الشاشة: «متابعة ابني».</b> هذا ما يأتي له أغلب الزوار. المتصدرون رابط تحته. و«دخول الإدارة» يبقى في أسفل الصفحة فقط (موجود هناك أصلاً) فتصبح الترويسة أبسط ويظهر اسم البرنامج في الجوال (مخفي حالياً).</li>
+        <li><b>ر٤ الأخبار: أحدث خبر كبير، والباقي قائمة مضغوطة.</b> بلا صورة بديلة مزخرفة؛ إذا لا توجد صورة لا يظهر مكانها شيء. والأهم: <b>حالياً لا يمكن قراءة الخبر كاملاً</b> لأن النص مقطوع بثلاثة أسطر. سأضيف «اقرأ الخبر» يفتح الخبر كاملاً.</li>
+        <li><b>ر٥ قسم «لماذا حلقات ابن الجوزي؟»</b> يصبح فقرة قصيرة «عن البرنامج» تحت الأخبار بدل ثلاث بطاقات. الزائر المعتاد (ولي أمر) يرى الأخبار أولاً.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= NAV ======================= -->
+<section id="nav">
+  <h2>الشريط السفلي والقائمة (لوحة الإشراف في الجوال)</h2>
+  <div class="compare">
+    <div class="col">
+      <span class="lbl">الحالي: «المزيد» مفتوحة</span>
+      <div class="phone">
+        <div class="bell"></div>
+        <div class="scroll"><div class="pad" style="padding-top:46px"><div class="pt">الطلاب</div></div></div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="hd">كل الصفحات <span>✕</span></div>
+          <div style="padding:0 12px 12px;overflow:hidden">
+            <div class="gh">العمل اليومي</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>بحث الغياب</div></div>
+            <div class="gh">الطلاب والتنظيم</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>الحلقات والمجموعات</div><div class="tile"><i></i>المتصدرون</div><div class="tile"><i></i>الإنجازات والأوسمة والعلامات</div></div>
+            <div class="gh">الطباعة والتقارير</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>الطباعة والشهادات</div><div class="tile"><i></i>التقارير</div><div class="tile"><i></i>النتائج الشهرية</div></div>
+            <div class="gh">الإدارة</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>المواسم</div><div class="tile"><i></i>استيراد Excel</div><div class="tile"><i></i>محتوى الصفحة الرئيسية</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="lbl after">المقترح: «المزيد» مفتوحة</span>
+      <div class="phone">
+        <div class="tbar"><span class="t">الطلاب</span><div class="acts"><span class="icb srch"></span><span class="icb bl"><span class="dot"></span></span></div></div>
+        <div class="scroll"></div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="hd"><span>كل الصفحات</span><span>✕</span></div>
+          <div style="padding:0 14px 12px;overflow:hidden">
+            <div class="gh">العمل اليومي</div>
+            <div class="mrow"><i></i>بحث الغياب</div>
+            <div class="gh">الطلاب والتنظيم</div>
+            <div class="mrow"><i></i>الحلقات والمجموعات</div><div class="mrow"><i></i>المتصدرون</div><div class="mrow"><i></i>الإنجازات والأوسمة</div>
+            <div class="gh">الطباعة والتقارير</div>
+            <div class="mrow"><i></i>الطباعة والشهادات</div><div class="mrow"><i></i>التقارير</div><div class="mrow" style="border:0"><i></i>النتائج الشهرية</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="why">
+      <h3>التغييرات</h3>
+      <ol class="items">
+        <li><b>ق١ شريط علوي رفيع في كل صفحات الإشراف.</b> حالياً جرس التنبيهات عائم وحده في الزاوية، وتحته مساحة فارغة. المقترح: اسم الصفحة الحالية، وزر بحث، والجرس، في شريط واحد.</li>
+        <li><b>ق٢ البحث الشامل في الجوال.</b> البحث السريع عن أي طالب موجود في النظام لكنه يفتح فقط باختصار لوحة المفاتيح Ctrl+K، أي أنه غير متاح في الجوال إطلاقاً، ولا يوجد زر له في الكمبيوتر. زر البحث في الشريط العلوي يحل هذا.</li>
+        <li><b>ق٣ «المزيد» كقائمة عمودية.</b> المربعات الحالية بإطار أسود تقطع الأسماء الطويلة إلى ثلاثة أسطر («الإنجازات والأوسمة والعلامات»). القائمة أسهل للقراءة وأسرع للمس، والصفحة الحالية تظهر بلون الموقع.</li>
+        <li><b>ق٤ الشريط السفلي:</b> خلفية خفيفة خلف أيقونة الصفحة الحالية لتكون أوضح، وحد علوي عادي بدل الحد الأسود السميك والظل.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= DASHBOARD + SMALL ======================= -->
+<section id="dash">
+  <h2>رئيسية الإشراف</h2>
+  <div class="compare">
+    <div class="col">
+      <span class="lbl after">المقترح: أعلى الصفحة</span>
+      <div class="phone" style="height:430px">
+        <div class="tbar"><span class="t">الرئيسية</span><div class="acts"><span class="icb srch"></span><span class="icb bl"></span></div></div>
+        <div class="scroll"><div class="pad stack">
+          <div class="card stack" style="gap:8px;border-color:var(--i)">
+            <div class="row between"><b style="font-size:13px">حضور اليوم</b><span class="sub">الأحد، ٢١ ربيع الأول</span></div>
+            <div class="bar"><i style="width:60%;background:var(--ok)"></i><i style="width:10%;background:var(--wa)"></i><i style="width:3.3%;background:var(--ex)"></i><i style="width:6.7%;background:var(--ab)"></i></div>
+            <div class="row between"><span class="sub">24 من 30 مسجّل، 2 غائب</span><span class="btn p" style="box-shadow:none">افتح الكشف</span></div>
+          </div>
+          <div class="g2">
+            <div class="card"><b style="font-size:18px">120</b><div class="sub">طالب نشط</div></div>
+            <div class="card"><b style="font-size:18px">34</b><div class="sub">يوم متبقٍ للموسم</div></div>
+            <div class="card" style="border-color:var(--wa)"><b style="font-size:18px;color:var(--wa)">3</b><div class="sub">علامات تحتاج إجراء</div></div>
+            <div class="card"><b style="font-size:18px">4</b><div class="sub">رسائل أولياء أمور</div></div>
+          </div>
+          <div class="card"><b style="font-size:13px">أفضل 5 طلاب</b><div class="sub" style="margin-top:4px">كما هي الآن</div></div>
+        </div></div>
+        <div class="bnav2"><div class="on"><i></i>الرئيسية</div><div><i></i>عمليات</div><div><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
+      </div>
+    </div>
+    <div class="why">
+      <h3>التغييرات</h3>
+      <ol class="items">
+        <li><b>إ١ بطاقة «حضور اليوم» أولاً.</b> أول ما يحتاجه المشرف كل يوم هو: هل انتهى التحضير؟ البطاقة تعرض نفس الشريط الملوّن من كشف الحضور وزر يفتح الكشف مباشرة. (الكود يحسب هذا الرقم أصلاً لكنه لا يعرضه.)</li>
+        <li><b>إ٢ مربعات الأرقام أصغر.</b> رقم «مسجّلون في الموسم الحالي» يكاد يطابق «الطلاب النشطين» فأستبدله برسائل أولياء الأمور غير المقروءة. وقائمة «آخر العمليات» تعرض أسماء تقنية للعمليات، سأترجمها لعبارات مفهومة أو أنقلها للإعدادات.</li>
+      </ol>
+      <h3 style="margin-top:12px">تحسينات صغيرة في صفحات أخرى</h3>
+      <ol class="items">
+        <li><b>ص١ العمليات السريعة:</b> زر «← عودة للبحث» سهمه باتجاه خاطئ في العربية، يصبح «→».</li>
+        <li><b>ص٢ المتصدرون:</b> خمسة تبويبات تنكسر على ثلاثة أسطر في الجوال. تصبح سطراً واحداً يتحرك أفقياً، ولكل تبويب أيقونة مختلفة (حالياً ثلاثة منها بنفس أيقونة الكأس).</li>
+        <li><b>ص٣ المتصدرون:</b> التبديل التلقائي كل 9 ثوانٍ مفيد على شاشة العرض في المسجد، لكنه مزعج في الجوال حين يقرأ الطالب ترتيبه. يكون مطفأً افتراضياً في الجوال.</li>
+        <li><b>ص٤ احترام إعداد «تقليل الحركة»</b> في الجوال للمستخدمين الذين يفعّلونه.</li>
+        <li><b>ص٥ الظل الأسود:</b> يبقى للزر الرئيسي وللعنصر المختار فقط، ويُزال من البطاقات العادية ومربعات الأرقام.</li>
+        <li><b>ص٦ الأرقام:</b> التواريخ تظهر بأرقام عربية مشرقية (١٢٣) والأعداد بأرقام (123). أوحّدها على شكل واحد تختاره أنت.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= DESKTOP ======================= -->
+<section id="desktop">
+  <h2>الكمبيوتر</h2>
+  <p class="prose">نفس الأفكار بتخطيط الشاشة الواسعة. هذا نموذج كشف الحضور بعد التعديل:</p>
+  <div class="tbl-wrap" style="border:0;background:none">
+    <div class="desk">
+      <div class="side"><div>الرئيسية</div><div>العمليات السريعة</div><div class="on">كشف الحضور</div><div>بحث الغياب</div><div>الطلاب</div><div>الحلقات والمجموعات</div></div>
+      <div class="main">
+        <div class="row between"><b style="font-size:16px">كشف الحضور</b><div class="row"><span class="btn o">النقاط التلقائية</span><span class="btn o">الباقون حاضر (6)</span><span class="btn p">إنهاء اليوم</span></div></div>
+        <div class="days"><div class="day done"><span>خميس</span><b>١٨</b></div><div class="day off"><span>جمعة</span><b>١٩</b></div><div class="day done"><span>سبت</span><b>٢٠</b></div><div class="day on"><span>اليوم</span><b>٢١</b></div><div class="day"><span>اثنين</span><b>٢٢</b></div><div class="day"><span>ثلاثاء</span><b>٢٣</b></div><div class="day"><span>أربعاء</span><b>٢٤</b></div><div class="day"><span>خميس</span><b>٢٥</b></div></div>
+        <div class="row between" style="gap:14px;flex-wrap:wrap">
+          <div class="chips"><div class="chip on">كل الحلقات</div><div class="chip">الفرقان</div><div class="chip">النور</div><div class="chip">الهدى</div><span style="width:10px"></span><div class="chip on">كل المجموعات</div><div class="chip"><span class="cd" style="background:#6b3fb0"></span>الصقور</div><div class="chip"><span class="cd" style="background:#12766b"></span>النجوم</div></div>
+          <div class="search" style="width:190px">ابحث بالاسم أو الكود</div>
+        </div>
+        <div class="row" style="gap:12px"><div class="bar" style="flex:1"><i style="width:60%;background:var(--ok)"></i><i style="width:10%;background:var(--wa)"></i><i style="width:3.3%;background:var(--ex)"></i><i style="width:6.7%;background:var(--ab)"></i></div>
+          <div class="legend"><span><i style="background:var(--ok)"></i>حاضر <b>18</b></span><span><i style="background:var(--wa)"></i>متأخر <b>3</b></span><span><i style="background:var(--ex)"></i>بعذر <b>1</b></span><span><i style="background:var(--ab)"></i>غائب <b>2</b></span><span><i style="background:#c9cdc4"></i>باقٍ <b>6</b></span></div></div>
+        <div class="dtable">
+          <div class="dtr h"><span>الطالب</span><span>الحلقة والمجموعة</span><span>الحالة</span></div>
+          <div class="dtr"><span><b>محمد العتيبي</b> <span class="sub">#1042</span></span><span class="sub">الفرقان، الصقور</span><div class="seg"><div class="pr">حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
+          <div class="dtr"><span><b>عبدالله الشهري</b> <span class="sub">#1043</span></span><span class="sub">الفرقان، النجوم</span><div class="seg"><div>حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
+          <div class="dtr"><span><b>سعد القحطاني</b> <span class="sub">#1044</span></span><span class="sub">النور، الصقور</span><div class="seg"><div>حاضر</div><div class="lt">متأخر</div><div>بعذر</div><div>غائب</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ol class="items">
+    <li><b>ك١ كشف الحضور:</b> أزرار الحالة في الجدول الآن أيقونات فقط بلا نص (تحتاج أن تمرّ عليها لتعرف أيها «بعذر»). تصبح شريطاً مقسّماً بالكلمات كما في النموذج.</li>
+    <li><b>ك٢ بوابة ولي الأمر:</b> عمودان في الشاشة الواسعة، الحضور والنتائج يميناً، والأوسمة والمراسلة يساراً، بدل عمود واحد ضيق في المنتصف.</li>
+    <li><b>ك٣ الرئيسية:</b> العنوان يميناً وأحدث خبر بجانبه يساراً، فيظهر الخبر دون تمرير.</li>
+    <li><b>ك٤ القائمة الجانبية:</b> تبقى كما هي، مع زر بحث ظاهر أعلاها يفتح البحث الشامل، ونفس تخفيف الظل للعنصر المختار.</li>
+  </ol>
+</section>
+
+<section id="keep">
+  <h2>ما لن أغيّره</h2>
+  <ul class="items">
+    <li>ألوان الموقع وخطه والشعار.</li>
+    <li>بطاقة «الدراسة اليوم عن بعد» في البوابة.</li>
+    <li>الحفظ الفوري للحضور والمزامنة بين الأجهزة، ونافذة إنهاء اليوم والواتساب والطباعة.</li>
+    <li>صفحات الطلاب والحلقات والمواسم والاستيراد والإعدادات: وظيفتها واضحة ولا تحتاج إلا تخفيف الظل العام (ص٥).</li>
+    <li>صفحة دخول ولي الأمر: بسيطة وواضحة.</li>
+  </ul>
+  <p class="note">الخطوة التالية: أرسل لي أرقام التغييرات التي توافق عليها، أو اكتب «موافق على الكل»، وأي تعديل تريده على طريقة حساب درجة الالتزام أو شكل الأرقام (ص٦). بعدها أبدأ التنفيذ على الجوال أولاً ثم الكمبيوتر.</p>
+</section>
+
+</div>
