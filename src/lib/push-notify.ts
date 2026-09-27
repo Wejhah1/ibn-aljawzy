@@ -24,7 +24,7 @@ export interface PushPayload {
   data?: Record<string, unknown>;
 }
 
-export type NotificationType = "attendance" | "badge" | "achievement" | "result" | "points" | "news";
+export type NotificationType = "attendance" | "badge" | "achievement" | "result" | "points" | "news" | "remote";
 
 /**
  * يرسل إشعار Push لكل الاشتراكات المرتبطة بأرقام جوال أولياء أمور محددة.

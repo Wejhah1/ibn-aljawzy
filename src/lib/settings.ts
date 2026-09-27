@@ -27,3 +27,16 @@ export async function getProgramInfo(supabase: SupabaseClient<Database>): Promis
   }
   return info;
 }
+
+export const REMOTE_STUDY_SETTING = { category: "remote_study", key: "enabled" } as const;
+
+/** المفتاح العام لوضع الدراسة عن بعد: إذا كان مفعّلاً تظهر روابط كل الحلقات التي لها رابط. */
+export async function getRemoteStudyEnabled(supabase: SupabaseClient<Database>): Promise<boolean> {
+  const { data } = await supabase
+    .from("app_settings")
+    .select("value")
+    .eq("category", REMOTE_STUDY_SETTING.category)
+    .eq("key", REMOTE_STUDY_SETTING.key)
+    .maybeSingle();
+  return data?.value === true;
+}

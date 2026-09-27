@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { parentLogoutAction, sendParentNoteAction, deleteParentNoteAction } from "./actions";
 import { PushNotificationToggleCompact } from "@/components/push-notification-toggle";
-import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList, MessageSquare, Send, Trash2 } from "lucide-react";
+import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList, MessageSquare, Send, Trash2, Video, ExternalLink } from "lucide-react";
 
 interface ParentNote {
   id: string;
@@ -26,6 +26,7 @@ interface StudentData {
   groupName: string | null;
   circleColor: string | null;
   groupColor: string | null;
+  meetingUrl: string | null;
   totalPoints: number;
   attendance: { present: number; late: number; absent: number; excused: number };
   achievements: { name: string }[];
@@ -98,6 +99,28 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
           </Card>
         ) : (
           <>
+            {selected.meetingUrl && (
+              <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                <Card className="mb-(--space-6) border-warning bg-warning-soft shadow-brutal-sm text-center">
+                  <div className="flex items-center justify-center gap-2 text-warning mb-1">
+                    <Video size={20} />
+                    <CardTitle className="text-warning">الدراسة اليوم عن بعد</CardTitle>
+                  </div>
+                  <CardDescription>
+                    {selected.circleName ? `رابط ${selected.circleName}` : "رابط الحلقة"} — اضغط للدخول عبر Google Meet
+                  </CardDescription>
+                  <a
+                    href={selected.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-(--space-4) inline-flex items-center justify-center gap-2 h-12 px-(--space-6) rounded-(--radius-sm) bg-brand text-on-brand text-base font-bold border-bold border-line-strong shadow-brutal-sm hover:bg-brand-hover active:shadow-brutal-press active:translate-x-[1px] active:translate-y-[1px]"
+                  >
+                    <ExternalLink size={18} /> دخول الحلقة الافتراضية
+                  </a>
+                </Card>
+              </motion.div>
+            )}
+
             <Card className="mb-(--space-6) shadow-brutal-sm text-center">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-3xl mx-auto mb-(--space-3)">
                 {selected.fullName.charAt(0)}

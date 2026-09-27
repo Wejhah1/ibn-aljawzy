@@ -15,6 +15,7 @@ interface Circle {
   teacher_name?: string | null;
   teacher_phone?: string | null;
   color_token?: string;
+  meeting_url?: string | null;
 }
 
 export function CircleFormModal({
@@ -53,6 +54,18 @@ export function CircleFormModal({
             <Label htmlFor="teacher_phone">جوال المعلم</Label>
             <Input id="teacher_phone" name="teacher_phone" defaultValue={circle?.teacher_phone ?? ""} dir="ltr" />
           </div>
+        </div>
+        <div>
+          <Label htmlFor="meeting_url">رابط الحلقة الافتراضية (Google Meet)</Label>
+          <Input
+            id="meeting_url"
+            name="meeting_url"
+            type="url"
+            dir="ltr"
+            defaultValue={circle?.meeting_url ?? ""}
+            placeholder="https://meet.google.com/abc-defg-hij"
+          />
+          <p className="text-[12px] text-ink-faint mt-1">يظهر لأولياء أمور طلاب الحلقة فقط عند تفعيل الدراسة عن بعد.</p>
         </div>
         <div className="grid grid-cols-2 gap-(--space-3)">
           <div>

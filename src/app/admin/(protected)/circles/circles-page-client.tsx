@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { Plus, Pencil, Phone, Users, CircleDot, Trash2, Eye, GraduationCap } from "lucide-react";
+import { Plus, Pencil, Phone, Users, CircleDot, Trash2, Eye, GraduationCap, Video, VideoOff, Copy, Check } from "lucide-react";
 import { CircleFormModal } from "./circle-form-modal";
 import { GroupFormModal } from "./group-form-modal";
 import { RosterPosterModal } from "./roster-poster-modal";
-import { deleteCircleAction, deleteGroupAction } from "./actions";
+import { deleteCircleAction, deleteGroupAction, setCircleRemoteAction, setGlobalRemoteAction } from "./actions";
 import type { ProgramInfo } from "@/lib/settings";
 
 interface Group {
@@ -29,6 +29,8 @@ interface Circle {
   teacher_phone: string | null;
   color_token: string;
   is_active: boolean;
+  meeting_url: string | null;
+  remote_active: boolean;
 }
 
 const TONE_STYLE: Record<string, { fg: string; bg: string }> = {
@@ -50,6 +52,7 @@ export function CirclesPageClient({
   circleCounts,
   groupCounts,
   programInfo,
+  remoteStudyEnabled,
 }: {
   circles: Circle[];
   groups: Group[];
@@ -57,6 +60,7 @@ export function CirclesPageClient({
   circleCounts: Record<string, number>;
   groupCounts: Record<string, number>;
   programInfo: ProgramInfo;
+  remoteStudyEnabled: boolean;
 }) {
   const [newCircleOpen, setNewCircleOpen] = useState(false);
   const [editCircle, setEditCircle] = useState<Circle | null>(null);
@@ -75,6 +79,8 @@ export function CirclesPageClient({
           الحلقات والمجموعات تصنيفان مستقلان — أضِف كلاً منهما بشكل منفصل، ثم اختر لكل طالب حلقته ومجموعته دون ارتباط بينهما.
         </p>
       </div>
+
+      <RemoteStudyBanner enabled={remoteStudyEnabled} circles={circles} />
 
       {/* الحلقات */}
       <div className="flex items-center justify-between mb-(--space-4)">
@@ -126,6 +132,7 @@ export function CirclesPageClient({
                         </CardDescription>
                       )}
                     </div>
+                    <CircleRemoteRow circle={circle} globalEnabled={remoteStudyEnabled} />
                   </div>
                 </div>
                 <div className="flex items-center gap-(--space-2)">
@@ -295,5 +302,105 @@ function ConfirmDeleteModal({
         </div>
       </div>
     </Modal>
+  );
+}
+
+function RemoteStudyBanner({ enabled, circles }: { enabled: boolean; circles: Circle[] }) {
+  const [pending, startTransition] = useTransition();
+  const withLink = circles.filter((c) => c.meeting_url).length;
+
+  const toggle = () => {
+    const message = enabled
+      ? "إيقاف وضع الدراسة عن بعد؟ ستختفي الروابط من بوابة ولي الأمر (عدا الحلقات المفعّلة لحالها)."
+      : `تفعيل وضع الدراسة عن بعد لكل الحلقات؟ سيظهر رابط كل حلقة (${withLink} حلقة لها رابط) لأولياء أمور طلابها ويصلهم إشعار.`;
+    if (!window.confirm(message)) return;
+    startTransition(async () => {
+      const result = await setGlobalRemoteAction(!enabled);
+      if (result?.error) window.alert(result.error);
+    });
+  };
+
+  return (
+    <Card
+      className={`mb-(--space-8) flex items-center justify-between gap-(--space-3) flex-wrap ${
+        enabled ? "border-warning bg-warning-soft" : ""
+      }`}
+    >
+      <div className="flex items-center gap-(--space-3)">
+        <div
+          className={`flex h-10 w-10 items-center justify-center rounded-(--radius-sm) shrink-0 ${
+            enabled ? "bg-warning text-on-brand" : "bg-surface-sunken text-ink-muted"
+          }`}
+        >
+          {enabled ? <Video size={18} /> : <VideoOff size={18} />}
+        </div>
+        <div>
+          <CardTitle>وضع الدراسة عن بعد {enabled && <Badge tone="warning">مفعّل</Badge>}</CardTitle>
+          <CardDescription>
+            {enabled
+              ? "روابط الحلقات الافتراضية ظاهرة الآن لأولياء الأمور في البوابة."
+              : "للطوارئ: يُظهر رابط Google Meet لكل حلقة لأولياء أمور طلابها. يمكنك أيضاً تفعيل حلقة واحدة من بطاقتها."}
+          </CardDescription>
+        </div>
+      </div>
+      <Button size="sm" variant={enabled ? "danger" : "primary"} disabled={pending} onClick={toggle}>
+        {pending ? "جارِ الحفظ..." : enabled ? "إيقاف للجميع" : "تفعيل لكل الحلقات"}
+      </Button>
+    </Card>
+  );
+}
+
+function CircleRemoteRow({ circle, globalEnabled }: { circle: Circle; globalEnabled: boolean }) {
+  const [pending, startTransition] = useTransition();
+  const [copied, setCopied] = useState(false);
+
+  if (!circle.meeting_url) {
+    return (
+      <CardDescription className="flex items-center gap-1 mt-1 text-ink-faint">
+        <VideoOff size={12} /> لا يوجد رابط حلقة افتراضية — أضفه من «تعديل»
+      </CardDescription>
+    );
+  }
+
+  const live = globalEnabled || circle.remote_active;
+
+  const toggle = () => {
+    startTransition(async () => {
+      const result = await setCircleRemoteAction(circle.id, !circle.remote_active);
+      if (result?.error) window.alert(result.error);
+    });
+  };
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(circle.meeting_url!);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      window.prompt("انسخ الرابط:", circle.meeting_url!);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-(--space-2) flex-wrap mt-(--space-2)">
+      <Badge tone={live ? "success" : "neutral"}>
+        {live ? <Video size={11} /> : <VideoOff size={11} />}
+        {live ? (globalEnabled && !circle.remote_active ? "ظاهر (التفعيل العام)" : "عن بعد: ظاهر") : "عن بعد: متوقف"}
+      </Badge>
+      <button
+        onClick={toggle}
+        disabled={pending}
+        className="text-[12px] font-semibold text-brand hover:underline disabled:opacity-50"
+      >
+        {pending ? "..." : circle.remote_active ? "إيقاف لهذه الحلقة" : "تفعيل لهذه الحلقة"}
+      </button>
+      <button
+        onClick={copy}
+        title="نسخ الرابط"
+        className="flex items-center gap-1 text-[12px] font-semibold text-ink-muted hover:text-ink"
+      >
+        {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? "تم النسخ" : "نسخ الرابط"}
+      </button>
+    </div>
   );
 }

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyParentToken, PARENT_COOKIE_NAME } from "@/lib/parent-session";
+import { getRemoteStudyEnabled } from "@/lib/settings";
 import { PortalClient } from "./portal-client";
 
 export default async function ParentPortalPage() {
@@ -22,12 +23,12 @@ export default async function ParentPortalPage() {
 
   const studentIds = students.map((s) => s.id);
 
-  const [{ data: enrollments }, { data: attendance }, { data: achievements }, { data: badges }, { data: monthlyResults }, { data: parentNotes }] =
+  const [{ data: enrollments }, { data: attendance }, { data: achievements }, { data: badges }, { data: monthlyResults }, { data: parentNotes }, remoteStudyEnabled] =
     await Promise.all([
       currentSeason
         ? admin
             .from("student_season_enrollments")
-            .select("student_id, total_points, circles(name, color_token), groups(name, color_token)")
+            .select("student_id, total_points, circles(name, color_token, meeting_url, remote_active), groups(name, color_token)")
             .in("student_id", studentIds)
             .eq("season_id", currentSeason.id)
         : Promise.resolve({ data: [] }),
@@ -61,6 +62,7 @@ export default async function ParentPortalPage() {
         .select("id, student_id, sender, message, created_at")
         .in("student_id", studentIds)
         .order("created_at", { ascending: true }),
+      getRemoteStudyEnabled(admin),
     ]);
 
   if (parentNotes?.length) {
@@ -87,6 +89,8 @@ export default async function ParentPortalPage() {
       groupName: group?.name ?? null,
       circleColor: circle?.color_token ?? null,
       groupColor: group?.color_token ?? null,
+      // الرابط لا يُرسل للمتصفح إلا إذا كانت الدراسة عن بعد مفعّلة لهذه الحلقة أو للجميع
+      meetingUrl: circle?.meeting_url && (remoteStudyEnabled || circle.remote_active) ? circle.meeting_url : null,
       totalPoints: enrollment?.total_points ?? 0,
       attendance: {
         present: att.filter((a) => a.status === "present").length,

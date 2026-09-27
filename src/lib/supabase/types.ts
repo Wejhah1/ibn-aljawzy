@@ -264,7 +264,9 @@ export type Database = {
           is_active: boolean
           leader_name: string | null
           leader_phone: string | null
+          meeting_url: string | null
           name: string
+          remote_active: boolean
           season_id: string | null
           teacher_name: string | null
           teacher_phone: string | null
@@ -277,7 +279,9 @@ export type Database = {
           is_active?: boolean
           leader_name?: string | null
           leader_phone?: string | null
+          meeting_url?: string | null
           name: string
+          remote_active?: boolean
           season_id?: string | null
           teacher_name?: string | null
           teacher_phone?: string | null
@@ -290,7 +294,9 @@ export type Database = {
           is_active?: boolean
           leader_name?: string | null
           leader_phone?: string | null
+          meeting_url?: string | null
           name?: string
+          remote_active?: boolean
           season_id?: string | null
           teacher_name?: string | null
           teacher_phone?: string | null

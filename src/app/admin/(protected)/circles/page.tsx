@@ -1,10 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { getProgramInfo } from "@/lib/settings";
+import { getProgramInfo, getRemoteStudyEnabled } from "@/lib/settings";
 import { CirclesPageClient } from "./circles-page-client";
 
 export default async function CirclesPage() {
   const supabase = await createClient();
-  const programInfo = await getProgramInfo(supabase);
+  const [programInfo, remoteStudyEnabled] = await Promise.all([getProgramInfo(supabase), getRemoteStudyEnabled(supabase)]);
 
   const { data: currentSeason } = await supabase
     .from("seasons")
@@ -14,7 +14,7 @@ export default async function CirclesPage() {
 
   const { data: circles } = await supabase
     .from("circles")
-    .select("id, name, leader_name, leader_phone, teacher_name, teacher_phone, color_token, is_active")
+    .select("id, name, leader_name, leader_phone, teacher_name, teacher_phone, color_token, is_active, meeting_url, remote_active")
     .order("created_at", { ascending: true });
 
   const { data: groups } = await supabase
@@ -42,6 +42,7 @@ export default async function CirclesPage() {
       circleCounts={circleCounts}
       groupCounts={groupCounts}
       programInfo={programInfo}
+      remoteStudyEnabled={remoteStudyEnabled}
     />
   );
 }
