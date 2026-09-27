@@ -1,281 +1,250 @@
 <title>خطة واجهة ابن الجوزي</title>
-<meta name="description" content="مراجعة واجهة موقع حلقات ابن الجوزي مع نماذج قبل وبعد للجوال والكمبيوتر">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
+/* رموز نظام تصميم حلقات ابن الجوزي كما هي */
 :root{
-  --bg:#f7f7f3; --raised:#ffffff; --sunken:#eef0e9; --line:#e2e5dc; --ink:#171b18; --muted:#5c6862; --faint:#7a8076;
-  --brand:#0e6b4f; --brand-soft:#e4f3ec; --warn:#9a5b09; --warn-soft:#fbf0dd; --bad:#c4362a; --bad-soft:#fbeae7; --info:#2a5caa;
+  --surface:#f7f7f3; --surface-raised:#ffffff; --surface-sunken:#eef0e9; --line:#e2e5dc; --ink:#171b18;
+  --ink-muted:#5c6862; --ink-faint:#7a8076; --brand:#0e6b4f; --brand-hover:#0b5640; --brand-soft:#e4f3ec; --on-brand:#fff;
+  --success:#0e6b4f; --success-soft:#e4f3ec; --danger:#c4362a; --danger-soft:#fbeae7; --warning:#9a5b09; --warning-soft:#fbf0dd;
+  --info:#2a5caa; --info-soft:#e7eef9; --neutral-soft:#eceee8; --accent:#8a6a34; --accent-soft:#fbf3e6; --accent-solid:#bc9b6a;
+  --g1f:#6b3fb0; --g1b:#efe7fb; --g2f:#12766b; --g2b:#e2f6f3; --g3f:#b0316f; --g3b:#fbe7ef; --g5f:#a24c1c; --g5b:#fbede3;
+  --shadow-sm:0 1px 2px #171b180d,0 2px 6px #171b1810; --brutal-sm:3px 3px 0 0 var(--ink); --brutal:4px 4px 0 0 var(--ink);
+  --r-xs:6px; --r-sm:8px; --r-md:10px; --r-lg:14px;
   --frame:#171b18;
+  --doc-bg:var(--surface); --doc-raised:var(--surface-raised); --doc-sunken:var(--surface-sunken); --doc-line:var(--line);
+  --doc-ink:var(--ink); --doc-muted:var(--ink-muted); --doc-brand:var(--brand); --doc-brand-soft:var(--brand-soft);
 }
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --bg:#121614; --raised:#1a201d; --sunken:#212824; --line:#2e3632; --ink:#e8ece9; --muted:#a3ada8; --faint:#87918c;
-    --brand:#4fb58f; --brand-soft:#173a2e; --warn:#e0a24a; --warn-soft:#3a2c14; --bad:#ef7a6e; --bad-soft:#3d1f1b; --info:#8fb0e6;
-    --frame:#3a433e;
-  }
+  :root:not([data-theme="light"]){color-scheme:dark;--doc-bg:#121614;--doc-raised:#1a201d;--doc-sunken:#212824;--doc-line:#2e3632;--doc-ink:#e8ece9;--doc-muted:#a3ada8;--doc-brand:#4fb58f;--doc-brand-soft:#173a2e;--frame:#3a433e}
 }
-:root[data-theme="dark"]{
-  color-scheme:dark;
-  --bg:#121614; --raised:#1a201d; --sunken:#212824; --line:#2e3632; --ink:#e8ece9; --muted:#a3ada8; --faint:#87918c;
-  --brand:#4fb58f; --brand-soft:#173a2e; --warn:#e0a24a; --warn-soft:#3a2c14; --bad:#ef7a6e; --bad-soft:#3d1f1b; --info:#8fb0e6;
-  --frame:#3a433e;
-}
+:root[data-theme="dark"]{color-scheme:dark;--doc-bg:#121614;--doc-raised:#1a201d;--doc-sunken:#212824;--doc-line:#2e3632;--doc-ink:#e8ece9;--doc-muted:#a3ada8;--doc-brand:#4fb58f;--doc-brand-soft:#173a2e;--frame:#3a433e}
+
 *{box-sizing:border-box}
 html{direction:rtl}
-body{background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;font-size:16px;line-height:1.75;padding-inline:16px;padding-block:0 64px}
-.wrap{max-width:1040px;margin:0 auto}
+body{background:var(--doc-bg);color:var(--doc-ink);font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif;font-size:16px;line-height:1.75;padding-inline:16px;padding-block:0 64px}
+.wrap{max-width:1060px;margin:0 auto}
 h1,h2,h3{text-wrap:balance;line-height:1.35;margin:0}
-h1{font-size:30px;font-weight:700}
-h2{font-size:23px;font-weight:700}
-h3{font-size:17px;font-weight:700}
+h1{font-size:30px}
+h2{font-size:23px}
+h3{font-size:17px}
 p{margin:0}
-.prose{max-width:66ch}
-.muted{color:var(--muted)}
-header.top{padding-block:40px 28px;border-bottom:1px solid var(--line);display:grid;gap:12px}
-header.top .meta{font-size:14px;color:var(--muted)}
-section{padding-block:40px;border-bottom:1px solid var(--line);display:grid;gap:20px}
+.prose{max-width:68ch}
+.muted{color:var(--doc-muted)}
+.top{padding-block:40px 28px;border-bottom:1.5px solid var(--doc-ink);display:grid;gap:12px}
+section{padding-block:40px;border-bottom:1px solid var(--doc-line);display:grid;gap:20px}
 section:last-of-type{border-bottom:0}
-.tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--brand-soft);color:var(--brand);vertical-align:middle}
-.tag.w{background:var(--warn-soft);color:var(--warn)}
-.tag.m{background:var(--sunken);color:var(--muted)}
 ol.items,ul.items{margin:0;padding-inline-start:22px;display:grid;gap:10px;max-width:72ch}
-ol.items li::marker{font-weight:700;color:var(--brand)}
-.items b{font-weight:700}
-.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--raised)}
-table{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}
-th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);vertical-align:top}
-th{background:var(--sunken);font-weight:600;color:var(--muted);font-size:13px}
-tr:last-child td{border-bottom:0}
-td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric:tabular-nums}
+ol.items{list-style:none;padding-inline-start:0}
+ol.items li{display:grid;grid-template-columns:auto 1fr;gap:10px}
+.n{font-weight:700;color:var(--doc-brand);font-size:14px;min-width:34px;padding-top:2px}
+.note{font-size:14px;color:var(--doc-muted);background:var(--doc-sunken);border-radius:10px;padding:12px 14px;max-width:72ch}
+.keep{font-size:14px;background:var(--doc-brand-soft);color:var(--doc-ink);border-radius:10px;padding:12px 14px;max-width:72ch}
 .compare{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
-.col{display:grid;gap:10px;justify-items:start}
-.col .lbl{font-size:13px;font-weight:700;color:var(--muted)}
-.col .lbl.after{color:var(--brand)}
+.col{display:grid;gap:10px;justify-items:center}
+.lbl{font-size:13px;font-weight:700;color:var(--doc-muted)}
+.lbl.after{color:var(--doc-brand)}
 .why{display:grid;gap:14px;flex:1 1 300px;min-width:0}
-.note{font-size:14px;color:var(--muted);background:var(--sunken);border-radius:10px;padding:12px 14px;max-width:72ch}
-.formula{font-size:15px;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:14px 16px;max-width:72ch;display:grid;gap:6px}
-.formula code{font-family:inherit;font-weight:700}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.rule{background:var(--doc-raised);border:1px solid var(--doc-line);border-radius:10px;padding:12px 14px;font-size:14px;display:grid;gap:4px}
+.rule b{font-size:14.5px}
+.tbl-wrap{overflow-x:auto}
+.formula{font-size:15px;background:var(--doc-raised);border:1px solid var(--doc-line);border-radius:10px;padding:14px 16px;max-width:72ch;display:grid;gap:6px}
 
-/* ============ phone mockups: fixed light theme = لقطة من الموقع ============ */
-.phone{--s:#f7f7f3;--r:#ffffff;--k:#eef0e9;--l:#e2e5dc;--i:#171b18;--mu:#5c6862;--fa:#7a8076;--b:#0e6b4f;--bs:#e4f3ec;--bh:#0b5640;
-  --ok:#0e6b4f;--oks:#e4f3ec;--wa:#9a5b09;--was:#fbf0dd;--ex:#2a5caa;--exs:#e7eef9;--ab:#c4362a;--abs:#fbeae7;--ns:#eceee8;--ac:#8a6a34;--acs:#fbf3e6;
-  color-scheme:light;width:300px;max-width:100%;height:600px;border:8px solid var(--frame);border-radius:30px;overflow:hidden;background:var(--s);color:var(--i);
-  display:flex;flex-direction:column;font-size:12px;line-height:1.5;position:relative;flex:none}
-.phone.tall{height:640px}
-.phone *{border-color:var(--l)}
+/* ===== شاشات الموقع (ثابتة على الوضع الفاتح لأنها لقطات من الموقع) ===== */
+.phone{color-scheme:light;width:320px;max-width:100%;height:640px;border:8px solid var(--frame);border-radius:30px;overflow:hidden;background:var(--surface);color:var(--ink);display:flex;flex-direction:column;font-size:12.5px;line-height:1.5;position:relative;flex:none}
+.phone.tall{height:700px}
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden}
-.pad{padding:12px}
-.stack{display:grid;gap:10px}
+.pad{padding:16px}
+.stack{display:grid;gap:12px}
 .row{display:flex;align-items:center;gap:6px}
 .between{justify-content:space-between}
-.pt{font-size:17px;font-weight:700}
-.sub{font-size:11px;color:var(--mu)}
-.card{background:var(--r);border:1.5px solid var(--l);border-radius:10px;padding:10px}
-.cardS{background:var(--r);border:1.5px solid var(--i);border-radius:10px;padding:10px;box-shadow:3px 3px 0 var(--i)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:30px;padding:0 10px;border-radius:8px;border:1.5px solid var(--i);font-weight:600;font-size:11px;background:var(--r);color:var(--i);white-space:nowrap}
-.btn.p{background:var(--b);color:#fff;box-shadow:3px 3px 0 var(--i)}
-.btn.o{background:transparent}
-.btn.g{border-color:transparent;background:transparent}
-.sel{height:30px;border:1px solid var(--l);border-radius:8px;background:var(--r);padding:0 8px;display:flex;align-items:center;justify-content:space-between;font-size:11px;min-width:84px}
-.sel::after{content:"▾";color:var(--fa);margin-inline-start:6px}
-.flab{font-size:10px;color:var(--mu);font-weight:600;margin-bottom:2px}
-.badge{display:inline-flex;align-items:center;gap:3px;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:600;background:var(--ns);color:var(--mu);white-space:nowrap}
-.search{height:30px;border:1px solid var(--l);border-radius:8px;background:var(--r);display:flex;align-items:center;padding:0 10px;color:var(--fa);font-size:11px}
-.stat{border:1.5px solid var(--i);border-radius:8px;text-align:center;padding:6px 2px}
-.stat b{display:block;font-size:17px}
-.stat span{font-size:10px;color:var(--mu);font-weight:600}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
-.sbtn{min-height:40px;border:1.5px solid var(--i);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--r)}
-.ic{width:12px;height:12px;border-radius:50%;border:2px solid currentColor;display:inline-block}
-.bell{position:absolute;top:8px;left:10px;width:30px;height:30px;border:1.5px solid var(--i);border-radius:8px;background:var(--r);display:flex;align-items:center;justify-content:center;z-index:2}
-.bell::before{content:"";width:10px;height:11px;border:2px solid var(--mu);border-radius:6px 6px 2px 2px}
-.bnav{display:flex;border-top:1.5px solid var(--i);background:var(--r);height:52px;flex:none}
-.bnav div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:600;color:var(--mu)}
-.bnav i{width:16px;height:16px;border:2px solid currentColor;border-radius:4px;display:block}
-.bnav .on{color:var(--b)}
-/* after-only pieces */
-.tbar{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--r);border-bottom:1px solid var(--l);flex:none}
-.tbar .t{font-size:15px;font-weight:700}
-.tbar .acts{display:flex;gap:6px}
-.icb{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--mu);position:relative}
-.icb.srch::before{content:"";width:10px;height:10px;border:2px solid currentColor;border-radius:50%}
-.icb.bl::before{content:"";width:10px;height:11px;border:2px solid currentColor;border-radius:6px 6px 2px 2px}
-.dot{position:absolute;top:5px;left:5px;width:7px;height:7px;border-radius:50%;background:var(--ab)}
-.days{display:flex;gap:6px;overflow:hidden;padding:0 12px}
-.day{flex:none;width:44px;border:1.5px solid var(--l);border-radius:10px;background:var(--r);text-align:center;padding:4px 0;line-height:1.3}
-.day b{display:block;font-size:14px}
-.day span{font-size:9px;color:var(--mu)}
-.day.on{background:var(--b);border-color:var(--b);color:#fff}
-.day.on span{color:#dfeee8}
-.day.off{background:repeating-linear-gradient(135deg,var(--k) 0 4px,var(--r) 4px 8px);color:var(--fa)}
-.day.done{box-shadow:inset 0 -3px 0 var(--ok)}
-.chips{display:flex;gap:5px;overflow:hidden;padding:0 12px}
-.chip{flex:none;height:26px;padding:0 10px;border-radius:13px;border:1px solid var(--l);background:var(--r);display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--mu)}
-.chip.on{background:var(--i);border-color:var(--i);color:#fff}
-.chip .cd{width:7px;height:7px;border-radius:50%}
-.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--ns)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:10.5px;color:var(--mu)}
+.center{text-align:center;justify-items:center;justify-content:center}
+.logo{background:url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhLS0gQ3JlYXRlZCB3aXRoIElua3NjYXBlIChodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy8pIC0tPgoKPHN2ZwogICB2ZXJzaW9uPSIxLjEiCiAgIGlkPSJzdmcxIgogICB3aWR0aD0iMTEyMi41MiIKICAgaGVpZ2h0PSI3OTMuNzAxMzUiCiAgIHZpZXdCb3g9IjAgMCAxMTIyLjUyIDc5My43MDEzNSIKICAgc29kaXBvZGk6ZG9jbmFtZT0i2LTYudin2LEg2KfZhNit2YTZgtin2KouYWkiCiAgIHhtbG5zOmlua3NjYXBlPSJodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy9uYW1lc3BhY2VzL2lua3NjYXBlIgogICB4bWxuczpzb2RpcG9kaT0iaHR0cDovL3NvZGlwb2RpLnNvdXJjZWZvcmdlLm5ldC9EVEQvc29kaXBvZGktMC5kdGQiCiAgIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIgogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxkZWZzCiAgICAgaWQ9ImRlZnMxIj4KICAgIAogIDwvZGVmcz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgaWQ9Im5hbWVkdmlldzEiCiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIgogICAgIGJvcmRlcmNvbG9yPSIjMDAwMDAwIgogICAgIGJvcmRlcm9wYWNpdHk9IjAuMjUiCiAgICAgaW5rc2NhcGU6c2hvd3BhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAuMCIKICAgICBpbmtzY2FwZTpwYWdlY2hlY2tlcmJvYXJkPSIwIgogICAgIGlua3NjYXBlOmRlc2tjb2xvcj0iI2QxZDFkMSI+CiAgICA8aW5rc2NhcGU6cGFnZQogICAgICAgeD0iMCIKICAgICAgIHk9IjAiCiAgICAgICBpbmtzY2FwZTpsYWJlbD0iMiIKICAgICAgIGlkPSJwYWdlMTAiCiAgICAgICB3aWR0aD0iMTEyMi41MiIKICAgICAgIGhlaWdodD0iNzkzLjcwMTM1IgogICAgICAgbWFyZ2luPSI2MS44NTk3MzQgMTgyLjQyNCA1NS42ODM5OTggMjI3LjE5NDY3IgogICAgICAgYmxlZWQ9IjAiIC8+CiAgPC9zb2RpcG9kaTpuYW1lZHZpZXc+CiAgPGcKICAgICBpZD0ibGF5ZXItTUMwIgogICAgIGlua3NjYXBlOmdyb3VwbW9kZT0ibGF5ZXIiCiAgICAgaW5rc2NhcGU6bGFiZWw9IkxheWVyIDEiCiAgICAgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTExNDIuNTIpIiAvPgogIDxnCiAgICAgaWQ9ImxheWVyLU1DMSIKICAgICBpbmtzY2FwZTpncm91cG1vZGU9ImxheWVyIgogICAgIGlua3NjYXBlOmxhYmVsPSJMYXllciAyIgogICAgIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0xMTQyLjUyKSI+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgxMSIKICAgICAgIGQ9Im0gMCwwIGMgLTEyMS40OSwwIC0yMjIuMywtODcuODkgLTI0MS4zNCwtMjAzLjA5IDExLjUyLDEwMC4wMiA4MS44LDE4Mi4zMiAxNzUuNzUsMjEyLjA5IDI0LjUsNy43NiA1MC42MiwxMS45NiA3Ny43MiwxMS45NiA4Mi44MSwwIDE1Ni40LC0zOS4xNCAyMDMsLTk5Ljc5IDAuMDMsLTAuMDMgMC4wNiwtMC4wNiAwLjA4LC0wLjEgMS40NywtMS45MiAyLjkxLC0zLjg1IDQuMzMsLTUuODEgNi40OCwtOC45NiAxMi4zOSwtMTguMzYgMTcuNjcsLTI4LjE0IC0wLjY5LC0wLjE5IC0xLjM5LC0wLjM4IC0yLjA4LC0wLjU4IC02LjQ4LC0xLjc4IC0xMy4wMiwtMy41IC0xOS41NiwtNS4xMiAtMS41NiwtMC4zOSAtMy4xMSwtMC43NyAtNC42NywtMS4xNCBDIDE2OC4zOSwtNDguMDggODkuODYsMCAwLDAiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE2OTEuNTAxOSw4My44MDM2KSIgLz4KICAgIDxwYXRoCiAgICAgICBpZD0icGF0aDEyIgogICAgICAgZD0ibSAwLDAgYyAtMy44NiwxNy4xNSAtOS41NCwzMy42MyAtMTYuODUsNDkuMiBsIDIuOTEsMS4yOCAxNy43NCw3LjgxIDMuMDksMS4zNSBDIDE3LjEzLDM2LjY3IDI0LjAzLDExLjkgMjYuOTYsLTE0LjA1IGwgLTguMiw0LjI4IC0xOC4yOSw5LjUzIHoiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDIwMDkuNzU1MiwzMzYuNTM2OTMpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMTMiCiAgICAgICBkPSJtIDAsMCBjIDAsLTY5LjM2IC0yOC4xMiwtMTMyLjIxIC03My42NywtMTc3Ljk0IC0wLjcyLC0wLjczIC0xLjQ1LC0xLjQ1IC0yLjE4LC0yLjE2IC0zLjY5LC0zLjYyIC03LjUsLTcuMTIgLTExLjQxLC0xMC41MSAtOC43NiwtNy42IC0xOC4wMywtMTQuNjEgLTI3Ljc4LC0yMC45NyAtMS41MiwtMC45OSAtMy4wNCwtMS45NiAtNC41OCwtMi45MiAtMi4xMiwtMS4zMSAtNC4yNSwtMi42IC02LjQxLC0zLjg1IC0xNy40NywtMTAuMiAtMzYuMjgsLTE4LjM5IC01Ni4xLC0yNC4yNSBoIC0wLjAxIGMgLTIzLjEyLC02Ljg1IC00Ny42MiwtMTAuNTIgLTcyLjk5LC0xMC41MiAtMi4wNywwIC00LjE0LDAuMDIgLTYuMTksMC4wNyAwLjk4LDAuMDIgMS45NywwLjA1IDIuOTUsMC4wOSAwLjQ4LDAuMDIgMC45NywwLjAzIDEuNDUsMC4wNiAxMS42OCwwLjQ4IDIzLjE1LDEuNzggMzQuMzYsMy44MyAyOC4wNyw1LjE0IDU0LjQ2LDE1LjA1IDc4LjI5LDI4LjgzIDAuMDMsMC4wMSAwLjA2LDAuMDMgMC4wOSwwLjA1IDAuNzQsMC40MyAxLjQ4LDAuODcgMi4yMSwxLjMgMS44NCwxLjA4IDMuNjcsMi4yIDUuNDgsMy4zNCAwLjY0LDAuNCAxLjI3LDAuOCAxLjksMS4yMSAwLjcxLDAuNDUgMS40MiwwLjkxIDIuMTIsMS4zNyAxLjYyLDEuMDYgMy4yMiwyLjE0IDQuOCwzLjI0IDYuNzMsNC42NSAxMy4yMSw5LjYyIDE5LjQyLDE0LjkxIDAuODksMC43NiAxLjc3LDEuNTEgMi42NSwyLjI4IDAuNjEsMC41MyAxLjIyLDEuMDcgMS44MiwxLjYgMC43MiwwLjY1IDEuNDQsMS4yOSAyLjE2LDEuOTUgMC43NCwwLjY3IDEuNDgsMS4zNiAyLjIyLDIuMDUgMC43MywwLjY5IDEuNDYsMS4zOSAyLjE5LDIuMDggMC43MywwLjcgMS40NSwxLjQxIDIuMTcsMi4xMSAxLjQzLDEuNDIgMi44NSwyLjg1IDQuMjUsNC4zIDAuMDIsMC4wMiAwLjA1LDAuMDUgMC4wOCwwLjA3IDEsMS4wMyAxLjk4LDIuMDggMi45NSwzLjEzIDAuNDksMC41MiAwLjk4LDEuMDQgMS40NiwxLjU3IDM5LjUyLDQzLjA5IDYzLjYsMTAwLjM1IDYzLjYsMTYzLjIgMCw4LjQzIC0wLjQzLDE2Ljc1IC0xLjI4LDI0Ljk2IGwgMC4yNCwtMC4xNCA5LjI5LC01LjEzIEwgLTksOS4xOCAtMC4xNyw5LjEzIEMgLTAuMDUsNi4xIDAsMy4wNiAwLDAiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDIwNDcuODQ4NSwzOTMuMzM2OTMpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMTQiCiAgICAgICBkPSJtIDAsMCBjIC0yMi40NywwIC00NC4yMSwtMy4xNiAtNjQuODcsLTkuMTEgLTAuNTQsLTAuMTQgLTEuMDgsLTAuMyAtMS42MSwtMC40NiAyNS4wMyw4LjE1IDUxLjc3LDEyLjU1IDc5LjU0LDEyLjU1IDgxLjM2LDAgMTUzLjgyLC0zNy43NyAyMDAuNTQsLTk2LjYxIDEuNDYsLTEuODQgMi45LC0zLjcgNC4zMSwtNS41OCA3LjUxLC0xMC4wMiAxNC4zLC0yMC42MiAyMC4yNywtMzEuNzEgLTAuMDgsLTAuMDIgLTAuMTcsLTAuMDUgLTAuMjUsLTAuMDcgLTAuNjksLTAuMTkgLTEuMzksLTAuMzggLTIuMDgsLTAuNTggLTYuNDgsLTEuNzggLTEzLjAyLC0zLjUgLTE5LjU2LC01LjEyIEMgMTc1LjUzLC01NS40NCA5My45NywwIDAsMCIKICAgICAgIHN0eWxlPSJmaWxsOiMxMTczYWQ7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTY5MC41NDE5LDU5LjY1NjkzMykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgxNSIKICAgICAgIGQ9Im0gMCwwIGMgLTMuMTQsMTcuNjEgLTgsMzQuNTggLTE0LjQxLDUwLjcyIGwgMTcuNzQsNy44MSAzLjA5LDEuMzUgMC4yNCwwLjExIEMgMTYuOTIsMzYuOTUgMjMuODIsMTIuMTEgMjYuNzMsLTEzLjkzIGwgLTAuMjQsMC4xMiAtOC4yLDQuMjggeiIKICAgICAgIHN0eWxlPSJmaWxsOiMxMTczYWQ7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMjAxMC4zODE5LDMzNi44NTY5MykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgxNiIKICAgICAgIGQ9Im0gMCwwIGMgMCwtNjkuNDYgLTI4LjIxLC0xMzIuMzkgLTczLjg4LC0xNzguMSAtMC43MiwtMC43MyAtMS40NSwtMS40NSAtMi4xOCwtMi4xNiAtMy42OSwtMy42MiAtNy41LC03LjEyIC0xMS40MSwtMTAuNTEgLTguNzUsLTcuNTcgLTE4LjA0LC0xNC41NiAtMjcuNzgsLTIwLjkxIC0xLjUyLC0wLjk5IC0zLjA0LC0xLjk2IC00LjU4LC0yLjkyIC0yLjEyLC0xLjMyIC00LjI1LC0yLjYgLTYuNDEsLTMuODUgLTE2LjU1LC05LjY0IC0zNC4yOCwtMTcuNDYgLTUyLjkzLC0yMy4yMyAtMS40NiwtMC40NCAtMi45MywtMC44OSAtNC40MSwtMS4zMiAtMC4wMywtMC4wMSAtMC4wNywtMC4wMiAtMC4xMSwtMC4wMyAtMjIuNjcsLTYuNTQgLTQ2LjY0LC0xMC4wNSAtNzEuNDQsLTEwLjA1IC0wLjY3LDAgLTEuMzMsMCAtMiwwLjAyIC0wLjQ4LC0wLjAxIC0wLjk3LDAgLTEuNDUsMC4wMSAtMC45MiwwIC0xLjgzLDAuMDIgLTIuNzQsMC4wNCAxMi44LDAuMyAyNS4zNiwxLjU4IDM3LjYsMy43NiAyNy44OCw0Ljk3IDU0LjEzLDE0LjY0IDc3Ljg3LDI4LjE0IDAuMDYsMC4wMyAwLjExLDAuMDYgMC4xNiwwLjA4IDEuMTcsMC42NyAyLjM1LDEuMzUgMy41MSwyLjA0IDEuODUsMS4wOSAzLjY3LDIuMiA1LjQ4LDMuMzQgMC42NCwwLjQgMS4yNywwLjggMS45LDEuMjEgMC43MSwwLjQ1IDEuNDIsMC45MSAyLjEyLDEuMzcgMS42MSwxLjA1IDMuMjIsMi4xMiA0LjgsMy4yNCA2LjczLDQuNjMgMTMuMjEsOS41OSAxOS40MiwxNC44NSAwLjg5LDAuNzYgMS43NywxLjUxIDIuNjUsMi4yOCAwLjYxLDAuNTMgMS4yMiwxLjA3IDEuODIsMS42IDAuNzIsMC42NSAxLjQ0LDEuMjkgMi4xNiwxLjk1IDAuNzQsMC42NyAxLjQ4LDEuMzYgMi4yMiwyLjA1IDAuNzMsMC42OCAxLjQ2LDEuMzcgMi4xOSwyLjA4IDAuNzMsMC42OSAxLjQ1LDEuMzkgMi4xNywyLjExIDEuNzQsMS42OSAzLjQ1LDMuNDMgNS4xNCw1LjE5IDMuNzgsMy45MyA3LjQyLDcuOTkgMTAuOTMsMTIuMTggMzUuMjcsNDIuMDQgNTYuNDgsOTYuMSA1Ni40OCwxNTUuMDYgMCw4LjMzIC0wLjQzLDE2LjU2IC0xLjI1LDI0LjY2IGwgOS4yOSwtNS4xMyA1LjQ1LC0wLjAzIDguODMsLTAuMDUgaCAwLjIyIEMgLTAuMDUsNS45OSAwLDMgMCwwIgogICAgICAgc3R5bGU9ImZpbGw6IzExNzNhZDtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZSIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMywwLDAsLTEuMzMzMzMzMywyMDQ4LjEyODUsMzkzLjEyMzYpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMTciCiAgICAgICBkPSJtIDAsMCBjIC0wLjczLDEuMTEgLTEuNSwyLjIyIC0yLjI2LDMuMzIgOSwtMTEuMzggMTcuMDQsLTIzLjU0IDI0LjAyLC0zNi4zNyAtMC4xNiwtMC4wNSAtMC4zMywtMC4wOSAtMC41LC0wLjE0IC0wLjA4LC0wLjAyIC0wLjE3LC0wLjA1IC0wLjI1LC0wLjA3IC0wLjY5LC0wLjE5IC0xLjM5LC0wLjM4IC0yLjA4LC0wLjU4IEMgMTQuMzcsLTIzLjkyIDkuMTYsLTE0LjMyIDMuMzQsLTUuMTIgMi41NiwtMy45IDEuNzgsLTIuNjggMC45OSwtMS40OCAwLjY5LC0xLjAyIDAuMzgsLTAuNTYgMC4wOCwtMC4xMSAwLjA2LC0wLjA3IDAuMDMsLTAuMDQgMCwwIgogICAgICAgc3R5bGU9ImZpbGw6IzI0M2E3NTtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZSIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMywwLDAsLTEuMzMzMzMzMywxOTc5Ljc2ODUsMTg5Ljk2MzYpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMTgiCiAgICAgICBkPSJtIDAsMCBjIC0xLjg5LDIzLjQ4IC02Ljk1LDQ2LjQgLTE0Ljk2LDY4LjA2IGwgMy4wOSwxLjM1IDAuMjQsMC4xMSAwLjUyLDAuMjMgQyAtMC42Miw0Ni40OCA2LjQ4LDIxLjM2IDkuNTQsLTQuOTggTCA4LjQ0LC00LjQgOC4yLC00LjI4IFoiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDIwMzQuNzY4NSwzNDkuNTYzNikiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgxOSIKICAgICAgIGQ9Im0gMCwwIGMgMCwtODkuMjYgLTQ2LC0xNjcuODEgLTExNS42NiwtMjEzLjM5IC0xLjUyLC0xIC0zLjA1LC0xLjk4IC00LjU5LC0yLjk0IC0yLjEzLC0xLjMzIC00LjI3LC0yLjYzIC02LjQzLC0zLjg5IC0xNy41NCwtMTAuMjggLTM2LjQxLC0xOC41MyAtNTYuMywtMjQuNDQgaCAtMC4wMSBjIC0wLjQyLC0wLjEgLTAuODMsLTAuMiAtMS4yNCwtMC4zIC0wLjAzLC0wLjAxIC0wLjA3LC0wLjAyIC0wLjExLC0wLjAzIC0xMi44NSwtMy4wNiAtMjUuOTYsLTUuMTQgLTM5LjIyLC02LjE5IC0wLjMyLC0wLjAzIC0wLjY0LC0wLjA2IC0wLjk1LC0wLjA4IC0xNi40NCwtMS4yNCAtMzMuMDgsLTAuOTEgLTQ5LjcyLDEuMDkgLTI1LjA1LDMuMDEgLTUwLjA1LDkuNzcgLTc0LjI4LDIwLjYgLTEuODksMC44NSAtMy43NywxLjcxIC01LjYzLDIuNiA2Ny43NiwtMjguMzggMTQxLjQzLC0yNC4xNCAyMDIuOTksNS44OSAxLjM2LDAuNjYgMi43MSwxLjM0IDQuMDUsMi4wMiAwLjA2LDAuMDMgMC4xMSwwLjA2IDAuMTYsMC4wOCAwLjQsMC4yMSAwLjgxLDAuNDIgMS4yMSwwLjYzIDAuMDMsMC4wMSAwLjA2LDAuMDMgMC4wOSwwLjA1IDE5LjYzLDEwLjE4IDM3LjkzLDIzLjAyIDU0LjMyLDM4LjMgMC4wMiwwLjAyIDAuMDUsMC4wNSAwLjA4LDAuMDcgMC4yNywwLjI2IDAuNTQsMC41MSAwLjgxLDAuNzcgMjIuNjksMjEuMzcgNDEuNjQsNDcuNDQgNTUuMjEsNzcuNTggNi45MywxNS4zOCAxMi4xMywzMS4wOSAxNS42OCw0Ni45MyAwLjAxLDAuMDMgMC4wMSwwLjA1IDAuMDIsMC4wOCA1Ljg3LDIxLjgyIDguODMsNDMuODggOS4wNiw2NS42NCBsIDguODMsLTAuMDUgaCAwLjIyIGwgMS4xNywtMC4wMSBDIC0wLjA4LDcuMzYgMCwzLjY5IDAsMCIKICAgICAgIHN0eWxlPSJmaWxsOiMyNDNhNzU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMjA0OS43OTUyLDM5NS44NTY5MykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgyMCIKICAgICAgIGQ9Im0gMCwwIGMgLTIuODUzLC0xLjI1NSAtNi40MiwtMC4yNDMgLTkuMjczLDEuMDEyIGwgLTExMS41NDgsNDkuMDg3IGMgLTEuMzYsMC41OTggLTEuODg4LDIuMDEyIC0xLjE4LDMuMTYgMC42ODMsMS4xMDggMi4yNzMsMS41NjkgMy42MTksMS4wNDkgMjEuMDkyLC04LjE0NyA2NS4yMDIsLTIzLjkzNCAxMDAuNTQ4LC0yOC4zMDIgOS43MTMsLTEuMiAxOS4wOTUsLTMuODUzIDI3Ljc5OSwtNy42ODMgbCA5Ljg3OSwtNC4zNDggYyAxLjk5MSwtMC44NzYgMS45OTEsLTMuMjgxIDAsLTQuMTU3IHoiCiAgICAgICBzdHlsZT0iZmlsbDojMzE3MDM3O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE4NTYuOTQ5MywyODkuODk1NDcpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMjEiCiAgICAgICBkPSJtIDAsMCBjIDIuODUzLC0xLjI1NSA2LjQyLC0wLjI0MyA5LjI3MywxLjAxMiBsIDExMS41NDgsNDkuMDg3IGMgMS4zNiwwLjU5OCAxLjg4OCwyLjAxMiAxLjE4LDMuMTYgLTAuNjgzLDEuMTA4IC0yLjI3MywxLjU2OSAtMy42MTksMS4wNDkgQyA5Ny4yOSw0Ni4xNjEgNTMuMTgsMzAuMzc0IDE3LjgzNCwyNi4wMDYgOC4xMjEsMjQuODA2IC0xLjI2MSwyMi4xNTMgLTkuOTY1LDE4LjMyMyBsIC05Ljg3OSwtNC4zNDggYyAtMS45OTEsLTAuODc2IC0xLjk5MSwtMy4yODEgMC4wMDEsLTQuMTU3IHoiCiAgICAgICBzdHlsZT0iZmlsbDojMzE3MDM3O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE5MTkuNTI5MSwyODkuODk1NDcpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMjIiCiAgICAgICBkPSJtIDAsMCAxLjY3MiwtMC44NjYgMy40NzgsLTEuODIxIDcuNjY1LC0zLjk5MyA0LjU1MywtMi4zNzQgMzAuOTQ2LC0xNi4xMzcgNzcuMDA0LC00MC4xNCAtMzUuMDEzLDAuMTk0IC02Ni41NDcsMzYuNzgyIC0zMC45NTMsMTYuMTM3IC02LjQ0OSwzLjM2NiAtNi40NTYsLTMuMzY2IC0zMC45NTMsLTE2LjEzNyAtNjYuNTQ4LC0zNi43ODIgLTM1LjAwNSwtMC4xOTQgNzYuOTk3LDQwLjE0IDMwLjk1MywxNi4xMzcgMTUuNjk2LDguMTgxIDEyLjUyMyw2LjUzMyBjIDEuNzQ2LDAuOTExIDMuODI2LDAuOTExIDUuNTcyLDEwZS00IHoiCiAgICAgICBzdHlsZT0iZmlsbDojODA0ZDFmO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE5MDYuNjY3NSwyODguMDA0NjcpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMjMiCiAgICAgICBkPSJtIDAsMCBjIDUuODQsMCAxMC41NywtNy4zNiAxMC41NywtMTYuNDMgMCwtOS4wOCAtNC43MywtMTYuNDQgLTEwLjU3LC0xNi40NCAtNS44NCwwIC0xMC41OCw3LjM2IC0xMC41OCwxNi40NCBDIC0xMC41OCwtNy4zNiAtNS44NCwwIDAsMCBtIDQ0LjQxLDEuNDQgaCAtMy42NSBjIDAsLTYuNzkgOS42NSwtMTkuODMgMTguNzgsLTI4LjE4IDkuMTMsLTguMzQgMS4wNCwtOS45MSAxLjA0LC05LjkxIEggMjkuMjggViA1Ny4yNiBMIDI1LjM3LDUwLjIyIFYgLTM2LjY1IEggMTAuNSB2IDQuNDMgYyAwLjMzLDAuNjUgMC42MiwxLjMyIDAuODcsMi4wMyA1LjY3LDE1LjU4IC01LjYsNDQuOSAtMTcuODMsMzIuNjcgLTEyLjA3LC0xMi4wNyAtNS4zLC0zMS4zNCAtNC41MSwtMzMuNDYgMCwtMC4wMSAwLC0wLjAxIDAuMDEsLTAuMDIgMC4wNSwtMC4xMSAwLjA3LC0wLjE3IDAuMDcsLTAuMTcgdiAtNS4yMiBoIC0xNi45NiBsIDAuNTIsOTMuMTMgLTMuOTEsLTcuMDQgViAtNDQuNDggSCA5NS44IGMgMCwwIDYuMTUsMi44MSAxMy41OCw2LjQ4IC00OS4zLDAgLTY0Ljk3LDM5LjQ0IC02NC45NywzOS40NCIKICAgICAgIHN0eWxlPSJmaWxsOiMxMTczYWQ7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTU2NC40ODAzLDMxNS44NTM4NykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgyNCIKICAgICAgIGQ9Im0gMCwwIGMgLTUuODQsMCAtMTAuNTgsNy4zNiAtMTAuNTgsMTYuNDQgMCw5LjA3IDQuNzQsMTYuNDMgMTAuNTgsMTYuNDMgNS44NCwwIDEwLjU3LC03LjM2IDEwLjU3LC0xNi40MyBDIDEwLjU3LDcuMzYgNS44NCwwIDAsMCBtIDAsMzkuMDcgYyAtOCwwIC0xNC40OCwtMTAuMDggLTE0LjQ4LC0yMi41IDAsLTUuNjEgMS4zMiwtMTAuNzQgMy41MSwtMTQuNjggMCwtMC4wMSAwLC0wLjAxIDAuMDEsLTAuMDIgMi42NSwtNC43OCA2LjU4LC03LjggMTAuOTYsLTcuOCA0LjYyLDAgOC43MywzLjM3IDExLjM3LDguNjEgMS45NSwzLjgyIDMuMSw4LjY1IDMuMSwxMy44OSAwLDEyLjQyIC02LjQ4LDIyLjUgLTE0LjQ3LDIyLjUiCiAgICAgICBzdHlsZT0iZmlsbDojMTE3M2FkO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE1NjQuNDgwMywzNTkuNjgwNTMpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMjUiCiAgICAgICBkPSJtIDAsMCBjIDAsMi4zMjMgLTEuMjEyLDQuMjA3IC0yLjcwNyw0LjIwNyAtMS40OTUsMCAtMi43MDcsLTEuODg0IC0yLjcwNywtNC4yMDcgMCwtMi4zMjMgMS4yMTIsLTQuMjA3IDIuNzA3LC00LjIwNyBDIC0xLjIxMiwtNC4yMDcgMCwtMi4zMjMgMCwwIgogICAgICAgc3R5bGU9ImZpbGw6IzExNzNhZDtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZSIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMywwLDAsLTEuMzMzMzMzMywxNTYxLjM4ODksMjc2LjkzNzg3KSIgLz4KICAgIDxwYXRoCiAgICAgICBpZD0icGF0aDI2IgogICAgICAgZD0ibSAwLDAgYyAwLDIuMzIzIC0xLjIxMiw0LjIwNyAtMi43MDcsNC4yMDcgLTEuNDk1LDAgLTIuNzA3LC0xLjg4NCAtMi43MDcsLTQuMjA3IDAsLTIuMzIzIDEuMjEyLC00LjIwNyAyLjcwNywtNC4yMDcgQyAtMS4yMTIsLTQuMjA3IDAsLTIuMzIzIDAsMCIKICAgICAgIHN0eWxlPSJmaWxsOiMxMTczYWQ7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTU3Ni43ODAzLDI3Ni45Mzc4NykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgyNyIKICAgICAgIGQ9Im0gMCwwIGMgMCwyLjMyMyAtMS4yMTIsNC4yMDcgLTIuNzA3LDQuMjA3IC0xLjQ5NSwwIC0yLjcwNywtMS44ODQgLTIuNzA3LC00LjIwNyAwLC0yLjMyMyAxLjIxMiwtNC4yMDcgMi43MDcsLTQuMjA3IEMgLTEuMjEyLC00LjIwNyAwLC0yLjMyMyAwLDAiCiAgICAgICBzdHlsZT0iZmlsbDojMTE3M2FkO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE0NDkuNDc1OSwzMjAuNTAzMDcpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMjgiCiAgICAgICBkPSJtIDAsMCBjIDAsMi4zMjMgLTEuMjEyLDQuMjA3IC0yLjcwNyw0LjIwNyAtMS40OTUsMCAtMi43MDcsLTEuODg0IC0yLjcwNywtNC4yMDcgMCwtMi4zMjMgMS4yMTIsLTQuMjA3IDIuNzA3LC00LjIwNyBDIC0xLjIxMiwtNC4yMDcgMCwtMi4zMjMgMCwwIgogICAgICAgc3R5bGU9ImZpbGw6IzExNzNhZDtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZSIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMywwLDAsLTEuMzMzMzMzMywxNDY0Ljg2NzIsMzIwLjUwMzA3KSIgLz4KICAgIDxwYXRoCiAgICAgICBpZD0icGF0aDI5IgogICAgICAgZD0ibSAwLDAgdiAtMzMuMDY1IGggLTc4Ljg0OCBsIDUuNjc0LDcuNDM1IGggNjkuMDY1IHYgMjAuMzQ3IHoiCiAgICAgICBzdHlsZT0iZmlsbDojMTE3M2FkO2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE1MDMuMTcxMiwzMzAuODk0NCkiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgzMCIKICAgICAgIGQ9Im0gMCwwIGMgMCwzLjI0MiAtMS42OTEsNS44NyAtMy43NzcsNS44NyAtMi4wODYsMCAtMy43NzcsLTIuNjI4IC0zLjc3NywtNS44NyAwLC0zLjI0MiAxLjY5MSwtNS44NyAzLjc3NywtNS44NyBDIC0xLjY5MSwtNS44NyAwLC0zLjI0MiAwLDAiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE4MzkuNzA3MSw0MzUuNzY0KSIgLz4KICAgIDxwYXRoCiAgICAgICBpZD0icGF0aDMxIgogICAgICAgZD0ibSAwLDAgYyAwLDMuMjQyIC0xLjY5MSw1Ljg3IC0zLjc3Nyw1Ljg3IC0yLjA4NiwwIC0zLjc3NywtMi42MjggLTMuNzc3LC01Ljg3IDAsLTMuMjQyIDEuNjkxLC01Ljg3IDMuNzc3LC01Ljg3IEMgLTEuNjkxLC01Ljg3IDAsLTMuMjQyIDAsMCIKICAgICAgIHN0eWxlPSJmaWxsOiMyNDNhNzU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTU1MC4zMTU5LDQzNS43NjQpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMzIiCiAgICAgICBkPSJtIDAsMCBjIDAsMy4yNDIgLTEuNjkxLDUuODcgLTMuNzc3LDUuODcgLTIuMDg2LDAgLTMuNzc3LC0yLjYyOCAtMy43NzcsLTUuODcgMCwtMy4yNDIgMS42OTEsLTUuODcgMy43NzcsLTUuODcgQyAtMS42OTEsLTUuODcgMCwtMy4yNDIgMCwwIgogICAgICAgc3R5bGU9ImZpbGw6IzI0M2E3NTtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZSIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMywwLDAsLTEuMzMzMzMzMywxODk1LjUzMzIsNTc1LjU5MDEzKSIgLz4KICAgIDxwYXRoCiAgICAgICBpZD0icGF0aDMzIgogICAgICAgZD0ibSAwLDAgYyAwLDMuMjQyIC0xLjY5MSw1Ljg3IC0zLjc3Nyw1Ljg3IC0yLjA4NiwwIC0zLjc3NywtMi42MjggLTMuNzc3LC01Ljg3IDAsLTMuMjQyIDEuNjkxLC01Ljg3IDMuNzc3LC01Ljg3IEMgLTEuNjkxLC01Ljg3IDAsLTMuMjQyIDAsMCIKICAgICAgIHN0eWxlPSJmaWxsOiMyNDNhNzU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTY3My42MjAxLDU3NS41OTAxMykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgzNCIKICAgICAgIGQ9Im0gMCwwIGMgMCwzLjI0MiAtMS42OTEsNS44NyAtMy43NzcsNS44NyAtMi4wODYsMCAtMy43NzcsLTIuNjI4IC0zLjc3NywtNS44NyAwLC0zLjI0MiAxLjY5MSwtNS44NyAzLjc3NywtNS44NyBDIC0xLjY5MSwtNS44NyAwLC0zLjI0MiAwLDAiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE0NjAuNzUwNSw2MjUuNjc3MDcpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMzUiCiAgICAgICBkPSJtIDAsMCBjIDAsMy4yNDIgLTEuNjkxLDUuODcgLTMuNzc3LDUuODcgLTIuMDg2LDAgLTMuNzc3LC0yLjYyOCAtMy43NzcsLTUuODcgMCwtMy4yNDIgMS42OTEsLTUuODcgMy43NzcsLTUuODcgQyAtMS42OTEsLTUuODcgMCwtMy4yNDIgMCwwIgogICAgICAgc3R5bGU9ImZpbGw6IzI0M2E3NTtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZSIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMywwLDAsLTEuMzMzMzMzMywxNDM3LjA5ODQsNjI1LjY3NzA3KSIgLz4KICAgIDxwYXRoCiAgICAgICBpZD0icGF0aDM2IgogICAgICAgZD0ibSAwLDAgdiAtMTExLjkxMyBjIDAsMCA1Ljg3LC0xOS45NTcgMTQuMDg3LDEuMTc0IDIuMzQ4LC0xMi45MTMgLTIxLjEzLC0zNy41NjUgLTIxLjEzLDAgdiA5OSB6IgogICAgICAgc3R5bGU9ImZpbGw6IzI0M2E3NTtmaWxsLW9wYWNpdHk6MTtmaWxsLXJ1bGU6bm9uemVybztzdHJva2U6bm9uZSIKICAgICAgIHRyYW5zZm9ybT0ibWF0cml4KDEuMzMzMzMzMywwLDAsLTEuMzMzMzMzMywxOTE5LjkzMiwzODkuMTExODcpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoMzciCiAgICAgICBkPSJtIDAsMCAtNy4wNDMsLTExLjczOSB2IC0xOCBIIC0yMS4zOTEgViA2LjUyMiBsIC04Ljg3LC0xMy4zMDUgdiAtNTUuMzA0IGMgMCwwIC0zLjY1MiwtMTQuODcgLTE1LjY1MiwtMTQuODcgLTEyLDAgLTEzLjgyNiwxMi43ODMgLTEzLjgyNiwxNC42MDkgMCwxLjgyNiAtMC4yNjEsMTggLTAuMjYxLDE4IGwgLTQuMTc0LC02IGMgMCwwIC00LjE3NCwtMzkuOTEzIDE5LjA0NCwtMzkuOTEzIDIzLjIxNywwIDIzLjczOSwzNC45NTcgMjMuNzM5LDQ2LjY5NiAxMiwwIDIwLjc0NywwLjEzOCAyMC43NDcsMC4xMzggeiIKICAgICAgIHN0eWxlPSJmaWxsOiMyNDNhNzU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTg5NS41ODQzLDQ4My4zNzI2NykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgzOCIKICAgICAgIGQ9Im0gMCwwIHYgLTExMS45MTMgYyAwLDAgNS44NywtMTkuOTU3IDE0LjA4NywxLjE3NCAyLjM0OCwtMTIuOTEzIC0yMS4xMywtMzcuNTY1IC0yMS4xMywwIHYgOTkgeiIKICAgICAgIHN0eWxlPSJmaWxsOiMyNDNhNzU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTc1Mi4yNzk5LDM4OS4xMTE4NykiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGgzOSIKICAgICAgIGQ9Im0gMCwwIGggLTg0LjQ1IHYgLTM1LjY4IGMgMCwtMS44NyAtMC4zNywtMy43MSAtMS4wOCwtNS40MSAtMC43LC0xLjcgLTEuNzQsLTMuMjYgLTMuMDcsLTQuNTkgLTIuNjUsLTIuNjUgLTYuMjQsLTQuMTQgLTkuOTksLTQuMTQgaCAtMTMuMzIgbCA3LjE3LDExLjU0IGggNC41IGMgNi41OSwwIDcuMjQsNy4yNCA3LjI0LDcuMjQgdiAzMC43OCBoIC01LjQ4IGMgLTAuNzIsMCAtMS40MSwwLjE0IC0yLjA3LDAuMzkgLTQuMjQsMS41NyAtNi45OCw3LjYyIC00LjQsMTAuNDIgMS4xNSwtMC42NyAyLjM5LC0xLjAzIDMuNjksLTEuMDMgNS44NCwwIDEwLjU3LDcuMzYgMTAuNTcsMTYuNDQgMCw2LjA3IC0yLjExLDExLjM2IC01LjI2LDE0LjIxIDAuMiwyLjAzIDAuOTcsNC45NyAzLjcxLDUuMzEgMC4xNywwLjAzIDAuMzYsMC4wNCAwLjU1LDAuMDQgNC44MiwwIDYuMzIsNC45IDYuMzIsNC45IFYgMTEuMDYgaCAzMy4yNiBjIDMuMjMsMCA2LjA3LDMuODEgMCw3LjMzIC02LjA2LDMuNTMgLTE4LjI5LDE5LjExIC0xOC4yOSwxOS4xMSBsIDQuMyw5IGMgMCwwIDQuOSwtOC40MSAxOS41NywtMjMuMDggQyAtMzEuODYsOC43NCAtNy4wMSwxMS42OCAtNy4wMSwxMS42OCB2IDg5LjIxIGwgNi42NSw4LjYxIHoiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE3MjcuMzIwMyw1MzkuNTA3MikiIC8+CiAgICA8cGF0aAogICAgICAgaWQ9InBhdGg0MCIKICAgICAgIGQ9Im0gMCwwIGMgLTEuMywwIC0yLjU0LDAuMzYgLTMuNjksMS4wMyAtNC4wMiwyLjMyIC02Ljg5LDguMzUgLTYuODksMTUuNDEgMCw5LjA4IDQuNzQsMTYuNDMgMTAuNTgsMTYuNDMgMS45NCwwIDMuNzUsLTAuODEgNS4zMSwtMi4yMiBDIDguNDYsMjcuOCAxMC41NywyMi41MSAxMC41NywxNi40NCAxMC41Nyw3LjM2IDUuODQsMCAwLDAgbSAxNS44OSwxOC41OSBjIC0wLjU5LDcuMjEgLTMuMTcsMTMuNDUgLTYuODcsMTcuMzcgLTIuNTcsMi43MyAtNS42OSw0LjMyIC05LjA0LDQuMzIgLTguODYsMCAtMTYuMDQsLTExLjEzIC0xNi4wNCwtMjQuODUgMCwtMTMuNzIgNy4xOCwtMjQuODUgMTYuMDQsLTI0Ljg1IDAuMjQsMCAwLjQ5LDAuMDEgMC43MywwLjAzIDcuODMsMC41NCAxNC4yMSw5Ljc5IDE1LjE4LDIxLjY2IDAuMDksMS4wMyAwLjEzLDIuMDkgMC4xMywzLjE2IDAsMS4wNyAtMC4wNCwyLjEzIC0wLjEzLDMuMTYiCiAgICAgICBzdHlsZT0iZmlsbDojMjQzYTc1O2ZpbGwtb3BhY2l0eToxO2ZpbGwtcnVsZTpub256ZXJvO3N0cm9rZTpub25lIgogICAgICAgdHJhbnNmb3JtPSJtYXRyaXgoMS4zMzMzMzMzLDAsMCwtMS4zMzMzMzMzLDE1OTIuMzA2OCw1MjYuODEzODcpIiAvPgogICAgPHBhdGgKICAgICAgIGlkPSJwYXRoNDEiCiAgICAgICBkPSJtIDAsMCB2IC04Ni4yNSBjIDAsLTMuMDU2IC0xLjIxNCwtNS45ODcgLTMuMzc1LC04LjE0OCAtMi4xNjEsLTIuMTYxIC01LjA5MiwtMy4zNzUgLTguMTQ4LC0zLjM3NSBoIC0xNS45OTkgbCA4LjA1NSwxMi41MDEgaCA2LjA2NSBjIDYuODQ4LDAgNi4wNjUsNS4yODMgNi4wNjUsNS4yODMgdiA2OC42NDEgeiIKICAgICAgIHN0eWxlPSJmaWxsOiMyNDNhNzU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTU1MC43NTgxLDQ3NS42MzM2KSIgLz4KICAgIDxwYXRoCiAgICAgICBpZD0icGF0aDQyIgogICAgICAgZD0ibSAwLDAgYyAwLDAgLTAuMjYxLDcuNTY1IC05LDE4LjM5MSAtOC43MzksMTAuODI2IC0xMy45NTcsMjQgLTEyLDMwLjUyMiAxLjk1Nyw2LjUyMiA3LjQzNSw2LjEzIDkuOTEzLDIuMjE3IEMgLTguNjA5LDQ3LjIxNyAxMy45NTcsNy4xNzQgMTMuOTU3LDcuMTc0IEggMjQuMzkxIEwgLTkuNzgzLDYzLjc4MyBjIDAsMCAtNy40MzQsNi45MTMgLTEzLjY5NSwtMy42NTMgLTYuMjYxLC0xMC41NjUgLTguNDc5LC0xOC42NTIgLTMuNTIyLC0yNyA0Ljk1NywtOC4zNDcgMTkuMDQzLC0yNC43ODIgMTcuNzM5LC0zOS41MjEgLTEuMzA0LC0xNC43MzkgLTEwLjA0MywtMjIuNjk2IC0yMC4wODcsLTIwLjM0OCAtMTAuMDQzLDIuMzQ4IC0xNC4wODcsMjQuNzgyIC0xMC44MjYsMzcuMzA0IDAuMzkxLDcuNDM1IC0xMi4wOTgsLTE2LjUzMiAtNC4wMTEsLTMyLjUxMSA4LjA4NywtMTUuOTc4IDIwLjYxNywtMjIuOTUzIDMwLjk3OCwtMTEuNjA4IEMgLTQuMjcyLC0yMy43NzIgMS4wMTEsLTYuMTYzIDAsMCIKICAgICAgIHN0eWxlPSJmaWxsOiMyNDNhNzU7ZmlsbC1vcGFjaXR5OjE7ZmlsbC1ydWxlOm5vbnplcm87c3Ryb2tlOm5vbmUiCiAgICAgICB0cmFuc2Zvcm09Im1hdHJpeCgxLjMzMzMzMzMsMCwwLC0xLjMzMzMzMzMsMTQ3Ni4xNzEyLDU0OS4yNjQpIiAvPgogIDwvZz4KPC9zdmc+Cg==") center/contain no-repeat;display:inline-block;flex:none}
+.logo-box{width:32px;height:32px;border:1.5px solid var(--ink);border-radius:var(--r-sm);background:var(--surface-raised);padding:2px;display:flex}
+.logo-box .logo{width:100%;height:100%}
+.code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:500;font-size:11px;color:var(--ink-muted)}
+.sub{font-size:11px;color:var(--ink-muted)}
+.ttl{font-size:14px;font-weight:600}
+/* Button */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding-inline:14px;border-radius:var(--r-sm);border:1.5px solid var(--ink);background:var(--surface-raised);color:var(--ink);font-weight:600;font-size:12.5px;box-shadow:var(--brutal-sm);white-space:nowrap}
+.btn.p{background:var(--brand);border-color:var(--brand-hover);color:#fff}
+.btn.sm{height:30px;font-size:11.5px;box-shadow:none;border-width:1px;padding-inline:10px}
+.btn.g{background:transparent;border-color:transparent;box-shadow:none}
+/* Card */
+.card{background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--r-md);padding:16px;box-shadow:var(--shadow-sm)}
+.card.bold{border:1.5px solid var(--ink);box-shadow:var(--brutal)}
+.oldcard{background:var(--surface-raised);border:1.5px solid var(--line);border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)}
+/* StatTile */
+.tile{background:var(--surface-raised);border:1.5px solid var(--ink);border-radius:var(--r-md);box-shadow:var(--brutal-sm);padding:14px;display:grid;gap:2px;text-align:center}
+.tile b{font-size:26px;line-height:1.2}
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:5px;height:24px;padding-inline:9px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.tag::before{content:"";width:9px;height:9px;border-radius:50%;border:1.6px solid currentColor}
+.tag.s{background:var(--surface-sunken);color:var(--ink-muted);border-color:var(--line)}
+.tag.g1{background:var(--g1b);color:var(--g1f)}.tag.g2{background:var(--g2b);color:var(--g2f)}.tag.g3{background:var(--g3b);color:var(--g3f)}
+.badge{display:inline-flex;align-items:center;gap:5px;height:22px;padding-inline:8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.ok{background:var(--success-soft);color:var(--success)}
+.badge.nt{background:var(--neutral-soft);color:var(--ink-muted)}
+/* Select / input */
+.sel{height:40px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-raised);padding-inline:12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px}
+.sel::after{content:"";width:7px;height:7px;border-left:1.8px solid var(--ink-muted);border-bottom:1.8px solid var(--ink-muted);transform:translateY(-2px) rotate(-45deg)}
+.flab{font-size:11px;font-weight:600;color:var(--ink-muted);margin-bottom:4px}
+.search{height:40px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-raised);display:flex;align-items:center;padding-inline:12px;color:var(--ink-faint);gap:8px}
+.search::before{content:"";width:10px;height:10px;border:1.8px solid currentColor;border-radius:50%}
+/* TopBar */
+.topbar{flex:none;height:52px;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;padding-inline:10px;background:var(--surface-raised);border-bottom:1.5px solid var(--ink)}
+.topbar .t{text-align:center;font-weight:700;font-size:15px}
+.icb{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--surface-raised);display:flex;align-items:center;justify-content:center;color:var(--ink-muted);position:relative}
+.icb.srch::before{content:"";width:10px;height:10px;border:1.8px solid currentColor;border-radius:50%}
+.icb.bl::before{content:"";width:10px;height:11px;border:1.8px solid currentColor;border-radius:6px 6px 2px 2px}
+.icb .dot{position:absolute;top:3px;left:3px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:1.5px solid #fff}
+.floatbell{position:absolute;top:8px;left:10px;width:34px;height:34px;border:1.5px solid var(--ink);border-radius:var(--r-sm);background:var(--surface-raised);display:flex;align-items:center;justify-content:center;z-index:2}
+.floatbell::before{content:"";width:10px;height:11px;border:1.8px solid var(--ink-muted);border-radius:6px 6px 2px 2px}
+/* BottomNav */
+.bnav{flex:none;display:flex;background:var(--surface-raised);border-top:1.5px solid var(--ink);height:56px;padding-inline:6px}
+.bnav div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9.5px;font-weight:600;color:var(--ink-muted)}
+.bnav i{width:17px;height:17px;border:1.8px solid currentColor;border-radius:4px;display:block}
+.bnav .on{color:var(--brand)}
+/* Attendance */
+.statbtn{height:44px;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--surface-raised);color:var(--ink-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11px;font-weight:600}
+.statbtn i{width:11px;height:11px;border-radius:50%;border:1.6px solid currentColor;display:block}
+.statbtn.on{border-color:var(--ink);box-shadow:var(--brutal-sm);color:#fff}
+.statbtn.on.ok{background:var(--success)}.statbtn.on.wa{background:var(--warning)}.statbtn.on.ab{background:var(--danger)}
+.st4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mcard{background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--r-md);padding:14px;display:grid;gap:12px}
+.mhead{display:grid;justify-items:center;gap:6px;text-align:center}
+.mhead .nm{font-size:14px;font-weight:600}
+.mact{display:flex;align-items:center;justify-content:center;gap:10px;padding-top:10px;border-top:1px solid var(--line)}
+.mact .icb{width:32px;height:32px}
+.icb.wa-i{background:var(--success-soft);border-color:var(--success-soft);color:var(--success)}
+.icb.wa-i::before{content:"";width:12px;height:9px;border:1.8px solid currentColor;border-radius:4px}
+.icb.hi::before{content:"";width:11px;height:11px;border:1.8px solid currentColor;border-radius:50%}
+.daypick{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:6px}
+.daypick .arr{height:40px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-raised);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink-muted)}
+.daypick .mid{height:40px;border:1.5px solid var(--ink);border-radius:var(--r-sm);background:var(--surface-raised);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--neutral-soft);border:1px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:11px;color:var(--ink-muted)}
 .legend span{display:inline-flex;align-items:center;gap:4px}
-.legend b{color:var(--i);font-variant-numeric:tabular-nums}
-.legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
-.list{background:var(--r);border-top:1px solid var(--l);border-bottom:1px solid var(--l)}
-.li{padding:9px 12px;border-bottom:1px solid var(--l);display:grid;gap:7px}
-.li:last-child{border-bottom:0}
-.nm{font-size:12.5px;font-weight:700}
-.seg{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--l);border-radius:8px;overflow:hidden;background:var(--k)}
-.seg div{height:30px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:var(--mu);border-inline-start:1px solid var(--l)}
-.seg div:first-child{border-inline-start:0}
-.seg .pr{background:var(--ok);color:#fff}
-.seg .lt{background:var(--wa);color:#fff}
-.seg .ex{background:var(--ex);color:#fff}
-.seg .ab{background:var(--ab);color:#fff}
-.dock{flex:none;background:var(--r);border-top:1px solid var(--l);padding:8px 12px;display:flex;gap:6px;align-items:center}
-.dock .btn{height:34px;flex:1}
-.bnav2{display:flex;background:var(--r);border-top:1px solid var(--l);height:52px;flex:none}
-.bnav2 div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:600;color:var(--mu)}
-.bnav2 i{width:16px;height:16px;border:2px solid currentColor;border-radius:4px;display:block}
-.bnav2 .on{color:var(--b)}
-.bnav2 .on i{outline:5px solid var(--bs);background:var(--bs)}
+.legend b{color:var(--ink)}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dock{flex:none;background:var(--surface-raised);border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:8px}
+.dock .btn{flex:1}
+/* old stat boxes */
+.obox{border:1.5px solid var(--ink);border-radius:var(--r-sm);text-align:center;padding:7px 2px}
+.obox b{display:block;font-size:18px}
+.obox span{font-size:10.5px;color:var(--ink-muted);font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.osbtn{min-height:44px;border:1.5px solid var(--ink);border-radius:var(--r-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;background:var(--surface-raised);gap:2px}
+.osbtn i{width:11px;height:11px;border-radius:50%;border:1.6px solid currentColor;display:block}
 /* portal */
-.avatar{width:44px;height:44px;border-radius:50%;background:var(--bs);color:var(--bh);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex:none}
-.gtag{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:1px 6px;font-size:10px;font-weight:600}
-.remote{background:var(--was);border:1.5px solid var(--wa);border-radius:10px;padding:10px;text-align:center;box-shadow:3px 3px 0 var(--i)}
-.remote .t{color:var(--wa);font-weight:700;font-size:13px}
-.score{display:flex;align-items:baseline;gap:4px}
-.score b{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
-.strip{display:grid;grid-template-columns:repeat(14,1fr);gap:3px}
-.strip i{aspect-ratio:1;border-radius:3px;display:block}
-.strip span{font-size:8px;color:var(--fa);text-align:center}
-.medals{display:flex;gap:8px;overflow:hidden}
-.medal{flex:none;width:58px;text-align:center;font-size:9.5px;line-height:1.3;color:var(--mu)}
-.medal .e{width:40px;height:40px;margin:0 auto 3px;border-radius:50%;background:var(--acs);border:1.5px solid #e8d9bd;display:flex;align-items:center;justify-content:center;font-size:19px}
-.mres{display:grid;gap:6px}
-.mres .r{display:grid;grid-template-columns:62px 1fr 34px;align-items:center;gap:6px;font-size:10.5px}
-.mres .tr{height:8px;border-radius:4px;background:var(--k);overflow:hidden}
-.mres .tr i{display:block;height:100%;background:var(--b);border-radius:4px}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--brand-soft);color:var(--brand-hover);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:26px}
+.points{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:1.5px solid var(--ink);border-radius:var(--r-sm);box-shadow:var(--brutal-sm);padding:6px 16px}
+.points b{font-size:28px;line-height:1.2}
+.trophy{width:18px;height:18px;border:2px solid currentColor;border-radius:3px 3px 9px 9px}
+.remote{background:var(--warning-soft);border:1.5px solid var(--warning);border-radius:var(--r-md);padding:14px;text-align:center;box-shadow:var(--brutal-sm);display:grid;gap:6px;justify-items:center}
+.remote .t{color:var(--warning);font-weight:700;font-size:14px}
+.cal{display:grid;grid-template-columns:repeat(7,30px);gap:7px;justify-content:center}
+.cal i{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:10.5px;font-weight:700;color:#fff}
+.cal i.ok{background:var(--success)}.cal i.wa{background:var(--warning)}.cal i.ex{background:var(--info)}.cal i.ab{background:var(--danger)}
+.cal i.today{outline:2px solid var(--ink);outline-offset:2px}
+.season4{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;border-top:1px solid var(--line);padding-top:12px}
+.season4 b{display:block;font-size:17px}
+.season4 span{font-size:10.5px;color:var(--ink-muted);font-weight:600}
+.medals{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+.medal{width:64px;text-align:center;font-size:10.5px;line-height:1.35;color:var(--ink-muted);font-weight:600}
+.medal .e{width:46px;height:46px;margin:0 auto 5px;border-radius:50%;background:var(--accent-soft);border:1.5px solid var(--accent-solid);display:flex;align-items:center;justify-content:center;font-size:21px}
+.mres{display:grid;gap:10px}
+.mres .r{background:var(--surface-sunken);border-radius:var(--r-sm);padding:9px 12px;display:grid;gap:7px}
+.mres .tr{height:6px;border-radius:3px;background:#dfe3d9;overflow:hidden}
+.mres .tr i{display:block;height:100%;background:var(--brand);border-radius:3px}
+.bub{border-radius:var(--r-sm);padding:8px 10px;max-width:85%;font-size:12px;display:grid;gap:3px}
+.bub.a{background:var(--brand-soft);margin-inline-end:auto}
+.bub.p{background:var(--surface-sunken);margin-inline-start:auto}
+.bub small{font-size:10px;color:var(--ink-faint)}
 /* home */
 .blob{position:absolute;border-radius:50%;filter:blur(30px);opacity:.55}
-.newsrow{display:grid;grid-template-columns:1fr 56px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--l)}
-.newsrow:last-child{border-bottom:0}
-.thumb{width:56px;height:56px;border-radius:8px;background:linear-gradient(160deg,#cfe3d8,#9fc4b1)}
-.cat{font-size:10px;font-weight:700}
+.pill{display:inline-flex;align-items:center;gap:6px;height:30px;padding-inline:14px;border-radius:999px;border:1.5px solid var(--ink);background:var(--surface-raised);box-shadow:var(--brutal-sm);font-size:11.5px;font-weight:700;color:var(--brand)}
+.news{background:var(--surface-raised);border:1.5px solid var(--ink);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--brutal-sm)}
+.news .band{height:78px;background:var(--brand);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.news .band::before{content:"";position:absolute;width:70px;height:70px;border-radius:50%;background:#ffffff1a;top:-25px;right:-18px}
+.news .band span{width:38px;height:38px;border-radius:50%;background:#ffffff33}
+.more{font-size:11.5px;font-weight:700;color:var(--brand)}
 /* sheet */
-.dim{position:absolute;inset:0;background:rgba(23,27,24,.45);z-index:3}
-.sheet{position:absolute;inset:auto 0 0 0;max-height:78%;background:var(--r);border-radius:16px 16px 0 0;z-index:4;overflow:hidden;display:flex;flex-direction:column}
-.sheet .hd{height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-bottom:1px solid var(--l);font-weight:700;font-size:12px;flex:none}
-.tile{border:1.5px solid var(--i);border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9.5px;font-weight:600;color:var(--mu);text-align:center;padding:4px;background:var(--s)}
-.tile i{width:14px;height:14px;border:2px solid currentColor;border-radius:3px}
-.gh{font-size:10px;font-weight:600;color:var(--fa);margin:10px 0 4px}
-.mrow{display:flex;align-items:center;gap:10px;height:38px;font-size:12px;font-weight:600;border-bottom:1px solid var(--l)}
-.mrow i{width:14px;height:14px;border:2px solid var(--mu);border-radius:3px;flex:none}
-.mrow.on{color:var(--b)}
-.mrow.on i{border-color:var(--b)}
+.dim{position:absolute;inset:0;background:rgba(23,27,24,.4);z-index:3}
+.sheet{position:absolute;inset:auto 0 0 0;max-height:80%;background:var(--surface-raised);border-radius:14px 14px 0 0;border-top:1.5px solid var(--ink);z-index:4;overflow:hidden;display:flex;flex-direction:column}
+.sheet .hd{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;flex:none}
+.gh{font-size:11px;font-weight:600;color:var(--ink-faint);margin:12px 0 6px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.itile{border:1.5px solid var(--ink);border-radius:var(--r-sm);min-height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:600;color:var(--ink-muted);text-align:center;padding:4px;background:var(--surface)}
+.itile i{width:16px;height:16px;border:1.8px solid currentColor;border-radius:4px}
+.itile.new{border:1px solid var(--line);background:var(--surface-raised);color:var(--ink)}
+.itile.new.on{background:var(--brand-soft);border:1.5px solid var(--brand);color:var(--brand)}
 /* desktop */
-.desk{--s:#f7f7f3;--r:#ffffff;--k:#eef0e9;--l:#e2e5dc;--i:#171b18;--mu:#5c6862;--fa:#7a8076;--b:#0e6b4f;--bs:#e4f3ec;
-  --ok:#0e6b4f;--wa:#9a5b09;--ex:#2a5caa;--ab:#c4362a;--ns:#eceee8;
-  color-scheme:light;background:var(--s);color:var(--i);border:6px solid var(--frame);border-radius:12px;min-width:760px;font-size:12px;line-height:1.5;display:flex}
-.desk .side{width:150px;background:var(--r);border-left:1px solid var(--l);padding:10px 8px;display:grid;gap:4px;align-content:start}
-.desk .side div{height:26px;border-radius:6px;padding:0 8px;display:flex;align-items:center;font-size:11px;color:var(--mu);font-weight:600}
-.desk .side .on{background:var(--b);color:#fff}
-.desk .main{flex:1;padding:14px 16px;display:grid;gap:10px;align-content:start}
-.desk .days{padding:0}
-.desk .chips{padding:0}
-.dtable{background:var(--r);border:1px solid var(--l);border-radius:8px;overflow:hidden}
-.dtr{display:grid;grid-template-columns:1.4fr 1fr 250px;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--l)}
-.dtr:last-child{border-bottom:0}
-.dtr.h{background:var(--k);color:var(--mu);font-weight:600;font-size:11px}
-@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+.desk{color-scheme:light;background:var(--surface);color:var(--ink);border:6px solid var(--frame);border-radius:12px;min-width:820px;font-size:12.5px;line-height:1.5;display:flex}
+.desk .side{width:160px;background:var(--surface-raised);border-left:1px solid var(--line);padding:12px 8px;display:grid;gap:4px;align-content:start}
+.desk .side div{height:30px;border-radius:var(--r-sm);padding:0 10px;display:flex;align-items:center;font-size:11.5px;color:var(--ink-muted);font-weight:600;border:1.5px solid transparent}
+.desk .side .on{background:var(--brand);color:#fff;border-color:var(--ink);box-shadow:var(--brutal-sm)}
+.desk .main{flex:1;display:grid;align-content:start}
+.desk .dtop{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--surface-raised);border-bottom:1.5px solid var(--ink)}
+.desk .body{padding:16px 18px;display:grid;gap:12px}
+.attrow{display:grid;grid-template-columns:1.3fr 100px 150px 290px 76px;align-items:center;gap:10px;padding:9px 14px;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--r-md)}
+.attrow.h{background:transparent;border-color:transparent;color:var(--ink-muted);font-weight:600;font-size:11px;padding-block:0}
+.sbtns{display:flex;gap:6px}
+.sb{height:30px;padding-inline:10px;border-radius:var(--r-xs);border:1px solid var(--line);background:var(--surface-raised);color:var(--ink-muted);font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:4px}
+.sb.on{border-color:var(--ink);box-shadow:var(--brutal-sm);color:#fff}
+.sb.on.ok{background:var(--success)}.sb.on.wa{background:var(--warning)}
 </style>
 
 <div class="wrap">
 
 <header class="top">
-  <h1>خطة تحسين واجهة حلقات ابن الجوزي</h1>
-  <p class="prose muted">راجعت كل صفحات الموقع من الكود: الصفحة الرئيسية وآخر الأخبار، بوابة ولي الأمر، المتصدرون، لوحة الإشراف بكل صفحاتها، القائمة الجانبية والشريط السفلي. تركيزي الأول على الجوال. كل تغيير هنا مرقّم ومعه سببه، وما لا يحتاج تغييراً تركته كما هو.</p>
-  <p class="meta">النماذج مرسومة من الكود نفسه بألوان الموقع وخطه، والأسماء والأرقام فيها أمثلة للتوضيح وليست بيانات حقيقية. لم أعدّل أي شيء في الموقع حتى الآن.</p>
+  <h1>خطة تحسين واجهة حلقات ابن الجوزي، النسخة الثانية</h1>
+  <p class="prose muted">أعدت التفكير من البداية بعد ملاحظاتك. هذه المرة بنيت كل النماذج على نظام التصميم «حلقات ابن الجوزي» الموجود في حسابك: نفس الألوان والخط والحدود والظلال والمكوّنات (MobileAttendanceCard، StatTile، GroupTag، SessionTag، TopBar، IconTile). وأبقيت كل ما أعجبك في الشكل القديم.</p>
+  <p class="muted" style="font-size:14px">الأسماء والأرقام في النماذج أمثلة للتوضيح. لم أعدّل شيئاً في الموقع بعد.</p>
 </header>
 
-<section id="summary">
-  <h2>الملخص والأولويات</h2>
-  <p class="prose">رتبت التغييرات حسب أثرها على الاستخدام اليومي. اختر ما توافق عليه بالأرقام (مثلاً: «موافق على ح١ إلى ح٥، ب١ إلى ب٤، ر٢»).</p>
-  <div class="tbl-wrap">
-    <table>
-      <thead><tr><th>رقم</th><th>الصفحة</th><th>التغيير</th><th>الأثر</th><th>الحجم</th></tr></thead>
-      <tbody>
-        <tr><td class="id">ح١–ح٥</td><td>كشف الحضور</td><td>شريط ملوّن بدل مربعات العدد، اختيار اليوم والحلقة والمجموعة بشرائح، صف أخف لكل طالب، زر «إنهاء اليوم» ثابت أسفل الشاشة</td><td><span class="tag">عالٍ</span></td><td>متوسط</td></tr>
-        <tr><td class="id">ب١–ب٥</td><td>بوابة ولي الأمر</td><td>درجة التزام من 100، آخر 14 يوماً بالألوان، الأوسمة بأيقوناتها، النتائج الشهرية كأشرطة، ترويسة الطالب أصغر</td><td><span class="tag">عالٍ</span></td><td>متوسط</td></tr>
-        <tr><td class="id">ق١–ق٤</td><td>الشريط السفلي والقائمة</td><td>شريط علوي فيه اسم الصفحة والبحث والتنبيهات، قائمة «المزيد» كقائمة لا كمربعات، البحث متاح في الجوال</td><td><span class="tag">عالٍ</span></td><td>صغير</td></tr>
-        <tr><td class="id">ر١–ر٥</td><td>الرئيسية وآخر الأخبار</td><td>إزالة ما يعطي انطباع «موقع مولّد»، خبر يمكن قراءته كاملاً، ترويسة أبسط في الجوال</td><td><span class="tag w">متوسط</span></td><td>صغير</td></tr>
-        <tr><td class="id">إ١–إ٢</td><td>رئيسية الإشراف</td><td>بطاقة «حضور اليوم» أولاً مع رابط مباشر للكشف</td><td><span class="tag w">متوسط</span></td><td>صغير</td></tr>
-        <tr><td class="id">ص١–ص٦</td><td>المتصدرون والعمليات السريعة وعام</td><td>إصلاحات صغيرة: اتجاه سهم، تبويبات في سطر واحد، تقليل الحركة، توحيد الأرقام</td><td><span class="tag m">تحسين</span></td><td>صغير</td></tr>
-        <tr><td class="id">ك١–ك٤</td><td>الكمبيوتر</td><td>نفس التحسينات بتخطيط يناسب الشاشة الواسعة</td><td><span class="tag w">متوسط</span></td><td>صغير</td></tr>
-      </tbody>
-    </table>
+<section>
+  <h2>القواعد التي التزمت بها هذه المرة</h2>
+  <div class="rules">
+    <div class="rule"><b>الهوية كما هي</b><span class="muted">الحدود السوداء والظل الصلب للأزرار ومربعات الأرقام والعنصر المختار، كما يحددها نظام التصميم. لا ألوان جديدة ولا شكل جديد.</span></div>
+    <div class="rule"><b>التوسيط</b><span class="muted">العناوين وبيانات الطالب والأرقام في المنتصف، في البوابة والرئيسية وبطاقات الحضور.</span></div>
+    <div class="rule"><b>مسافات مريحة</b><span class="muted">مسافة واضحة بين كل بطاقة وأخرى (12 إلى 24 بكسل كما في النظام)، ولا عناصر ملتصقة.</span></div>
+    <div class="rule"><b>تغيير له سبب فقط</b><span class="muted">ما أعجبك (النقاط البارزة، النتائج الشهرية، المراسلة، قائمة المزيد، الرئيسية) بقي، والتعديل عليه خفيف.</span></div>
   </div>
-</section>
-
-<section id="ai-look">
-  <h2>ما الذي يجعل الموقع يبدو كأنه مولّد بالذكاء الاصطناعي</h2>
-  <p class="prose">بحثت في مهارة التصميم المثبتة عندك (frontend-design) وفي الأنماط المعروفة. هذه هي العلامات الموجودة فعلاً في موقعك، ومكان كل واحدة:</p>
-  <ul class="items">
-    <li><b>بقع لونية ضبابية خلف العنوان</b> في الصفحة الرئيسية (دائرتان خضراء وذهبية مع blur). من أشهر علامات القوالب المولّدة.</li>
-    <li><b>شارة صغيرة فوق العنوان</b> («الموسم الحالي: …») بإطار وظل، ثم عنوان ووصف وزرّان، والكل في المنتصف.</li>
-    <li><b>قسم «لماذا حلقات ابن الجوزي؟»</b> بثلاث بطاقات متطابقة، كل واحدة فيها أيقونة داخل مربع ملوّن ثم عنوان ثم سطرين. هذا هو قالب صفحات SaaS بالحرف.</li>
-    <li><b>ظهور كل قسم بحركة انزلاق وتلاشٍ</b> عند التمرير، وارتفاع كل بطاقة عند المرور عليها. حركة في كل مكان بدون سبب.</li>
-    <li><b>صورة بديلة مزخرفة للأخبار</b> بلا صورة: مستطيل ملوّن فيه دوائر شفافة وأيقونة في المنتصف، ونجمة بجانب التصنيف.</li>
-    <li><b>نفس الإطار والظل الأسود على كل شيء</b>: الأزرار والبطاقات والتبويبات والإحصاءات. حين يكون كل شيء بارزاً لا يبرز شيء.</li>
-    <li><b>مربعات الأرقام الكبيرة</b> (طالب مسجّل، حلقة تحفيظ) كأول محتوى بعد العنوان.</li>
-  </ul>
-  <p class="note">هوية الموقع الحالية (الأخضر الداكن، خط IBM Plex Sans Arabic، الحدود الواضحة) جيدة ومناسبة ولن أغيّرها. التغيير هو تقليل التكرار وإزالة الزخارف التي لا تؤدي وظيفة.</p>
 </section>
 
 <!-- ======================= ATTENDANCE ======================= -->
 <section id="attendance">
-  <h2>كشف الحضور (الجوال)</h2>
+  <h2>كشف الحضور في الجوال</h2>
   <div class="compare">
     <div class="col">
-      <span class="lbl">الحالي: أول شاشة</span>
+      <span class="lbl">الحالي</span>
       <div class="phone">
-        <div class="bell"></div>
-        <div class="scroll"><div class="pad stack" style="padding-top:46px">
-          <div><div class="pt">كشف الحضور</div><div class="sub">موسم ١٤٤٧ · الأحد، ٢١ ربيع الأول</div></div>
-          <div class="row"><span class="btn o">⚙ النقاط التلقائية</span><span class="btn p">إنهاء اليوم</span></div>
-          <div class="card" style="display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end">
-            <div><div class="flab">اليوم</div><div class="sel">أحد ٢١ ربيع…</div></div>
-            <div><div class="flab">الحلقة</div><div class="sel">كل الحلقات</div></div>
-            <div><div class="flab">المجموعة</div><div class="sel">كل المجموعات</div></div>
-            <span class="btn o">تعليم الجميع حاضر</span>
+        <div class="floatbell"></div>
+        <div class="scroll"><div class="pad stack" style="padding-top:52px">
+          <div><div style="font-size:18px;font-weight:700">كشف الحضور</div><div class="sub">موسم ١٤٤٧ · الأحد، ٢١ ربيع الأول</div></div>
+          <div class="row"><span class="btn" style="box-shadow:none">النقاط التلقائية</span><span class="btn p">إنهاء اليوم</span></div>
+          <div class="oldcard" style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
+            <div><div class="flab">اليوم</div><div class="sel" style="min-width:100px">أحد ٢١ ربيع…</div></div>
+            <div><div class="flab">الحلقة</div><div class="sel" style="min-width:100px">كل الحلقات</div></div>
+            <div><div class="flab">المجموعة</div><div class="sel" style="min-width:100px">كل المجموعات</div></div>
+            <span class="btn" style="box-shadow:none">تعليم الجميع حاضر</span>
           </div>
           <div class="g2">
-            <div class="stat" style="background:var(--oks)"><b style="color:var(--ok)">18</b><span>حاضر</span></div>
-            <div class="stat" style="background:var(--was)"><b style="color:var(--wa)">3</b><span>متأخر</span></div>
-            <div class="stat" style="background:var(--exs)"><b style="color:var(--ex)">1</b><span>بعذر</span></div>
-            <div class="stat" style="background:var(--abs)"><b style="color:var(--ab)">2</b><span>غائب</span></div>
-            <div class="stat" style="background:var(--ns)"><b style="color:var(--mu)">6</b><span>غير مسجّل</span></div>
+            <div class="obox" style="background:var(--success-soft)"><b style="color:var(--success)">18</b><span>حاضر</span></div>
+            <div class="obox" style="background:var(--warning-soft)"><b style="color:var(--warning)">3</b><span>متأخر</span></div>
+            <div class="obox" style="background:var(--info-soft)"><b style="color:var(--info)">1</b><span>بعذر</span></div>
+            <div class="obox" style="background:var(--danger-soft)"><b style="color:var(--danger)">2</b><span>غائب</span></div>
+            <div class="obox" style="background:var(--neutral-soft)"><b style="color:var(--ink-muted)">6</b><span>غير مسجّل</span></div>
           </div>
           <div class="search">ابحث باسم الطالب أو كوده...</div>
-          <div class="card">
-            <div class="row between" style="margin-bottom:8px">
-              <div><div class="row"><b>محمد العتيبي</b><span class="badge">#1042</span></div><div class="sub">الفرقان · الصقور</div></div>
-              <span class="badge" style="background:var(--oks);color:var(--bh)">حاضر</span>
-            </div>
-            <div class="g4">
-              <div class="sbtn" style="background:var(--ok);color:#fff"><span class="ic"></span>حاضر</div>
-              <div class="sbtn"><span class="ic"></span>متأخر</div>
-              <div class="sbtn"><span class="ic"></span>بعذر</div>
-              <div class="sbtn"><span class="ic"></span>غائب</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="row between" style="margin-bottom:8px">
-              <div><div class="row"><b>عبدالله الشهري</b><span class="badge">#1043</span></div><div class="sub">الفرقان · النجوم</div></div>
-              <span class="badge">○ غير مسجّل</span>
-            </div>
-            <div class="g4"><div class="sbtn">حاضر</div><div class="sbtn">متأخر</div><div class="sbtn">بعذر</div><div class="sbtn">غائب</div></div>
+          <div class="oldcard">
+            <div class="row between" style="margin-bottom:10px"><div><div class="row"><b>أحمد سفيان</b><span class="badge nt">#002</span></div><div class="sub">حلقة ابن باز · النقاء</div></div><span class="badge ok">حاضر</span></div>
+            <div class="g4"><div class="osbtn" style="background:var(--success);color:#fff"><i></i>حاضر</div><div class="osbtn"><i></i>متأخر</div><div class="osbtn"><i></i>بعذر</div><div class="osbtn"><i></i>غائب</div></div>
           </div>
         </div></div>
         <div class="bnav"><div><i></i>الرئيسية</div><div><i></i>عمليات</div><div class="on"><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
@@ -283,64 +252,49 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
     </div>
 
     <div class="col">
-      <span class="lbl after">المقترح: أول شاشة</span>
+      <span class="lbl after">المقترح</span>
       <div class="phone">
-        <div class="tbar"><span class="t">كشف الحضور</span><div class="acts"><span class="icb srch"></span><span class="icb bl"><span class="dot"></span></span><span class="icb" style="font-weight:700">⋮</span></div></div>
-        <div class="scroll"><div class="stack" style="padding-block:10px 0">
-          <div class="days">
-            <div class="day done"><span>خميس</span><b>١٨</b></div>
-            <div class="day off"><span>جمعة</span><b>١٩</b></div>
-            <div class="day done"><span>سبت</span><b>٢٠</b></div>
-            <div class="day on"><span>اليوم</span><b>٢١</b></div>
-            <div class="day"><span>اثنين</span><b>٢٢</b></div>
-            <div class="day"><span>ثلاثاء</span><b>٢٣</b></div>
+        <div class="topbar"><span class="icb srch"></span><span class="t">كشف الحضور</span><span class="icb bl"><span class="dot"></span></span></div>
+        <div class="scroll"><div class="pad stack" style="gap:14px">
+          <div class="daypick"><span class="arr">›</span><span class="mid">الأحد 21 / 09 <span class="badge ok">اليوم</span></span><span class="arr">‹</span></div>
+          <div class="g2">
+            <div class="sel">كل الحلقات</div>
+            <div class="sel">كل المجموعات</div>
           </div>
-          <div class="chips">
-            <div class="chip on">كل الحلقات</div><div class="chip">الفرقان</div><div class="chip">النور</div><div class="chip">الهدى</div>
-          </div>
-          <div class="chips">
-            <div class="chip on">كل المجموعات</div><div class="chip"><span class="cd" style="background:#6b3fb0"></span>الصقور</div><div class="chip"><span class="cd" style="background:#12766b"></span>النجوم</div><div class="chip"><span class="cd" style="background:#b0316f"></span>الفرسان</div>
-          </div>
-          <div style="padding:0 12px" class="stack">
-            <div class="row between"><b style="font-size:12px">24 من 30 مسجّل</b><span class="sub">اضغط لون لعرض طلابه</span></div>
-            <div class="bar">
-              <i style="width:60%;background:var(--ok)"></i><i style="width:10%;background:var(--wa)"></i><i style="width:3.3%;background:var(--ex)"></i><i style="width:6.7%;background:var(--ab)"></i>
-            </div>
+          <div class="card stack center" style="gap:10px">
+            <div class="ttl">24 من 30 طالباً مسجّلون</div>
+            <div class="bar" style="width:100%"><i style="width:60%;background:var(--success)"></i><i style="width:10%;background:var(--warning)"></i><i style="width:3.3%;background:var(--info)"></i><i style="width:6.7%;background:var(--danger)"></i></div>
             <div class="legend">
-              <span><i style="background:var(--ok)"></i>حاضر <b>18</b></span>
-              <span><i style="background:var(--wa)"></i>متأخر <b>3</b></span>
-              <span><i style="background:var(--ex)"></i>بعذر <b>1</b></span>
-              <span><i style="background:var(--ab)"></i>غائب <b>2</b></span>
-              <span><i style="background:#c9cdc4"></i>باقٍ <b>6</b></span>
+              <span><i style="background:var(--success)"></i>حاضر <b>18</b></span><span><i style="background:var(--warning)"></i>متأخر <b>3</b></span><span><i style="background:var(--info)"></i>بعذر <b>1</b></span><span><i style="background:var(--danger)"></i>غائب <b>2</b></span><span><i style="background:#c9cdc4"></i>لم يُسجَّل <b>6</b></span>
             </div>
           </div>
-          <div style="padding:0 12px"><div class="search">ابحث بالاسم أو الكود</div></div>
-          <div class="list">
-            <div class="li"><div class="row between"><div><span class="nm">محمد العتيبي</span> <span class="sub">#1042</span></div><span class="sub">الفرقان، الصقور</span></div>
-              <div class="seg"><div class="pr">حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
-            <div class="li"><div class="row between"><div><span class="nm">عبدالله الشهري</span> <span class="sub">#1043</span></div><span class="sub">الفرقان، النجوم</span></div>
-              <div class="seg"><div>حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
-            <div class="li"><div class="row between"><div><span class="nm">سعد القحطاني</span> <span class="sub">#1044</span></div><span class="sub">النور، الصقور</span></div>
-              <div class="seg"><div>حاضر</div><div class="lt">متأخر</div><div>بعذر</div><div>غائب</div></div></div>
-            <div class="li"><div class="row between"><div><span class="nm">فيصل الدوسري</span> <span class="sub">#1045</span></div><span class="sub">النور، الفرسان</span></div>
-              <div class="seg"><div>حاضر</div><div>متأخر</div><div>بعذر</div><div class="ab">غائب</div></div></div>
+          <div class="search">ابحث باسم الطالب أو رقمه</div>
+          <div class="mcard">
+            <div class="mhead"><div class="row"><span class="nm">أحمد سفيان أحمد</span><span class="code">#002</span></div><div class="row"><span class="tag g1">النقاء</span><span class="tag s">حلقة عبدالعزيز بن باز</span></div></div>
+            <div class="st4"><div class="statbtn on ok"><i></i>حاضر</div><div class="statbtn"><i></i>متأخر</div><div class="statbtn"><i></i>بعذر</div><div class="statbtn"><i></i>غائب</div></div>
+            <div class="mact"><span class="icb wa-i"></span><span class="icb hi"></span></div>
+          </div>
+          <div class="mcard">
+            <div class="mhead"><div class="row"><span class="nm">أحمد محمد ساقي</span><span class="code">#082</span></div><div class="row"><span class="tag g2">العطاء</span><span class="tag s">حلقة الألباني</span></div></div>
+            <div class="st4"><div class="statbtn"><i></i>حاضر</div><div class="statbtn on wa"><i></i>متأخر</div><div class="statbtn"><i></i>بعذر</div><div class="statbtn"><i></i>غائب</div></div>
+            <div class="mact"><span class="icb wa-i"></span><span class="icb hi"></span></div>
           </div>
         </div></div>
-        <div class="dock"><span class="btn o">الباقون حاضر (6)</span><span class="btn p" style="box-shadow:none">إنهاء اليوم</span></div>
-        <div class="bnav2"><div><i></i>الرئيسية</div><div><i></i>عمليات</div><div class="on"><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
+        <div class="dock"><span class="btn">الباقون حاضر (6)</span><span class="btn p">إنهاء اليوم</span></div>
+        <div class="bnav"><div><i></i>الرئيسية</div><div><i></i>عمليات</div><div class="on"><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
       </div>
     </div>
 
     <div class="why">
       <h3>التغييرات</h3>
       <ol class="items">
-        <li><b>ح١ شريط واحد بدل خمسة مربعات.</b> المربعات الآن تأخذ ثلاثة صفوف في الجوال (والخامس وحيد في صفه). الشريط يعطي نفس المعلومة في سطرين، ومعه «24 من 30 مسجّل» لتعرف كم بقي. والضغط على أي لون في الشرح يعرض طلاب تلك الحالة فقط، فتصل مثلاً للستة غير المسجّلين مباشرة.</li>
-        <li><b>ح٢ شريط أيام بدل قائمة منسدلة.</b> اليوم الحالي مظلل، والعطل مخططة ولا تُختار، والأيام التي اكتمل تحضيرها عليها خط أخضر صغير. تبديل اليوم بلمسة واحدة بدل فتح قائمة طويلة.</li>
-        <li><b>ح٣ الحلقة والمجموعة كشرائح أفقية.</b> لمسة واحدة للتصفية، والمجموعات تظهر بألوانها الموجودة في النظام أصلاً. إذا زادت الحلقات تتحرك الشرائح أفقياً.</li>
-        <li><b>ح٤ صف أخف لكل طالب.</b> حذفت شارة الحالة المكررة (الزر الملوّن يكفي)، ووضعت الأزرار الأربعة في شريط مقسّم واحد. النتيجة: يظهر 4 طلاب في أول شاشة بدل صفر. زر «مسيرة الحضور» يبقى بالضغط على اسم الطالب.</li>
-        <li><b>ح٥ «إنهاء اليوم» و«الباقون حاضر» ثابتان فوق الشريط السفلي.</b> لا تحتاج أن تصعد لأعلى الصفحة بعد تحضير 30 طالباً. زر «النقاط التلقائية» إعداد نادر الاستخدام فانتقل لقائمة ⋮ في الأعلى.</li>
+        <li><span class="n">ح١</span><span><b>اختيار اليوم بأسهم.</b> الأسهم تنقلك لليوم السابق أو التالي بلمسة (وهو الاستخدام الأكثر)، والضغط على التاريخ نفسه يفتح القائمة الكاملة لأي يوم بعيد. تُتخطّى العطل تلقائياً، وعلامة «اليوم» تظهر حين تكون على يوم اليوم.</span></li>
+        <li><span class="n">ح٢</span><span><b>الحلقة والمجموعة قائمتان منسدلتان</b> كما طلبت، جنباً إلى جنب في سطر واحد، بتصميم Select من نظامك.</span></li>
+        <li><span class="n">ح٣</span><span><b>شريط ملوّن بدل المربعات الخمسة</b> مع الأرقام تحته في الوسط. الضغط على أي حالة في الشرح يعرض طلابها فقط، مثل «لم يُسجَّل».</span></li>
+        <li><span class="n">ح٤</span><span><b>بطاقة الطالب هي MobileAttendanceCard من نظامك</b>، منفصلة بمسافة واضحة عن التي بعدها. الاسم والرقم والمجموعة والحلقة في الوسط، والأزرار الأربعة بعرض متساوٍ، والزر المختار وحده بحد أسود وظل صلب. أزلت شارة الحالة المكررة لأن الزر المختار يكفي.</span></li>
+        <li><span class="n">ح٥</span><span><b>«إنهاء اليوم» و«الباقون حاضر» ثابتان أسفل الشاشة</b> فلا تصعد لأعلى بعد تحضير آخر طالب. «النقاط التلقائية» إعداد نادر فينتقل إلى نافذة إنهاء اليوم.</span></li>
+        <li><span class="n">ح٦</span><span><b>شريط علوي من نظامك (TopBar)</b> باسم الصفحة وزر بحث والتنبيهات، بدل الجرس العائم وحده.</span></li>
       </ol>
-      <p class="note">لا تغيير على طريقة الحفظ الفوري ولا على المزامنة بين الأجهزة ولا على نافذة إنهاء اليوم والواتساب. التغيير في الشكل وترتيب العناصر فقط.</p>
     </div>
   </div>
 </section>
@@ -352,30 +306,20 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
     <div class="col">
       <span class="lbl">الحالي</span>
       <div class="phone tall">
-        <div class="tbar" style="height:50px"><div class="row"><span style="width:26px;height:26px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><b style="font-size:12px">بوابة ولي الأمر</b></div><span class="sub">🔔 خروج</span></div>
-        <div class="scroll"><div class="pad stack">
-          <div class="remote"><div class="t">▶ الدراسة اليوم عن بعد</div><div class="sub">رابط حلقة الفرقان — اضغط للدخول عبر Google Meet</div><span class="btn p" style="margin-top:8px;height:34px">دخول الحلقة الافتراضية</span></div>
-          <div class="card" style="text-align:center;box-shadow:3px 3px 0 var(--i);border-color:var(--l)">
-            <div class="avatar" style="width:56px;height:56px;margin:0 auto 6px;font-size:22px">م</div>
-            <b style="font-size:15px">محمد العتيبي</b>
-            <div class="row" style="justify-content:center;margin-top:4px;flex-wrap:wrap"><span class="badge">#1042</span><span class="gtag" style="background:#e2f6f3;color:#12766b">الفرقان</span><span class="gtag" style="background:#efe7fb;color:#6b3fb0">الصقور</span></div>
-            <div class="sub">موسم ١٤٤٧</div>
-            <span class="btn p" style="height:38px;font-size:18px;margin-top:6px">🏆 245 <small style="font-size:11px">نقطة</small></span>
+        <div class="topbar" style="border-bottom:1px solid var(--line);grid-template-columns:auto 1fr auto"><span class="row"><span class="logo-box"><span class="logo"></span></span><b style="font-size:12.5px">بوابة ولي الأمر</b></span><span></span><span class="sub">خروج</span></div>
+        <div class="scroll"><div class="pad stack" style="gap:18px">
+          <div class="remote"><span class="t">الدراسة اليوم عن بعد</span><span class="sub">رابط حلقة ابن باز، اضغط للدخول عبر Google Meet</span><span class="btn p">دخول الحلقة الافتراضية</span></div>
+          <div class="oldcard stack center" style="box-shadow:var(--brutal-sm);gap:8px">
+            <div class="avatar" style="width:72px;height:72px">أ</div>
+            <b style="font-size:17px">أحمد سفيان أحمد</b>
+            <div class="row" style="flex-wrap:wrap;justify-content:center"><span class="badge nt">#002</span><span class="tag s" style="border:0">حلقة ابن باز</span><span class="tag g1">النقاء</span></div>
+            <span class="points"><span class="trophy"></span><b>245</b>نقطة</span>
           </div>
-          <div class="card"><b style="font-size:13px">الحضور هذا الموسم</b>
-            <div class="g4" style="margin-top:8px">
-              <div class="stat" style="background:var(--oks)"><b style="color:var(--ok)">20</b><span>حاضر</span></div>
-              <div class="stat" style="background:var(--was)"><b style="color:var(--wa)">2</b><span>متأخر</span></div>
-              <div class="stat" style="background:var(--exs)"><b style="color:var(--ex)">1</b><span>بعذر</span></div>
-              <div class="stat" style="background:var(--abs)"><b style="color:var(--ab)">1</b><span>غائب</span></div>
-            </div></div>
-          <div class="card"><b style="font-size:13px">الإنجازات والأوسمة</b>
-            <div class="row" style="flex-wrap:wrap;margin-top:6px"><span class="badge" style="background:var(--acs);color:var(--ac)">ختم جزء عم</span><span class="badge" style="background:var(--acs);color:var(--ac)">المواظب</span><span class="badge" style="background:var(--acs);color:var(--ac)">نجم الأسبوع</span></div></div>
-          <div class="card"><b style="font-size:13px">النتائج الشهرية</b>
-            <div class="stack" style="margin-top:6px;gap:5px">
-              <div class="row between" style="background:var(--k);border-radius:6px;padding:4px 8px"><span>شهر صفر</span><b style="color:var(--b)">88%</b></div>
-              <div class="row between" style="background:var(--k);border-radius:6px;padding:4px 8px"><span>ربيع الأول</span><b style="color:var(--b)">94%</b></div>
-            </div></div>
+          <div class="oldcard"><div class="ttl" style="margin-bottom:10px">الحضور هذا الموسم</div>
+            <div class="g4"><div class="obox" style="background:var(--success-soft)"><b style="color:var(--success)">20</b><span>حاضر</span></div><div class="obox" style="background:var(--warning-soft)"><b style="color:var(--warning)">2</b><span>متأخر</span></div><div class="obox" style="background:var(--info-soft)"><b style="color:var(--info)">1</b><span>بعذر</span></div><div class="obox" style="background:var(--danger-soft)"><b style="color:var(--danger)">1</b><span>غائب</span></div></div></div>
+          <div class="oldcard"><div class="ttl" style="margin-bottom:8px">الإنجازات والأوسمة</div><div class="row" style="flex-wrap:wrap"><span class="badge" style="background:var(--accent-soft);color:var(--accent)">ختم جزء عم</span><span class="badge" style="background:var(--accent-soft);color:var(--accent)">المواظب</span></div></div>
+          <div class="oldcard"><div class="ttl" style="margin-bottom:8px">النتائج الشهرية</div>
+            <div class="stack" style="gap:6px"><div class="row between" style="background:var(--surface-sunken);border-radius:8px;padding:6px 10px"><span>شهر صفر</span><b style="color:var(--brand)">88%</b></div><div class="row between" style="background:var(--surface-sunken);border-radius:8px;padding:6px 10px"><span>ربيع الأول</span><b style="color:var(--brand)">94%</b></div></div></div>
         </div></div>
       </div>
     </div>
@@ -383,46 +327,57 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
     <div class="col">
       <span class="lbl after">المقترح</span>
       <div class="phone tall">
-        <div class="tbar" style="height:50px"><div class="row"><span style="width:26px;height:26px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><b style="font-size:12px">بوابة ولي الأمر</b></div><span class="sub">🔔 خروج</span></div>
-        <div class="scroll"><div class="pad stack">
-          <div class="remote"><div class="t">▶ الدراسة اليوم عن بعد</div><div class="sub">رابط حلقة الفرقان، اضغط للدخول عبر Google Meet</div><span class="btn p" style="margin-top:8px;height:34px">دخول الحلقة الافتراضية</span></div>
-          <div class="row" style="gap:10px;padding:2px 0">
-            <div class="avatar">م</div>
-            <div style="flex:1;min-width:0"><b style="font-size:14px">محمد العتيبي</b>
-              <div class="row" style="flex-wrap:wrap;gap:4px"><span class="gtag" style="background:#e2f6f3;color:#12766b">الفرقان</span><span class="gtag" style="background:#efe7fb;color:#6b3fb0">الصقور</span><span class="sub">#1042</span></div></div>
-            <div style="text-align:center;line-height:1.1"><b style="font-size:22px;color:var(--b)">245</b><div class="sub">نقطة</div></div>
+        <div class="topbar" style="border-bottom:1px solid var(--line);grid-template-columns:auto 1fr auto"><span class="row"><span class="logo-box"><span class="logo"></span></span><b style="font-size:12.5px">بوابة ولي الأمر</b></span><span></span><span class="sub">خروج</span></div>
+        <div class="scroll"><div class="pad stack" style="gap:20px">
+          <div class="remote"><span class="t">الدراسة اليوم عن بعد</span><span class="sub">رابط حلقة ابن باز، اضغط للدخول عبر Google Meet</span><span class="btn p">دخول الحلقة الافتراضية</span></div>
+
+          <div class="card stack center" style="gap:8px;padding:20px 16px">
+            <div class="avatar">أ</div>
+            <b style="font-size:19px;line-height:1.3">أحمد سفيان أحمد</b>
+            <span class="code" style="font-size:12px">#002</span>
+            <div class="row" style="flex-wrap:wrap;justify-content:center"><span class="tag s">حلقة عبدالعزيز بن باز</span><span class="tag g1">النقاء</span></div>
+            <span class="points" style="margin-top:6px"><span class="trophy"></span><b>245</b>نقطة</span>
           </div>
-          <div class="card stack" style="gap:8px">
-            <div class="row between"><b style="font-size:13px">الحضور</b><span class="sub">آخر 14 يوم دراسي</span></div>
-            <div class="row between" style="align-items:flex-end">
-              <div class="score"><b>91</b><span class="sub">من 100</span></div>
-              <span class="badge" style="background:var(--oks);color:var(--bh);font-size:11px">ممتاز</span>
+
+          <div class="card stack center" style="gap:14px;padding:20px 16px">
+            <div class="ttl">الحضور</div>
+            <svg width="118" height="118" viewBox="0 0 118 118" aria-label="نسبة الحضور 91%">
+              <circle cx="59" cy="59" r="50" fill="none" stroke="#eceee8" stroke-width="10"/>
+              <circle cx="59" cy="59" r="50" fill="none" stroke="#0e6b4f" stroke-width="10" stroke-linecap="round" stroke-dasharray="285.9 314.2" transform="rotate(-90 59 59)"/>
+              <text x="59" y="66" text-anchor="middle" font-family="IBM Plex Sans Arabic, sans-serif" font-size="26" font-weight="700" fill="#171b18">91%</text>
+            </svg>
+            <span class="badge ok" style="height:24px;font-size:12px">ممتاز</span>
+            <div class="sub" style="font-weight:600">آخر 14 يوماً دراسياً</div>
+            <div class="cal">
+              <i class="ok">7</i><i class="ok">8</i><i class="wa">9</i><i class="ok">10</i><i class="ok">11</i><i class="ok">12</i><i class="ab">14</i>
+              <i class="ok">15</i><i class="ex">16</i><i class="ok">17</i><i class="ok">18</i><i class="wa">19</i><i class="ok">20</i><i class="ok today">21</i>
             </div>
-            <div class="strip">
-              <i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--wa)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--ab)"></i>
-              <i style="background:var(--ok)"></i><i style="background:var(--ex)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok)"></i><i style="background:var(--wa)"></i><i style="background:var(--ok)"></i><i style="background:var(--ok);outline:2px solid var(--i);outline-offset:1px"></i>
+            <div class="legend"><span><i style="background:var(--success)"></i>حاضر</span><span><i style="background:var(--warning)"></i>متأخر</span><span><i style="background:var(--info)"></i>بعذر</span><span><i style="background:var(--danger)"></i>غائب</span></div>
+            <div class="season4" style="width:100%">
+              <div><b style="color:var(--success)">20</b><span>حاضر</span></div><div><b style="color:var(--warning)">2</b><span>متأخر</span></div><div><b style="color:var(--info)">1</b><span>بعذر</span></div><div><b style="color:var(--danger)">1</b><span>غائب</span></div>
             </div>
-            <div class="row between"><span class="sub">٢ ربيع الأول</span><span class="sub">اليوم</span></div>
-            <div class="legend" style="border-top:1px solid var(--l);padding-top:6px">
-              <span><i style="background:var(--ok)"></i>حاضر <b>20</b></span><span><i style="background:var(--wa)"></i>متأخر <b>2</b></span><span><i style="background:var(--ex)"></i>بعذر <b>1</b></span><span><i style="background:var(--ab)"></i>غائب <b>1</b></span>
-            </div>
+            <span class="sub" style="margin-top:-6px">مجموع الموسم</span>
           </div>
-          <div class="card stack" style="gap:8px">
-            <div class="row between"><b style="font-size:13px">الأوسمة والإنجازات</b><span class="sub">3</span></div>
-            <div class="medals">
-              <div class="medal"><div class="e">📖</div>ختم جزء عم</div>
-              <div class="medal"><div class="e">🎖️</div>المواظب</div>
-              <div class="medal"><div class="e">⭐</div>نجم الأسبوع</div>
-            </div>
+
+          <div class="card stack center" style="gap:14px;padding:20px 16px">
+            <div class="ttl">الإنجازات والأوسمة</div>
+            <div class="medals"><div class="medal"><div class="e">📖</div>ختم جزء عم</div><div class="medal"><div class="e">🎖️</div>المواظب</div><div class="medal"><div class="e">⭐</div>نجم الأسبوع</div></div>
           </div>
-          <div class="card stack" style="gap:8px">
-            <b style="font-size:13px">النتائج الشهرية</b>
+
+          <div class="card stack" style="gap:12px;padding:20px 16px">
+            <div class="ttl" style="text-align:center">النتائج الشهرية</div>
             <div class="mres">
-              <div class="r"><span>شهر صفر</span><div class="tr"><i style="width:88%"></i></div><b>88%</b></div>
-              <div class="r"><span>ربيع الأول</span><div class="tr"><i style="width:94%"></i></div><b>94%</b></div>
+              <div class="r"><div class="row between"><span style="font-weight:600">شهر صفر</span><b style="color:var(--brand)">88%</b></div><div class="tr"><i style="width:88%"></i></div></div>
+              <div class="r"><div class="row between"><span style="font-weight:600">ربيع الأول</span><b style="color:var(--brand)">94%</b></div><div class="tr"><i style="width:94%"></i></div></div>
             </div>
           </div>
-          <div class="card row between"><b style="font-size:13px">مراسلة الإدارة</b><span class="badge" style="background:var(--bs);color:var(--bh)">رد جديد</span></div>
+
+          <div class="card stack" style="gap:12px;padding:20px 16px">
+            <div class="ttl" style="text-align:center">ملاحظة للإدارة</div>
+            <div class="bub p"><span>أحمد سيتأخر غداً بسبب موعد طبي.</span><small>أنت، 19 / 09</small></div>
+            <div class="bub a"><span>وصلت، شكراً لتبليغنا.</span><small>الإدارة، 19 / 09</small></div>
+            <div class="row"><div class="search" style="flex:1">اكتب ملاحظتك هنا...</div><span class="btn p" style="height:40px">إرسال</span></div>
+          </div>
         </div></div>
       </div>
     </div>
@@ -430,18 +385,17 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
     <div class="why">
       <h3>التغييرات</h3>
       <ol class="items">
-        <li><b>ب١ بطاقة «الدراسة عن بعد» تبقى كما هي</b> في مكانها أعلى الصفحة.</li>
-        <li><b>ب٢ ترويسة الطالب في سطر واحد.</b> الصورة الرمزية والاسم والحلقة والمجموعة، والنقاط على الطرف. البطاقة الحالية المتوسّطة تأخذ ربع الشاشة لمعلومات قليلة.</li>
-        <li><b>ب٣ الحضور: درجة التزام من 100 وآخر 14 يوماً.</b> مربع صغير لكل يوم بلون حالته، وآخرها اليوم. ولي الأمر يفهم الوضع بنظرة، ويرى هل الغياب قديم أم الأسبوع الحالي. أعداد الموسم تبقى في سطر صغير تحتها.</li>
-        <li><b>ب٤ الأوسمة بأيقوناتها.</b> كل وسام وإنجاز له أيقونة في قاعدة البيانات، لكن البوابة لا تعرضها حالياً. عرضها كميداليات يجعل القسم محفزاً للطالب نفسه.</li>
-        <li><b>ب٥ النتائج الشهرية كأشرطة</b> بطول النسبة، ليظهر التقدم من شهر لآخر. إذا كانت النتيجة نصاً بدل نسبة يظهر النص كما هو الآن.</li>
-        <li><b>ب٦ المراسلة في سطر قابل للفتح</b> مع تنبيه «رد جديد» إذا ردّت الإدارة. المحادثة نفسها كما هي عند فتحها.</li>
+        <li><span class="n">ب١</span><span><b>بطاقة الطالب كما كانت تقريباً</b>: في الوسط، الاسم أكبر وأوضح، تحته الرقم، ثم الحلقة والمجموعة بشارات نظامك، ثم النقاط بارزة في المربع الأخضر كما أعجبتك. التغيير الوحيد هو ترتيب الأسطر حتى يُقرأ الاسم ثم الرقم ثم الحلقة والمجموعة.</span></li>
+        <li><span class="n">ب٢</span><span><b>الحضور: نسبة مئوية داخل حلقة</b> (91%) مع تقدير مكتوب، ثم آخر 14 يوماً كتقويم صغير بصفين، كل دائرة فيها رقم اليوم ولونها حالته، ويوم اليوم محاط بإطار. وتحتها مجموع الموسم كأرقام ملوّنة بلا مربعات.</span></li>
+        <li><span class="n">ب٣</span><span><b>الأوسمة بأيقوناتها</b> في الوسط بمسافة مريحة. الأيقونات مسجّلة في قاعدة البيانات لكن البوابة لا تعرضها حالياً.</span></li>
+        <li><span class="n">ب٤</span><span><b>النتائج الشهرية بنفس شكلها القديم</b> (الصف الرمادي والنسبة الخضراء)، مع خط تقدّم رفيع داخل الصف ومسافة أوسع بين الأشهر.</span></li>
+        <li><span class="n">ب٥</span><span><b>المراسلة كما هي</b>، مع تحسين بسيط فقط: تاريخ أقصر ومسافة أوسع بين الرسائل.</span></li>
+        <li><span class="n">ب٦</span><span><b>مسافة 20 بكسل بين البطاقات</b> وحشو داخلي أوسع، حتى لا تبدو الصفحة مزدحمة.</span></li>
       </ol>
       <div class="formula">
-        <b>طريقة حساب درجة الالتزام (قابلة للتعديل)</b>
-        <span><code>(الحضور + نصف أيام التأخر) ÷ (الأيام المسجّلة − أيام العذر) × 100</code></span>
-        <span class="muted">مثال: 20 حاضر، 2 متأخر، 1 بعذر، 1 غائب ← (20 + 1) ÷ (24 − 1) = 91. التقدير: 90 فأعلى ممتاز، 75 إلى 89 جيد جداً، 60 إلى 74 جيد، أقل من 60 يحتاج متابعة.</span>
-        <span class="muted">تقنياً يحتاج هذا إضافة تاريخ اليوم لاستعلام الحضور في البوابة فقط. لا تغيير على قاعدة البيانات.</span>
+        <b>طريقة حساب نسبة الحضور (قابلة للتعديل)</b>
+        <span>(أيام الحضور + نصف أيام التأخر) ÷ (الأيام المسجّلة − أيام العذر) × 100</span>
+        <span class="muted">مثال: 20 حاضر، 2 متأخر، 1 بعذر، 1 غائب ← (20 + 1) ÷ (24 − 1) = 91%. التقدير: 90% فأعلى ممتاز، 75% إلى 89% جيد جداً، 60% إلى 74% جيد، وأقل من ذلك يحتاج متابعة.</span>
       </div>
     </div>
   </div>
@@ -449,29 +403,28 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
 
 <!-- ======================= HOME ======================= -->
 <section id="home">
-  <h2>الصفحة الرئيسية وآخر الأخبار</h2>
+  <h2>الصفحة الرئيسية</h2>
   <div class="compare">
     <div class="col">
       <span class="lbl">الحالي</span>
       <div class="phone tall">
-        <div class="tbar" style="height:50px;background:var(--s)"><span style="width:28px;height:28px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><div class="row"><span class="btn">بوابة ولي الأمر</span><span class="btn g">دخول الإدارة</span></div></div>
-        <div class="scroll"><div style="position:relative;overflow:hidden;padding:34px 14px 26px;text-align:center">
+        <div class="topbar" style="border-bottom:1px solid var(--line);background:var(--surface);grid-template-columns:auto 1fr auto"><span class="logo-box"><span class="logo"></span></span><span></span><span class="row"><span class="btn sm">بوابة ولي الأمر</span><span class="btn sm g">دخول الإدارة</span></span></div>
+        <div class="scroll">
+          <div style="position:relative;overflow:hidden;padding:40px 16px 30px;text-align:center">
             <div class="blob" style="width:170px;height:170px;background:#bfe3d2;top:-40px;left:-50px"></div>
             <div class="blob" style="width:190px;height:190px;background:#f1dcb8;bottom:-60px;right:-40px"></div>
-            <div style="position:relative" class="stack">
-              <span class="btn" style="margin:0 auto;border-radius:20px;color:var(--b);box-shadow:3px 3px 0 var(--i)">📅 الموسم الحالي: ١٤٤٧</span>
-              <b style="font-size:24px">حلقات ابن الجوزي</b>
-              <span class="sub" style="font-size:12px">برنامج تحفيظ صيفي بمسجد الطرباق — يجمع بين حفظ القرآن الكريم، التحفيز بنظام النقاط، ومتابعة دقيقة لأولياء الأمور طوال الموسم.</span>
-              <div class="row" style="justify-content:center"><span class="btn p" style="height:36px">متابعة ابني ←</span><span class="btn" style="height:36px;box-shadow:3px 3px 0 var(--i)">🏆 لوحة المتصدرين</span></div>
+            <div class="stack center" style="position:relative">
+              <span class="pill">الموسم الحالي: ١٤٤٧</span>
+              <b style="font-size:27px">حلقات ابن الجوزي</b>
+              <span class="sub" style="font-size:12.5px">برنامج تحفيظ صيفي بمسجد الطرباق، يجمع بين حفظ القرآن الكريم والتحفيز بنظام النقاط ومتابعة دقيقة لأولياء الأمور طوال الموسم.</span>
+              <div class="row"><span class="btn p">متابعة ابني</span><span class="btn">لوحة المتصدرين</span></div>
             </div>
           </div>
-          <div class="pad stack">
-            <div class="g2"><div class="cardS" style="text-align:center"><b style="font-size:22px">120</b><div class="sub">طالب مسجّل</div></div><div class="cardS" style="text-align:center"><b style="font-size:22px">8</b><div class="sub">حلقة تحفيظ</div></div></div>
-            <b style="font-size:15px;text-align:center">لماذا حلقات ابن الجوزي؟</b>
-            <div class="cardS" style="box-shadow:none"><div style="width:30px;height:30px;border-radius:8px;background:var(--bs);margin-bottom:6px"></div><b>حفظ وتلاوة</b><div class="sub">برنامج يومي منظم لحفظ القرآن الكريم ومراجعته…</div></div>
-            <div class="cardS" style="box-shadow:none"><div style="width:30px;height:30px;border-radius:8px;background:var(--bs);margin-bottom:6px"></div><b>نظام نقاط وحوافز</b><div class="sub">تحفيز مستمر للطلاب عبر النقاط…</div></div>
-            <b style="font-size:15px;text-align:center">آخر الأخبار</b>
-            <div class="cardS" style="padding:0;overflow:hidden"><div style="height:70px;background:var(--b);display:flex;align-items:center;justify-content:center;position:relative"><span style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.25)"></span></div><div style="padding:8px"><span class="badge" style="background:var(--bs);color:var(--b)">★ إعلان</span><div><b>بدء التسجيل للموسم الجديد</b></div><div class="sub">يسر إدارة الحلقات الإعلان عن…</div></div></div>
+          <div class="pad stack" style="gap:18px">
+            <div class="g2"><div class="tile"><b>120</b><span class="sub">طالب مسجّل</span></div><div class="tile"><b>8</b><span class="sub">حلقة تحفيظ</span></div></div>
+            <b style="font-size:16px;text-align:center">لماذا حلقات ابن الجوزي؟</b>
+            <div class="oldcard" style="border-color:var(--ink)"><div style="width:34px;height:34px;border-radius:8px;background:var(--brand-soft);margin-bottom:8px"></div><b>حفظ وتلاوة</b><div class="sub">برنامج يومي منظم لحفظ القرآن الكريم ومراجعته…</div></div>
+            <div class="oldcard" style="border-color:var(--ink)"><div style="width:34px;height:34px;border-radius:8px;background:var(--brand-soft);margin-bottom:8px"></div><b>نظام نقاط وحوافز</b><div class="sub">تحفيز مستمر للطلاب عبر النقاط…</div></div>
           </div>
         </div>
       </div>
@@ -480,29 +433,23 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
     <div class="col">
       <span class="lbl after">المقترح</span>
       <div class="phone tall">
-        <div class="tbar" style="height:50px"><div class="row"><span style="width:28px;height:28px;border:1.5px solid var(--i);border-radius:6px;display:inline-block"></span><b style="font-size:12px">حلقات ابن الجوزي</b></div><span class="btn">بوابة ولي الأمر</span></div>
+        <div class="topbar" style="border-bottom:1px solid var(--line);background:var(--surface);grid-template-columns:auto 1fr auto"><span class="logo-box"><span class="logo"></span></span><span></span><span class="btn sm">بوابة ولي الأمر</span></div>
         <div class="scroll">
-          <div style="padding:26px 16px 20px;background:var(--r);border-bottom:1px solid var(--l)" class="stack">
-            <span class="sub" style="font-size:11.5px;font-weight:600;color:var(--b)">مسجد الطرباق، موسم ١٤٤٧</span>
-            <b style="font-size:26px;line-height:1.3">حلقات ابن الجوزي</b>
-            <span style="font-size:12.5px;color:var(--mu)">برنامج صيفي لحفظ القرآن الكريم يضم هذا الموسم <b style="color:var(--i)">120 طالباً</b> في <b style="color:var(--i)">8 حلقات</b>.</span>
-            <span class="btn p" style="height:42px;font-size:13px;box-shadow:3px 3px 0 var(--i)">متابعة ابني</span>
-            <span style="font-size:12px;font-weight:600;color:var(--b);text-align:center">لوحة المتصدرين</span>
+          <div style="position:relative;overflow:hidden;padding:30px 16px 30px;text-align:center">
+            <div class="blob" style="width:170px;height:170px;background:#bfe3d2;top:-40px;left:-50px"></div>
+            <div class="blob" style="width:190px;height:190px;background:#f1dcb8;bottom:-60px;right:-40px"></div>
+            <div class="stack center" style="position:relative">
+              <span class="logo" style="width:120px;height:86px"></span>
+              <span class="pill">الموسم الحالي: ١٤٤٧</span>
+              <b style="font-size:27px">حلقات ابن الجوزي</b>
+              <span class="sub" style="font-size:12.5px">برنامج تحفيظ صيفي بمسجد الطرباق، يجمع بين حفظ القرآن الكريم والتحفيز بنظام النقاط ومتابعة دقيقة لأولياء الأمور طوال الموسم.</span>
+              <div class="row"><span class="btn p">متابعة ابني</span><span class="btn">لوحة المتصدرين</span></div>
+            </div>
           </div>
-          <div class="pad stack">
-            <b style="font-size:15px">آخر الأخبار</b>
-            <div class="card" style="padding:0;overflow:hidden">
-              <div style="height:110px;background:linear-gradient(160deg,#cfe3d8,#8fb9a4)"></div>
-              <div style="padding:10px" class="stack"><span class="cat" style="color:var(--b)">إعلان</span><b style="font-size:13px;margin-top:-6px">بدء التسجيل للموسم الجديد</b><span class="sub">يسر إدارة الحلقات الإعلان عن فتح باب التسجيل…</span><div class="row between"><span class="sub">١٥ ربيع الأول</span><span style="font-size:11px;font-weight:700;color:var(--b)">اقرأ الخبر</span></div></div>
-            </div>
-            <div>
-              <div class="newsrow"><div><span class="cat" style="color:var(--ex)">إنجاز</span><div><b>تكريم الحافظين لجزء عم</b></div><span class="sub">١٢ ربيع الأول</span></div><div class="thumb"></div></div>
-              <div class="newsrow"><div><span class="cat" style="color:var(--ac)">فعالية</span><div><b>رحلة الطلاب المتميزين</b></div><span class="sub">٨ ربيع الأول</span></div><div class="thumb" style="background:none;border:1px dashed var(--l)"></div></div>
-            </div>
-            <div class="stack" style="gap:6px;border-top:1px solid var(--l);padding-top:12px">
-              <b style="font-size:13px">عن البرنامج</b>
-              <span class="sub" style="font-size:11.5px">حفظ ومراجعة يومية بإشراف معلمين، ونقاط وأوسمة طوال الموسم، وبوابة لولي الأمر يتابع فيها الحضور والنتائج.</span>
-            </div>
+          <div class="pad stack" style="gap:18px">
+            <div class="g2"><div class="tile"><b>120</b><span class="sub">طالب مسجّل</span></div><div class="tile"><b>8</b><span class="sub">حلقة تحفيظ</span></div></div>
+            <b style="font-size:16px;text-align:center">آخر الأخبار</b>
+            <div class="news"><div class="band"><span></span></div><div style="padding:12px" class="stack"><b style="font-size:13.5px">بدء التسجيل للموسم الجديد</b><span class="sub">يسر إدارة الحلقات الإعلان عن فتح باب التسجيل للموسم الجديد، ويمكن لأولياء الأمور…</span><div class="row between"><span class="sub">١٥ ربيع الأول</span><span class="more">اقرأ الخبر كاملاً</span></div></div></div>
           </div>
         </div>
       </div>
@@ -511,11 +458,64 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
     <div class="why">
       <h3>التغييرات</h3>
       <ol class="items">
-        <li><b>ر١ إزالة البقع الضبابية والشارة فوق العنوان وحركات الظهور.</b> العنوان محاذى لليمين كقراءة عربية طبيعية، واسم المسجد والموسم فوقه كسطر نصي عادي.</li>
-        <li><b>ر٢ الأرقام داخل الجملة</b> («120 طالباً في 8 حلقات») بدل مربعين كبيرين. نفس المعلومة بمساحة أقل ولا تبدو لوحة تحكم.</li>
-        <li><b>ر٣ زر واحد رئيسي بعرض الشاشة: «متابعة ابني».</b> هذا ما يأتي له أغلب الزوار. المتصدرون رابط تحته. و«دخول الإدارة» يبقى في أسفل الصفحة فقط (موجود هناك أصلاً) فتصبح الترويسة أبسط ويظهر اسم البرنامج في الجوال (مخفي حالياً).</li>
-        <li><b>ر٤ الأخبار: أحدث خبر كبير، والباقي قائمة مضغوطة.</b> بلا صورة بديلة مزخرفة؛ إذا لا توجد صورة لا يظهر مكانها شيء. والأهم: <b>حالياً لا يمكن قراءة الخبر كاملاً</b> لأن النص مقطوع بثلاثة أسطر. سأضيف «اقرأ الخبر» يفتح الخبر كاملاً.</li>
-        <li><b>ر٥ قسم «لماذا حلقات ابن الجوزي؟»</b> يصبح فقرة قصيرة «عن البرنامج» تحت الأخبار بدل ثلاث بطاقات. الزائر المعتاد (ولي أمر) يرى الأخبار أولاً.</li>
+        <li><span class="n">ر١</span><span><b>شعار الحلقات فوق شارة الموسم</b> في وسط الصفحة، بحجم واضح.</span></li>
+        <li><span class="n">ر٢</span><span><b>زر «دخول الإدارة» يُزال من الأعلى</b> ويبقى رابطاً في أسفل الصفحة فقط (موجود هناك أصلاً).</span></li>
+        <li><span class="n">ر٣</span><span><b>قسم «لماذا حلقات ابن الجوزي؟» يُحذف</b> فتأتي «آخر الأخبار» مباشرة بعد الأرقام.</span></li>
+        <li><span class="n">ر٤</span><span><b>«اقرأ الخبر كاملاً»</b> يفتح نص الخبر كاملاً في نافذة. حالياً ينقطع النص بعد ثلاثة أسطر ولا توجد طريقة لقراءة الباقي.</span></li>
+      </ol>
+      <p class="keep">يبقى كما هو: العنوان والوصف والزرّان في الوسط، ومربعا «120 طالب» و«8 حلقات» البارزان، وتصميم بطاقات الأخبار.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ADMIN HOME ======================= -->
+<section id="dash">
+  <h2>رئيسية الإشراف</h2>
+  <div class="compare">
+    <div class="col">
+      <span class="lbl">الحالي</span>
+      <div class="phone" style="height:560px">
+        <div class="floatbell"></div>
+        <div class="scroll"><div class="pad stack" style="padding-top:52px;gap:16px">
+          <div><div style="font-size:18px;font-weight:700">الرئيسية</div><div class="sub">الموسم الحالي: ١٤٤٧</div></div>
+          <div class="g2" style="gap:12px">
+            <div class="tile" style="text-align:start"><b>120</b><span class="sub">إجمالي الطلاب النشطين</span></div>
+            <div class="tile" style="text-align:start"><b>118</b><span class="sub">مسجّلون في الموسم الحالي</span></div>
+            <div class="tile" style="text-align:start"><b>3</b><span class="sub">علامات تحتاج إجراء</span></div>
+            <div class="tile" style="text-align:start"><b>34</b><span class="sub">يوم متبقٍ لنهاية الموسم</span></div>
+          </div>
+          <div class="oldcard"><div class="ttl">أفضل 5 طلاب</div></div>
+        </div></div>
+        <div class="bnav"><div class="on"><i></i>الرئيسية</div><div><i></i>عمليات</div><div><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="lbl after">المقترح</span>
+      <div class="phone" style="height:560px">
+        <div class="topbar"><span class="icb srch"></span><span class="t">الرئيسية</span><span class="icb bl"></span></div>
+        <div class="scroll"><div class="pad stack" style="gap:16px">
+          <div class="card bold stack center" style="gap:10px">
+            <div class="ttl">حضور اليوم</div>
+            <span class="sub" style="margin-top:-8px">الأحد 21 / 09</span>
+            <div class="bar" style="width:100%"><i style="width:60%;background:var(--success)"></i><i style="width:10%;background:var(--warning)"></i><i style="width:3.3%;background:var(--info)"></i><i style="width:6.7%;background:var(--danger)"></i></div>
+            <span class="sub">24 من 30 مسجّلون، 2 غائب</span>
+            <div class="g2" style="width:100%"><span class="btn">إنهاء اليوم</span><span class="btn p">أكمل التحضير</span></div>
+          </div>
+          <div class="g2" style="gap:12px">
+            <div class="tile"><b>120</b><span class="sub">طالب نشط</span></div>
+            <div class="tile"><b>34</b><span class="sub">يوم متبقٍ للموسم</span></div>
+            <div class="tile"><b style="color:var(--warning)">3</b><span class="sub">علامات تحتاج إجراء</span></div>
+            <div class="tile"><b>4</b><span class="sub">رسائل أولياء الأمور</span></div>
+          </div>
+        </div></div>
+        <div class="bnav"><div class="on"><i></i>الرئيسية</div><div><i></i>عمليات</div><div><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
+      </div>
+    </div>
+    <div class="why">
+      <h3>التغييرات</h3>
+      <ol class="items">
+        <li><span class="n">إ١</span><span><b>بطاقة «حضور اليوم» أولاً</b> بنفس الشريط الملوّن، وزرّان: «ابدأ تحضير اليوم» (يصبح «أكمل التحضير» بعد البدء) و«إنهاء اليوم» الذي يفتح ملخص الغياب وإرسال الواتساب. هي البطاقة البارزة الوحيدة في الصفحة كما يسمح نظامك.</span></li>
+        <li><span class="n">إ٢</span><span><b>مربعات الأرقام تبقى بنفس تصميمها</b> (StatTile)، مع استبدال «مسجّلون في الموسم» لأنه يكاد يساوي «الطلاب النشطين» بعدد رسائل أولياء الأمور غير المقروءة. والأرقام في الوسط.</span></li>
       </ol>
     </div>
   </div>
@@ -523,44 +523,38 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
 
 <!-- ======================= NAV ======================= -->
 <section id="nav">
-  <h2>الشريط السفلي والقائمة (لوحة الإشراف في الجوال)</h2>
+  <h2>القائمة والشريط السفلي</h2>
   <div class="compare">
     <div class="col">
-      <span class="lbl">الحالي: «المزيد» مفتوحة</span>
-      <div class="phone">
-        <div class="bell"></div>
-        <div class="scroll"><div class="pad" style="padding-top:46px"><div class="pt">الطلاب</div></div></div>
-        <div class="dim"></div>
-        <div class="sheet">
-          <div class="hd">كل الصفحات <span>✕</span></div>
-          <div style="padding:0 12px 12px;overflow:hidden">
-            <div class="gh">العمل اليومي</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>بحث الغياب</div></div>
-            <div class="gh">الطلاب والتنظيم</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>الحلقات والمجموعات</div><div class="tile"><i></i>المتصدرون</div><div class="tile"><i></i>الإنجازات والأوسمة والعلامات</div></div>
-            <div class="gh">الطباعة والتقارير</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>الطباعة والشهادات</div><div class="tile"><i></i>التقارير</div><div class="tile"><i></i>النتائج الشهرية</div></div>
-            <div class="gh">الإدارة</div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"><div class="tile"><i></i>المواسم</div><div class="tile"><i></i>استيراد Excel</div><div class="tile"><i></i>محتوى الصفحة الرئيسية</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <span class="lbl after">المقترح: «المزيد» مفتوحة</span>
-      <div class="phone">
-        <div class="tbar"><span class="t">الطلاب</span><div class="acts"><span class="icb srch"></span><span class="icb bl"><span class="dot"></span></span></div></div>
+      <span class="lbl">الحالي</span>
+      <div class="phone" style="height:520px">
+        <div class="floatbell"></div>
         <div class="scroll"></div>
         <div class="dim"></div>
         <div class="sheet">
-          <div class="hd"><span>كل الصفحات</span><span>✕</span></div>
-          <div style="padding:0 14px 12px;overflow:hidden">
-            <div class="gh">العمل اليومي</div>
-            <div class="mrow"><i></i>بحث الغياب</div>
+          <div class="hd">كل الصفحات <span>✕</span></div>
+          <div style="padding:0 14px 14px">
             <div class="gh">الطلاب والتنظيم</div>
-            <div class="mrow"><i></i>الحلقات والمجموعات</div><div class="mrow"><i></i>المتصدرون</div><div class="mrow"><i></i>الإنجازات والأوسمة</div>
+            <div class="tiles"><div class="itile"><i></i>الحلقات والمجموعات</div><div class="itile"><i></i>المتصدرون</div><div class="itile"><i></i>الإنجازات والأوسمة والعلامات</div></div>
             <div class="gh">الطباعة والتقارير</div>
-            <div class="mrow"><i></i>الطباعة والشهادات</div><div class="mrow"><i></i>التقارير</div><div class="mrow" style="border:0"><i></i>النتائج الشهرية</div>
+            <div class="tiles"><div class="itile"><i></i>الطباعة والشهادات</div><div class="itile"><i></i>التقارير</div><div class="itile"><i></i>النتائج الشهرية</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <span class="lbl after">المقترح</span>
+      <div class="phone" style="height:520px">
+        <div class="topbar"><span class="icb srch"></span><span class="t">المتصدرون</span><span class="icb bl"></span></div>
+        <div class="scroll"></div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="hd">كل الصفحات <span>✕</span></div>
+          <div style="padding:0 14px 14px">
+            <div class="gh">الطلاب والتنظيم</div>
+            <div class="tiles"><div class="itile new"><i></i>الحلقات والمجموعات</div><div class="itile new on"><i></i>المتصدرون</div><div class="itile new"><i></i>الإنجازات والأوسمة</div></div>
+            <div class="gh">الطباعة والتقارير</div>
+            <div class="tiles"><div class="itile new"><i></i>الطباعة والشهادات</div><div class="itile new"><i></i>التقارير</div><div class="itile new"><i></i>النتائج الشهرية</div></div>
           </div>
         </div>
       </div>
@@ -568,54 +562,9 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
     <div class="why">
       <h3>التغييرات</h3>
       <ol class="items">
-        <li><b>ق١ شريط علوي رفيع في كل صفحات الإشراف.</b> حالياً جرس التنبيهات عائم وحده في الزاوية، وتحته مساحة فارغة. المقترح: اسم الصفحة الحالية، وزر بحث، والجرس، في شريط واحد.</li>
-        <li><b>ق٢ البحث الشامل في الجوال.</b> البحث السريع عن أي طالب موجود في النظام لكنه يفتح فقط باختصار لوحة المفاتيح Ctrl+K، أي أنه غير متاح في الجوال إطلاقاً، ولا يوجد زر له في الكمبيوتر. زر البحث في الشريط العلوي يحل هذا.</li>
-        <li><b>ق٣ «المزيد» كقائمة عمودية.</b> المربعات الحالية بإطار أسود تقطع الأسماء الطويلة إلى ثلاثة أسطر («الإنجازات والأوسمة والعلامات»). القائمة أسهل للقراءة وأسرع للمس، والصفحة الحالية تظهر بلون الموقع.</li>
-        <li><b>ق٤ الشريط السفلي:</b> خلفية خفيفة خلف أيقونة الصفحة الحالية لتكون أوضح، وحد علوي عادي بدل الحد الأسود السميك والظل.</li>
-      </ol>
-    </div>
-  </div>
-</section>
-
-<!-- ======================= DASHBOARD + SMALL ======================= -->
-<section id="dash">
-  <h2>رئيسية الإشراف</h2>
-  <div class="compare">
-    <div class="col">
-      <span class="lbl after">المقترح: أعلى الصفحة</span>
-      <div class="phone" style="height:430px">
-        <div class="tbar"><span class="t">الرئيسية</span><div class="acts"><span class="icb srch"></span><span class="icb bl"></span></div></div>
-        <div class="scroll"><div class="pad stack">
-          <div class="card stack" style="gap:8px;border-color:var(--i)">
-            <div class="row between"><b style="font-size:13px">حضور اليوم</b><span class="sub">الأحد، ٢١ ربيع الأول</span></div>
-            <div class="bar"><i style="width:60%;background:var(--ok)"></i><i style="width:10%;background:var(--wa)"></i><i style="width:3.3%;background:var(--ex)"></i><i style="width:6.7%;background:var(--ab)"></i></div>
-            <div class="row between"><span class="sub">24 من 30 مسجّل، 2 غائب</span><span class="btn p" style="box-shadow:none">افتح الكشف</span></div>
-          </div>
-          <div class="g2">
-            <div class="card"><b style="font-size:18px">120</b><div class="sub">طالب نشط</div></div>
-            <div class="card"><b style="font-size:18px">34</b><div class="sub">يوم متبقٍ للموسم</div></div>
-            <div class="card" style="border-color:var(--wa)"><b style="font-size:18px;color:var(--wa)">3</b><div class="sub">علامات تحتاج إجراء</div></div>
-            <div class="card"><b style="font-size:18px">4</b><div class="sub">رسائل أولياء أمور</div></div>
-          </div>
-          <div class="card"><b style="font-size:13px">أفضل 5 طلاب</b><div class="sub" style="margin-top:4px">كما هي الآن</div></div>
-        </div></div>
-        <div class="bnav2"><div class="on"><i></i>الرئيسية</div><div><i></i>عمليات</div><div><i></i>الحضور</div><div><i></i>الطلاب</div><div><i></i>المزيد</div></div>
-      </div>
-    </div>
-    <div class="why">
-      <h3>التغييرات</h3>
-      <ol class="items">
-        <li><b>إ١ بطاقة «حضور اليوم» أولاً.</b> أول ما يحتاجه المشرف كل يوم هو: هل انتهى التحضير؟ البطاقة تعرض نفس الشريط الملوّن من كشف الحضور وزر يفتح الكشف مباشرة. (الكود يحسب هذا الرقم أصلاً لكنه لا يعرضه.)</li>
-        <li><b>إ٢ مربعات الأرقام أصغر.</b> رقم «مسجّلون في الموسم الحالي» يكاد يطابق «الطلاب النشطين» فأستبدله برسائل أولياء الأمور غير المقروءة. وقائمة «آخر العمليات» تعرض أسماء تقنية للعمليات، سأترجمها لعبارات مفهومة أو أنقلها للإعدادات.</li>
-      </ol>
-      <h3 style="margin-top:12px">تحسينات صغيرة في صفحات أخرى</h3>
-      <ol class="items">
-        <li><b>ص١ العمليات السريعة:</b> زر «← عودة للبحث» سهمه باتجاه خاطئ في العربية، يصبح «→».</li>
-        <li><b>ص٢ المتصدرون:</b> خمسة تبويبات تنكسر على ثلاثة أسطر في الجوال. تصبح سطراً واحداً يتحرك أفقياً، ولكل تبويب أيقونة مختلفة (حالياً ثلاثة منها بنفس أيقونة الكأس).</li>
-        <li><b>ص٣ المتصدرون:</b> التبديل التلقائي كل 9 ثوانٍ مفيد على شاشة العرض في المسجد، لكنه مزعج في الجوال حين يقرأ الطالب ترتيبه. يكون مطفأً افتراضياً في الجوال.</li>
-        <li><b>ص٤ احترام إعداد «تقليل الحركة»</b> في الجوال للمستخدمين الذين يفعّلونه.</li>
-        <li><b>ص٥ الظل الأسود:</b> يبقى للزر الرئيسي وللعنصر المختار فقط، ويُزال من البطاقات العادية ومربعات الأرقام.</li>
-        <li><b>ص٦ الأرقام:</b> التواريخ تظهر بأرقام عربية مشرقية (١٢٣) والأعداد بأرقام (123). أوحّدها على شكل واحد تختاره أنت.</li>
+        <li><span class="n">ق١</span><span><b>قائمة «المزيد» تبقى مربعات</b> كما تفضّل. التعديل الوحيد أنها تطابق مكوّن IconTile في نظامك: حد رفيع للمربعات العادية، والصفحة الحالية بخلفية خضراء فاتحة وحد أخضر. واختصار الاسم الطويل إلى «الإنجازات والأوسمة» حتى لا ينكسر على ثلاثة أسطر.</span></li>
+        <li><span class="n">ق٢</span><span><b>زر البحث في الشريط العلوي.</b> البحث السريع عن أي طالب موجود في النظام لكنه لا يفتح إلا بـ Ctrl+K، فهو غير متاح في الجوال إطلاقاً.</span></li>
+        <li><span class="n">ق٣</span><span><b>الشريط السفلي كما هو</b> (حده الأسود والأيقونة الخضراء للصفحة الحالية مطابقة لنظامك).</span></li>
       </ol>
     </div>
   </div>
@@ -624,46 +573,57 @@ td.id{font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric
 <!-- ======================= DESKTOP ======================= -->
 <section id="desktop">
   <h2>الكمبيوتر</h2>
-  <p class="prose">نفس الأفكار بتخطيط الشاشة الواسعة. هذا نموذج كشف الحضور بعد التعديل:</p>
-  <div class="tbl-wrap" style="border:0;background:none">
+  <p class="prose">كشف الحضور بعد التعديل، مبني على مكوّن AttendanceRow من نظامك: أعمدة ثابتة، المجموعة بلونها، الحلقة بشارة محايدة، وأزرار الحالة بالكلمات بدل الأيقونات فقط.</p>
+  <div class="tbl-wrap">
     <div class="desk">
       <div class="side"><div>الرئيسية</div><div>العمليات السريعة</div><div class="on">كشف الحضور</div><div>بحث الغياب</div><div>الطلاب</div><div>الحلقات والمجموعات</div></div>
       <div class="main">
-        <div class="row between"><b style="font-size:16px">كشف الحضور</b><div class="row"><span class="btn o">النقاط التلقائية</span><span class="btn o">الباقون حاضر (6)</span><span class="btn p">إنهاء اليوم</span></div></div>
-        <div class="days"><div class="day done"><span>خميس</span><b>١٨</b></div><div class="day off"><span>جمعة</span><b>١٩</b></div><div class="day done"><span>سبت</span><b>٢٠</b></div><div class="day on"><span>اليوم</span><b>٢١</b></div><div class="day"><span>اثنين</span><b>٢٢</b></div><div class="day"><span>ثلاثاء</span><b>٢٣</b></div><div class="day"><span>أربعاء</span><b>٢٤</b></div><div class="day"><span>خميس</span><b>٢٥</b></div></div>
-        <div class="row between" style="gap:14px;flex-wrap:wrap">
-          <div class="chips"><div class="chip on">كل الحلقات</div><div class="chip">الفرقان</div><div class="chip">النور</div><div class="chip">الهدى</div><span style="width:10px"></span><div class="chip on">كل المجموعات</div><div class="chip"><span class="cd" style="background:#6b3fb0"></span>الصقور</div><div class="chip"><span class="cd" style="background:#12766b"></span>النجوم</div></div>
-          <div class="search" style="width:190px">ابحث بالاسم أو الكود</div>
-        </div>
-        <div class="row" style="gap:12px"><div class="bar" style="flex:1"><i style="width:60%;background:var(--ok)"></i><i style="width:10%;background:var(--wa)"></i><i style="width:3.3%;background:var(--ex)"></i><i style="width:6.7%;background:var(--ab)"></i></div>
-          <div class="legend"><span><i style="background:var(--ok)"></i>حاضر <b>18</b></span><span><i style="background:var(--wa)"></i>متأخر <b>3</b></span><span><i style="background:var(--ex)"></i>بعذر <b>1</b></span><span><i style="background:var(--ab)"></i>غائب <b>2</b></span><span><i style="background:#c9cdc4"></i>باقٍ <b>6</b></span></div></div>
-        <div class="dtable">
-          <div class="dtr h"><span>الطالب</span><span>الحلقة والمجموعة</span><span>الحالة</span></div>
-          <div class="dtr"><span><b>محمد العتيبي</b> <span class="sub">#1042</span></span><span class="sub">الفرقان، الصقور</span><div class="seg"><div class="pr">حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
-          <div class="dtr"><span><b>عبدالله الشهري</b> <span class="sub">#1043</span></span><span class="sub">الفرقان، النجوم</span><div class="seg"><div>حاضر</div><div>متأخر</div><div>بعذر</div><div>غائب</div></div></div>
-          <div class="dtr"><span><b>سعد القحطاني</b> <span class="sub">#1044</span></span><span class="sub">النور، الصقور</span><div class="seg"><div>حاضر</div><div class="lt">متأخر</div><div>بعذر</div><div>غائب</div></div></div>
+        <div class="dtop"><b style="font-size:16px">كشف الحضور</b><div class="row" style="gap:8px"><span class="btn">الباقون حاضر (6)</span><span class="btn p">إنهاء اليوم</span></div></div>
+        <div class="body">
+          <div class="row" style="gap:10px">
+            <div class="daypick" style="width:250px"><span class="arr">›</span><span class="mid">الأحد 21 / 09 <span class="badge ok">اليوم</span></span><span class="arr">‹</span></div>
+            <div class="sel" style="width:150px">كل الحلقات</div><div class="sel" style="width:150px">كل المجموعات</div>
+            <div class="search" style="flex:1">ابحث باسم الطالب أو رقمه</div>
+          </div>
+          <div class="card row" style="gap:16px;padding:12px 16px">
+            <span class="ttl" style="white-space:nowrap">24 من 30 مسجّلون</span>
+            <div class="bar" style="flex:1"><i style="width:60%;background:var(--success)"></i><i style="width:10%;background:var(--warning)"></i><i style="width:3.3%;background:var(--info)"></i><i style="width:6.7%;background:var(--danger)"></i></div>
+            <div class="legend"><span><i style="background:var(--success)"></i>حاضر <b>18</b></span><span><i style="background:var(--warning)"></i>متأخر <b>3</b></span><span><i style="background:var(--info)"></i>بعذر <b>1</b></span><span><i style="background:var(--danger)"></i>غائب <b>2</b></span><span><i style="background:#c9cdc4"></i>لم يُسجَّل <b>6</b></span></div>
+          </div>
+          <div class="stack" style="gap:8px">
+            <div class="attrow h"><span>الطالب</span><span>المجموعة</span><span>الحلقة</span><span>الحالة</span><span></span></div>
+            <div class="attrow"><span class="row"><b>أحمد سفيان أحمد</b><span class="code">#002</span></span><span><span class="tag g1">النقاء</span></span><span><span class="tag s">حلقة ابن باز</span></span><div class="sbtns"><span class="sb on ok">حاضر</span><span class="sb">متأخر</span><span class="sb">بعذر</span><span class="sb">غائب</span></div><div class="row"><span class="icb wa-i" style="width:30px;height:30px"></span><span class="icb hi" style="width:30px;height:30px"></span></div></div>
+            <div class="attrow"><span class="row"><b>أحمد محمد ساقي</b><span class="code">#082</span></span><span><span class="tag g2">العطاء</span></span><span><span class="tag s">حلقة الألباني</span></span><div class="sbtns"><span class="sb">حاضر</span><span class="sb on wa">متأخر</span><span class="sb">بعذر</span><span class="sb">غائب</span></div><div class="row"><span class="icb wa-i" style="width:30px;height:30px"></span><span class="icb hi" style="width:30px;height:30px"></span></div></div>
+            <div class="attrow"><span class="row"><b>إبراهيم أحمد حزام</b><span class="code">#096</span></span><span></span><span><span class="tag s">حلقة ابن غديان</span></span><div class="sbtns"><span class="sb">حاضر</span><span class="sb">متأخر</span><span class="sb">بعذر</span><span class="sb">غائب</span></div><div class="row"><span class="icb wa-i" style="width:30px;height:30px"></span><span class="icb hi" style="width:30px;height:30px"></span></div></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
   <ol class="items">
-    <li><b>ك١ كشف الحضور:</b> أزرار الحالة في الجدول الآن أيقونات فقط بلا نص (تحتاج أن تمرّ عليها لتعرف أيها «بعذر»). تصبح شريطاً مقسّماً بالكلمات كما في النموذج.</li>
-    <li><b>ك٢ بوابة ولي الأمر:</b> عمودان في الشاشة الواسعة، الحضور والنتائج يميناً، والأوسمة والمراسلة يساراً، بدل عمود واحد ضيق في المنتصف.</li>
-    <li><b>ك٣ الرئيسية:</b> العنوان يميناً وأحدث خبر بجانبه يساراً، فيظهر الخبر دون تمرير.</li>
-    <li><b>ك٤ القائمة الجانبية:</b> تبقى كما هي، مع زر بحث ظاهر أعلاها يفتح البحث الشامل، ونفس تخفيف الظل للعنصر المختار.</li>
+    <li><span class="n">ك١</span><span><b>كشف الحضور</b> كما في النموذج: نفس اختيار اليوم بالأسهم، والقائمتان، والشريط الملوّن، وصفوف AttendanceRow.</span></li>
+    <li><span class="n">ك٢</span><span><b>بوابة ولي الأمر</b>: بطاقة الطالب في الأعلى بعرض الصفحة، وتحتها عمودان (الحضور والنتائج، ثم الأوسمة والمراسلة) بدل عمود واحد ضيق.</span></li>
+    <li><span class="n">ك٣</span><span><b>القائمة الجانبية</b> كما هي، مع حقل بحث ظاهر أعلاها يفتح البحث السريع.</span></li>
   </ol>
 </section>
 
-<section id="keep">
-  <h2>ما لن أغيّره</h2>
-  <ul class="items">
-    <li>ألوان الموقع وخطه والشعار.</li>
-    <li>بطاقة «الدراسة اليوم عن بعد» في البوابة.</li>
-    <li>الحفظ الفوري للحضور والمزامنة بين الأجهزة، ونافذة إنهاء اليوم والواتساب والطباعة.</li>
-    <li>صفحات الطلاب والحلقات والمواسم والاستيراد والإعدادات: وظيفتها واضحة ولا تحتاج إلا تخفيف الظل العام (ص٥).</li>
-    <li>صفحة دخول ولي الأمر: بسيطة وواضحة.</li>
-  </ul>
-  <p class="note">الخطوة التالية: أرسل لي أرقام التغييرات التي توافق عليها، أو اكتب «موافق على الكل»، وأي تعديل تريده على طريقة حساب درجة الالتزام أو شكل الأرقام (ص٦). بعدها أبدأ التنفيذ على الجوال أولاً ثم الكمبيوتر.</p>
+<section id="small">
+  <h2>إصلاحات صغيرة</h2>
+  <ol class="items">
+    <li><span class="n">ص١</span><span><b>العمليات السريعة:</b> سهم «← عودة للبحث» باتجاه خاطئ في العربية، يصبح «→».</span></li>
+    <li><span class="n">ص٢</span><span><b>المتصدرون:</b> التبويبات الخمسة تنكسر على ثلاثة أسطر في الجوال. تصبح سطراً واحداً يُسحب أفقياً، ولكل تبويب أيقونة مختلفة.</span></li>
+    <li><span class="n">ص٣</span><span><b>المتصدرون:</b> التبديل التلقائي كل 9 ثوانٍ يبقى على شاشة الكمبيوتر، ويكون مطفأً في الجوال حتى لا تتغير الصفحة والطالب يقرأ ترتيبه.</span></li>
+  </ol>
+</section>
+
+<section id="questions">
+  <h2>أحتاج رأيك في ثلاثة أشياء</h2>
+  <ol class="items">
+    <li><span class="n">١</span><span><b>اختيار اليوم بالأسهم (ح١):</b> هل يناسبك، أم تفضّل القائمة المنسدلة كما هي الآن؟</span></li>
+    <li><span class="n">٢</span><span><b>شكل التاريخ:</b> نظام التصميم يحدد التاريخ رقمياً (21 / 09 / 2026)، والموقع حالياً يعرضه هجرياً بالكلمات (الأحد، ٢١ ربيع الأول). أيهما تريد في الموقع كله؟</span></li>
+    <li><span class="n">٣</span><span><b>نسبة الحضور (ب٢):</b> هل تناسبك طريقة الحساب، وهل يُحسب التأخر نصف يوم؟</span></li>
+  </ol>
+  <p class="note">أرسل أرقام ما توافق عليه (مثلاً «موافق على ح١ إلى ح٦ وب١ إلى ب٦») أو «موافق على الكل»، وأبدأ بالجوال ثم الكمبيوتر.</p>
 </section>
 
 </div>
