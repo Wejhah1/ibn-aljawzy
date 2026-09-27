@@ -18,6 +18,7 @@ import {
   type FormState,
 } from "./actions";
 import { Building2, MessageCircle, Users, ScrollText, ShieldCheck, Plus, Pencil, Eye, EyeOff } from "lucide-react";
+import { hijriDate, hijriDateTime } from "@/lib/date";
 
 type TabKey = "program" | "whatsapp" | "users" | "audit" | "security";
 
@@ -83,7 +84,7 @@ export function SettingsClient({
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[900px] mx-auto">
-      <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">الإدارة والإعدادات</h1>
+      <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">الإدارة والإعدادات</h1>
 
       <div className="flex items-center gap-(--space-2) mb-(--space-6) flex-wrap">
         {TABS.map((t) => (
@@ -251,7 +252,7 @@ function UsersTab({ profiles, isAdmin, currentUserId }: { profiles: Profile[]; i
                 <p className="text-sm font-semibold text-ink">
                   {p.full_name} {p.id === currentUserId && <span className="text-ink-faint">(أنت)</span>}
                 </p>
-                <p className="text-[12px] text-ink-muted">{new Date(p.created_at).toLocaleDateString("ar-SA")}</p>
+                <p className="text-[12px] text-ink-muted">{hijriDate(p.created_at)}</p>
               </div>
             </div>
             <div className="flex items-center gap-(--space-2)">
@@ -349,7 +350,7 @@ function AuditTab({ rows }: { rows: AuditRow[] }) {
               <span className="text-ink-muted">— {r.action}</span>
             </div>
             <span className="text-[12px] text-ink-faint">
-              {new Date(r.created_at).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" })}
+              {hijriDateTime(r.created_at)}
             </span>
           </Card>
         );

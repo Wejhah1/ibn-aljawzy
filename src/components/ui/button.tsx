@@ -28,6 +28,16 @@ const sizeClasses: Record<Size, string> = {
   icon: "h-11 w-11 rounded-(--radius-sm)",
 };
 
+// نفس شكل الزر لعناصر ليست <button> (مثل روابط Link) حتى لا يُلف رابط حول زر
+export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {
+  return cn(
+    "inline-flex items-center justify-center font-semibold transition-all duration-(--duration-fast) ease-(--ease-standard) select-none",
+    variantClasses[variant],
+    sizeClasses[size],
+    className
+  );
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", ...props }, ref) => {
     return (

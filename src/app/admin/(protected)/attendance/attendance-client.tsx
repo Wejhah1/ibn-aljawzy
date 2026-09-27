@@ -40,7 +40,13 @@ import {
   Printer,
   Download,
   X,
+  ChevronRight,
+  ChevronLeft,
+  CalendarDays,
+  ChevronDown,
 } from "lucide-react";
+import { GroupTag, SessionTag } from "@/components/ui/tags";
+import { hijriDate, hijriWeekday } from "@/lib/date";
 import { LottieLoader } from "@/components/ui/lottie-loader";
 
 type Status = "present" | "absent" | "late" | "excused" | null;
@@ -54,6 +60,7 @@ interface Row {
   groupId: string | null;
   circleName: string | null;
   groupName: string | null;
+  groupColor: string | null;
   status: Status;
 }
 
@@ -69,6 +76,8 @@ export function AttendanceClient({
   seasonId,
   programDays,
   selectedDay,
+  todayIso,
+  openSummary = false,
   circles,
   groups,
   selectedCircle,
@@ -82,8 +91,10 @@ export function AttendanceClient({
   seasonId: string;
   programDays: { id: string; day_date: string; is_holiday: boolean; note: string | null }[];
   selectedDay: { id: string; day_date: string; is_holiday: boolean; note: string | null } | null;
+  todayIso: string;
+  openSummary?: boolean;
   circles: { id: string; name: string }[];
-  groups: { id: string; name: string }[];
+  groups: { id: string; name: string; color_token?: string | null }[];
   selectedCircle: string;
   selectedGroup: string;
   rows: Row[];
@@ -125,10 +136,12 @@ export function AttendanceClient({
   // ولا تعطّل أي زر أبداً حتى لا يشعر المشرف بتعليق أثناء الضغط المتكرر السريع.
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [pending, startTransition] = useTransition();
-  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(openSummary);
   const [pointsSettingsOpen, setPointsSettingsOpen] = useState(false);
   const [historyFor, setHistoryFor] = useState<Row | null>(null);
   const [nameQuery, setNameQuery] = useState("");
+  // تصفية حسب الحالة عند الضغط على أحد ألوان الشريط (مثل «لم يُسجَّل» فقط)
+  const [statusFilter, setStatusFilter] = useState<Exclude<Status, null> | "unmarked" | null>(null);
   const lastLocalChange = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
@@ -146,9 +159,27 @@ export function AttendanceClient({
 
   const filteredRows = useMemo(() => {
     const q = nameQuery.trim();
-    if (!q) return rows;
-    return rows.filter((r) => r.fullName.includes(q) || r.code.includes(q));
-  }, [rows, nameQuery]);
+    return rows.filter(
+      (r) =>
+        (!q || r.fullName.includes(q) || r.code.includes(q)) &&
+        (!statusFilter || (statusFilter === "unmarked" ? !r.status : r.status === statusFilter))
+    );
+  }, [rows, nameQuery, statusFilter]);
+
+  // التنقل بين الأيام بالأسهم يتخطى العطل؛ والضغط على التاريخ يفتح منتقي التاريخ لأي يوم بعيد
+  const workDays = useMemo(() => programDays.filter((d) => !d.is_holiday), [programDays]);
+  const prevDay = selectedDay ? [...workDays].reverse().find((d) => d.day_date < selectedDay.day_date) : undefined;
+  const nextDay = selectedDay ? workDays.find((d) => d.day_date > selectedDay.day_date) : undefined;
+  const pickDate = (iso: string) => {
+    if (!iso) return;
+    const exact = programDays.find((d) => d.day_date === iso);
+    if (exact) return changeDay(exact.id);
+    const target = new Date(iso).getTime();
+    const nearest = [...workDays].sort(
+      (a, b) => Math.abs(new Date(a.day_date).getTime() - target) - Math.abs(new Date(b.day_date).getTime() - target)
+    )[0];
+    if (nearest) changeDay(nearest.id);
+  };
 
   const setStatus = (studentId: string, status: Exclude<Status, null>) => {
     if (!selectedDay || selectedDay.is_holiday) return;
@@ -225,22 +256,23 @@ export function AttendanceClient({
     };
   }, [selectedDay]);
 
-  const dayLabel = selectedDay
-    ? new Date(selectedDay.day_date).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" })
-    : "—";
+  const dayLabel = selectedDay ? hijriWeekday(selectedDay.day_date) : "—";
+  const isHoliday = !selectedDay || selectedDay.is_holiday;
+  const marked = rows.length - stats.unmarked;
 
   return (
-    <main className="p-(--space-4) md:p-(--space-8) max-w-[1100px] mx-auto pb-24">
-      <div className="flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
+    <main className="p-(--space-4) md:p-(--space-8) max-w-[1100px] mx-auto pb-[190px] md:pb-24">
+      <div className="hidden md:flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
         <div>
           <h1 className="text-[22px] leading-[30px] font-bold text-ink">كشف الحضور</h1>
-          <p className="text-sm text-ink-muted mt-1">
-            {seasonName} · {dayLabel}
-          </p>
+          <p className="text-sm text-ink-muted mt-1">{seasonName}</p>
         </div>
         <div className="flex items-center gap-(--space-2)">
           <Button variant="outline" onClick={() => setPointsSettingsOpen(true)}>
             <Settings2 size={16} /> النقاط التلقائية
+          </Button>
+          <Button variant="secondary" onClick={markAllPresent} disabled={isHoliday || stats.unmarked === 0}>
+            الباقون حاضر ({stats.unmarked})
           </Button>
           <Button onClick={() => setSummaryOpen(true)}>
             <ListChecks size={16} /> إنهاء اليوم
@@ -248,83 +280,111 @@ export function AttendanceClient({
         </div>
       </div>
 
-      <div className="mb-(--space-4)">
-        <Card className="flex flex-wrap gap-(--space-3) items-end">
-          <div>
-            <label className="block text-[12px] font-semibold text-ink-muted mb-1">اليوم</label>
-            <select
-              name="day"
-              value={selectedDay?.id ?? ""}
-              onChange={(e) => changeDay(e.target.value)}
-              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
-            >
-              {programDays.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {new Date(d.day_date).toLocaleDateString("ar-SA", { weekday: "short", day: "numeric", month: "short" })}
-                  {d.is_holiday ? " — عطلة" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[12px] font-semibold text-ink-muted mb-1">الحلقة</label>
-            <select
-              name="circle"
-              value={circleFilter}
-              onChange={(e) => applyLocalFilter(e.target.value, groupFilter)}
-              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
-            >
-              <option value="">كل الحلقات</option>
-              {circles.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-[12px] font-semibold text-ink-muted mb-1">المجموعة</label>
-            <select
-              name="group"
-              value={groupFilter}
-              onChange={(e) => applyLocalFilter(circleFilter, e.target.value)}
-              className="h-11 rounded-(--radius-sm) border border-line bg-surface-raised px-(--space-3) text-sm text-ink"
-            >
-              <option value="">كل المجموعات</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <Button type="button" variant="outline" onClick={markAllPresent} disabled={!selectedDay || selectedDay.is_holiday}>
-            تعليم الجميع حاضر
-          </Button>
-        </Card>
+      {/* اختيار اليوم والحلقة والمجموعة */}
+      <div className="grid gap-(--space-3) md:grid-cols-[minmax(280px,340px)_1fr_1fr] mb-(--space-4)">
+        <div className="grid grid-cols-[44px_1fr_44px] gap-(--space-2)">
+          <button
+            type="button"
+            onClick={() => prevDay && changeDay(prevDay.id)}
+            disabled={!prevDay || dayPending}
+            title="اليوم السابق"
+            className="flex h-11 items-center justify-center rounded-(--radius-sm) border border-line bg-surface-raised text-ink-muted hover:bg-surface-sunken disabled:opacity-(--opacity-disabled)"
+          >
+            <ChevronRight size={18} />
+          </button>
+          <label className="relative flex h-11 items-center justify-center gap-(--space-2) rounded-(--radius-sm) border-bold border-line-strong bg-surface-raised text-sm font-semibold text-ink cursor-pointer">
+            <CalendarDays size={16} className="text-ink-muted" />
+            <span className="truncate">{dayLabel}</span>
+            {selectedDay?.day_date === todayIso && <Badge tone="success">اليوم</Badge>}
+            {selectedDay?.is_holiday && <Badge tone="danger">عطلة</Badge>}
+            <input
+              type="date"
+              aria-label="اختر التاريخ"
+              value={selectedDay?.day_date ?? ""}
+              min={programDays[0]?.day_date}
+              max={programDays[programDays.length - 1]?.day_date}
+              onChange={(e) => pickDate(e.target.value)}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={() => nextDay && changeDay(nextDay.id)}
+            disabled={!nextDay || dayPending}
+            title="اليوم التالي"
+            className="flex h-11 items-center justify-center rounded-(--radius-sm) border border-line bg-surface-raised text-ink-muted hover:bg-surface-sunken disabled:opacity-(--opacity-disabled)"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-(--space-2) md:contents">
+          <FilterSelect label="الحلقة" value={circleFilter} onChange={(v) => applyLocalFilter(v, groupFilter)} allLabel="كل الحلقات" options={circles} />
+          <FilterSelect label="المجموعة" value={groupFilter} onChange={(v) => applyLocalFilter(circleFilter, v)} allLabel="كل المجموعات" options={groups} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-(--space-2) mb-(--space-4)">
-        <StatChip label="حاضر" count={stats.present} tone="success" />
-        <StatChip label="متأخر" count={stats.late} tone="warning" />
-        <StatChip label="بعذر" count={stats.excused} tone="info" />
-        <StatChip label="غائب" count={stats.absent} tone="danger" />
-        <StatChip label="غير مسجّل" count={stats.unmarked} tone="neutral" />
-      </div>
+      {/* شريط ملوّن يلخص حالة اليوم، والضغط على أي حالة يعرض طلابها فقط */}
+      <Card className="mb-(--space-4) flex flex-col items-center gap-(--space-3) text-center md:flex-row md:text-right">
+        <p className="text-sm font-semibold text-ink whitespace-nowrap">
+          {marked} من {rows.length} مسجّلون
+        </p>
+        <div className="flex h-3 w-full md:flex-1 overflow-hidden rounded-full border border-line bg-neutral-soft">
+          {(["present", "late", "excused", "absent"] as const).map((key) =>
+            stats[key] > 0 ? (
+              <span
+                key={key}
+                style={{ width: `${(stats[key] / Math.max(rows.length, 1)) * 100}%`, backgroundColor: `var(--color-${STATUS_META[key].tone})` }}
+              />
+            ) : null
+          )}
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-(--space-2) gap-y-1">
+          {([...(Object.keys(STATUS_META) as Exclude<Status, null>[]), "unmarked"] as const).map((key) => {
+            const count = key === "unmarked" ? stats.unmarked : stats[key];
+            const label = key === "unmarked" ? "لم يُسجَّل" : STATUS_META[key].label;
+            const color = key === "unmarked" ? "var(--color-ink-faint)" : `var(--color-${STATUS_META[key].tone})`;
+            const active = statusFilter === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setStatusFilter(active ? null : key)}
+                aria-pressed={active}
+                className={`inline-flex items-center gap-1.5 h-8 px-(--space-2) rounded-full text-[12px] font-semibold transition-colors ${
+                  active ? "bg-ink text-surface" : "text-ink-muted hover:bg-surface-sunken"
+                }`}
+              >
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+                {label}
+                <span className={active ? "font-bold" : "font-bold text-ink"}>{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Card>
 
       <div className="relative mb-(--space-4)">
         <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint" />
         <input
           value={nameQuery}
           onChange={(e) => setNameQuery(e.target.value)}
-          placeholder="ابحث باسم الطالب أو كوده..."
+          placeholder="ابحث باسم الطالب أو رقمه"
           className="w-full h-11 rounded-(--radius-sm) border border-line bg-surface-raised pr-9 pl-3 text-sm text-ink placeholder:text-ink-faint"
         />
       </div>
 
-      {nameQuery.trim() && filteredRows.length === 0 && (
+      {statusFilter && (
+        <div className="flex items-center justify-center gap-(--space-2) mb-(--space-4) text-[13px] text-ink-muted">
+          يُعرض {filteredRows.length} طالب فقط
+          <button type="button" onClick={() => setStatusFilter(null)} className="font-semibold text-brand">
+            عرض الكل
+          </button>
+        </div>
+      )}
+
+      {(nameQuery.trim() || statusFilter) && filteredRows.length === 0 && (
         <Card className="mb-(--space-4)">
-          <CardDescription>لا يوجد طالب مطابق لبحثك.</CardDescription>
+          <CardDescription className="text-center">لا يوجد طالب مطابق.</CardDescription>
         </Card>
       )}
 
@@ -337,7 +397,7 @@ export function AttendanceClient({
       {selectedDay?.is_holiday && (
         <Card className="mb-(--space-4) border-danger bg-danger-soft">
           <CardDescription className="text-danger font-semibold">
-            هذا اليوم عطلة{selectedDay.note ? ` — ${selectedDay.note}` : ""}. لا يمكن تسجيل حضور فيه.
+            هذا اليوم عطلة{selectedDay.note ? `، ${selectedDay.note}` : ""}. لا يمكن تسجيل حضور فيه.
           </CardDescription>
         </Card>
       )}
@@ -385,7 +445,7 @@ export function AttendanceClient({
                       return (
                         <button
                           key={key}
-                          disabled={!selectedDay || selectedDay.is_holiday}
+                          disabled={isHoliday}
                           onClick={() => setStatus(r.studentId, key)}
                           title={meta.label}
                           className="h-10 w-10 rounded-(--radius-sm) border-bold flex items-center justify-center transition-colors"
@@ -420,41 +480,27 @@ export function AttendanceClient({
         </table>
       </div>
 
-      {/* بطاقات للجوال */}
+      {/* بطاقات الجوال (MobileAttendanceCard في نظام التصميم) */}
       <div className={`md:hidden space-y-(--space-3) ${dayPending ? "opacity-50 pointer-events-none" : ""}`}>
         {filteredRows.map((r) => (
-          <Card key={r.studentId}>
-            <div className="flex items-center justify-between mb-(--space-3)">
-              <div>
-                <div className="flex items-center gap-(--space-2)">
-                  <span className="font-semibold text-ink text-sm">{r.fullName}</span>
-                  <Badge tone="neutral">#{r.code}</Badge>
-                  {saving.has(r.studentId) && (
-                    <span
-                      className="inline-block h-3 w-3 rounded-full border-2 border-brand-soft border-t-brand animate-spin"
-                      title="جارِ الحفظ"
-                    />
-                  )}
-                </div>
-                <p className="text-[12px] text-ink-muted mt-0.5">
-                  {r.circleName ?? "—"} {r.groupName ? `· ${r.groupName}` : ""}
-                </p>
-              </div>
-              <div className="flex items-center gap-(--space-2)">
-                {r.status ? (
-                  <Badge tone={STATUS_META[r.status].tone as never}>{STATUS_META[r.status].label}</Badge>
-                ) : (
-                  <Badge tone="neutral">
-                    <Circle size={10} /> غير مسجّل
-                  </Badge>
+          <div key={r.studentId} className="rounded-(--radius-md) border border-line bg-surface-raised p-(--space-4) flex flex-col gap-(--space-3)">
+            <div className="flex flex-col items-center gap-1.5 text-center">
+              <div className="flex items-center justify-center gap-(--space-2) max-w-full">
+                <span className="font-semibold text-ink text-[15px] truncate">{r.fullName}</span>
+                <span className="font-mono text-[12px] font-medium text-ink-muted shrink-0">#{r.code}</span>
+                {saving.has(r.studentId) && (
+                  <span
+                    className="inline-block h-3 w-3 shrink-0 rounded-full border-2 border-brand-soft border-t-brand animate-spin"
+                    title="جارِ الحفظ"
+                  />
                 )}
-                <button
-                  onClick={() => setHistoryFor(r)}
-                  className="flex h-8 w-8 items-center justify-center rounded-(--radius-sm) text-ink-muted hover:bg-surface-sunken hover:text-brand"
-                >
-                  <History size={15} />
-                </button>
               </div>
+              {(r.groupName || r.circleName) && (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 max-w-full">
+                  {r.groupName && <GroupTag name={r.groupName} token={r.groupColor} />}
+                  {r.circleName && <SessionTag name={r.circleName} />}
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-4 gap-(--space-2)">
               {(Object.keys(STATUS_META) as Exclude<Status, null>[]).map((key) => {
@@ -464,18 +510,13 @@ export function AttendanceClient({
                 return (
                   <button
                     key={key}
-                    disabled={!selectedDay || selectedDay.is_holiday}
+                    disabled={isHoliday}
                     onClick={() => setStatus(r.studentId, key)}
-                    className="min-h-[48px] rounded-(--radius-sm) border-bold flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors"
-                    style={
-                      active
-                        ? {
-                            backgroundColor: `var(--color-${meta.tone})`,
-                            color: `var(--color-on-${meta.tone})`,
-                            borderColor: "var(--color-line-strong)",
-                          }
-                        : { borderColor: "var(--color-line-strong)", color: "var(--color-ink)" }
-                    }
+                    aria-pressed={active}
+                    className={`min-h-[48px] rounded-(--radius-xs) flex flex-col items-center justify-center gap-0.5 text-[12px] font-semibold transition-colors disabled:opacity-(--opacity-disabled) ${
+                      active ? "border-bold border-line-strong shadow-brutal-sm" : "border border-line bg-surface-raised text-ink-muted"
+                    }`}
+                    style={active ? { backgroundColor: `var(--color-${meta.tone})`, color: `var(--color-on-${meta.tone})` } : undefined}
                   >
                     <Icon size={16} />
                     {meta.label}
@@ -483,8 +524,37 @@ export function AttendanceClient({
                 );
               })}
             </div>
-          </Card>
+            <div className="flex items-center justify-center gap-(--space-3) pt-(--space-3) border-t border-line">
+              <a
+                href={buildWaMeLink(r.guardianPhone, "السلام عليكم")}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="تواصل مع ولي الأمر عبر واتساب"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-success-soft bg-success-soft text-success"
+              >
+                <MessageCircle size={17} />
+              </a>
+              <button
+                type="button"
+                onClick={() => setHistoryFor(r)}
+                title="مسيرة الحضور هذا الموسم"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface-raised text-ink-muted"
+              >
+                <History size={17} />
+              </button>
+            </div>
+          </div>
         ))}
+      </div>
+
+      {/* أزرار ثابتة أسفل شاشة الجوال فوق الشريط السفلي */}
+      <div className="md:hidden print:hidden fixed inset-x-0 z-30 bottom-[calc(64px+env(safe-area-inset-bottom))] border-t border-line bg-surface-raised px-(--space-4) py-(--space-3) flex gap-(--space-3)">
+        <Button variant="secondary" className="flex-1" onClick={markAllPresent} disabled={isHoliday || stats.unmarked === 0}>
+          الباقون حاضر ({stats.unmarked})
+        </Button>
+        <Button className="flex-1" onClick={() => setSummaryOpen(true)}>
+          <ListChecks size={16} /> إنهاء اليوم
+        </Button>
       </div>
 
       {summaryOpen && (
@@ -493,6 +563,7 @@ export function AttendanceClient({
           seasonId={seasonId}
           dayId={selectedDay?.id ?? null}
           onClose={() => setSummaryOpen(false)}
+          onOpenPoints={() => setPointsSettingsOpen(true)}
           programInfo={programInfo}
           absentTemplate={absentTemplate}
           lateTemplate={lateTemplate}
@@ -645,7 +716,7 @@ function AttendanceHistoryModal({
                 className="flex items-center justify-between rounded-(--radius-sm) border border-line px-(--space-3) py-(--space-2)"
               >
                 <span className="text-sm font-semibold text-ink">
-                  {new Date(e.dayDate).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long" })}
+                  {hijriWeekday(e.dayDate)}
                 </span>
                 {meta ? (
                   <Badge tone={meta.tone as never}>
@@ -678,6 +749,7 @@ function StatChip({ label, count, tone }: { label: string; count: number; tone: 
 }
 
 function EndDayModal({
+  onOpenPoints,
   rows,
   seasonId,
   dayId,
@@ -687,6 +759,7 @@ function EndDayModal({
   lateTemplate,
   dayLabel,
 }: {
+  onOpenPoints: () => void;
   rows: Row[];
   seasonId: string;
   dayId: string | null;
@@ -708,8 +781,8 @@ function EndDayModal({
       name: r.fullName,
       program: programInfo.program_name,
       mosque: programInfo.mosque_name,
-      date: new Date().toLocaleDateString("ar-SA"),
-      day: dayLabel,
+      date: hijriDate(new Date()),
+      day: dayLabel.split(" ")[0],
       circle: r.circleName ?? "",
     } as WhatsappVariables);
 
@@ -814,7 +887,12 @@ function EndDayModal({
           <Button variant="outline" onClick={() => setPrintOpen(true)} disabled={!dayId}>
             <Printer size={16} /> طباعة حضور اليوم
           </Button>
-          <Button onClick={onClose}>تم</Button>
+          <div className="flex items-center gap-(--space-2)">
+            <Button variant="ghost" className="md:hidden" onClick={onOpenPoints}>
+              <Settings2 size={16} /> النقاط
+            </Button>
+            <Button onClick={onClose}>تم</Button>
+          </div>
         </div>
       </div>
       {printOpen && dayId && <PrintAttendanceModal seasonId={seasonId} dayId={dayId} dayLabel={dayLabel} onClose={() => setPrintOpen(false)} />}
@@ -850,7 +928,7 @@ function PrintAttendanceModal({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `حضور_${c.circleName}_${dayLabel}.pdf`;
+      a.download = `حضور_${c.circleName}_${dayLabel.replace(/\//g, "-")}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -907,6 +985,39 @@ function PrintAttendanceModal({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  allLabel,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  allLabel: string;
+  options: { id: string; name: string }[];
+}) {
+  return (
+    <div className="relative">
+      <select
+        aria-label={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="appearance-none w-full h-11 rounded-(--radius-sm) border border-line bg-surface-raised pr-(--space-3) pl-9 text-sm text-ink hover:border-ink-muted truncate"
+      >
+        <option value="">{allLabel}</option>
+        {options.map((o) => (
+          <option key={o.id} value={o.id}>
+            {o.name}
+          </option>
+        ))}
+      </select>
+      <ChevronDown size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
     </div>
   );
 }

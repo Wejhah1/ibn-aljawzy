@@ -46,7 +46,7 @@ export function ReportsClient({
     <main className="p-(--space-4) md:p-(--space-8) max-w-[1100px] mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
         <div>
-          <h1 className="text-[22px] leading-[30px] font-bold text-ink">التقارير</h1>
+          <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink">التقارير</h1>
           <p className="text-sm text-ink-muted mt-1">{seasonName}</p>
         </div>
         <Link href="/admin/reports/print">

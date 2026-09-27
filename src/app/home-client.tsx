@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Users, CircleDot, Calendar, BookOpen, Trophy, ShieldCheck, ArrowLeft, GraduationCap, Megaphone, Sparkles, Star } from "lucide-react";
+import { Modal } from "@/components/ui/modal";
+import { hijriDate } from "@/lib/date";
+import { Users, CircleDot, Calendar, Trophy, ArrowLeft, GraduationCap, Megaphone, Sparkles, Star } from "lucide-react";
 
 interface PublicStats {
   season_name: string | null;
@@ -28,12 +31,6 @@ interface NewsPost {
   published_at: string;
 }
 
-const FEATURES = [
-  { icon: BookOpen, title: "حفظ وتلاوة", desc: "برنامج يومي منظم لحفظ القرآن الكريم ومراجعته بإشراف معلمين مؤهلين." },
-  { icon: Trophy, title: "نظام نقاط وحوافز", desc: "تحفيز مستمر للطلاب عبر النقاط، الإنجازات، والأوسمة على مدار الموسم." },
-  { icon: ShieldCheck, title: "متابعة أولياء الأمور", desc: "بوابة خاصة لولي الأمر لمتابعة حضور ونتائج ابنه أولاً بأول." },
-];
-
 const NEWS_STYLES: Record<string, { icon: typeof GraduationCap; bg: string; soft: string; fg: string }> = {
   "إنجاز": { icon: GraduationCap, bg: "bg-info", soft: "bg-info-soft", fg: "text-info" },
   "فعالية": { icon: Sparkles, bg: "bg-accent-solid", soft: "bg-accent-soft", fg: "text-accent" },
@@ -46,6 +43,8 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
   const subtitle =
     content.hero_subtitle?.trim() ||
     "برنامج تحفيظ صيفي بمسجد الطرباق — يجمع بين حفظ القرآن الكريم، التحفيز بنظام النقاط، ومتابعة دقيقة لأولياء الأمور طوال الموسم.";
+
+  const [openNews, setOpenNews] = useState<NewsPost | null>(null);
 
   return (
     <main className="min-h-screen bg-surface overflow-x-hidden">
@@ -63,18 +62,11 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
             )}
             <p className="text-sm font-bold text-ink hidden sm:block">{title}</p>
           </div>
-          <div className="flex items-center gap-(--space-2)">
-            <Link href="/portal/login">
-              <Button size="sm" variant="secondary">
-                بوابة ولي الأمر
-              </Button>
-            </Link>
-            <Link href="/admin/login">
-              <Button size="sm" variant="ghost">
-                دخول الإدارة
-              </Button>
-            </Link>
-          </div>
+          <Link href="/portal/login">
+            <Button size="sm" variant="secondary">
+              بوابة ولي الأمر
+            </Button>
+          </Link>
         </div>
       </header>
 
@@ -94,6 +86,15 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
         />
 
         <div className="relative max-w-[800px] mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mx-auto mb-(--space-5) flex h-28 w-36 md:h-32 md:w-44 items-center justify-center rounded-(--radius-lg) border-bold border-line-strong bg-surface-raised p-(--space-3) shadow-brutal-sm"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={content.logo_url || "/logo.svg"} alt={title} className="h-full w-full object-contain" />
+          </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -172,39 +173,6 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
         </div>
       </section>
 
-      {/* مميزات البرنامج */}
-      <section className="px-(--space-4) pb-20">
-        <div className="max-w-[1000px] mx-auto">
-          <motion.h2
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-[22px] font-bold text-ink text-center mb-(--space-8)"
-          >
-            لماذا حلقات ابن الجوزي؟
-          </motion.h2>
-          <div className="grid md:grid-cols-3 gap-(--space-4)">
-            {FEATURES.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                whileHover={{ y: -4 }}
-                className="group rounded-(--radius-lg) border-bold border-line-strong bg-surface-raised p-(--space-6) transition-shadow hover:shadow-brutal"
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-(--radius-sm) bg-brand-soft text-brand-hover mb-(--space-4) transition-transform group-hover:scale-110">
-                  <f.icon size={20} />
-                </div>
-                <h3 className="text-[16px] font-bold text-ink mb-(--space-2)">{f.title}</h3>
-                <p className="text-sm text-ink-muted leading-relaxed">{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {news.length > 0 && (
         <section className="px-(--space-4) pb-20">
           <div className="max-w-[1000px] mx-auto">
@@ -253,9 +221,14 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
                       </span>
                       <h3 className="text-[15px] font-bold text-ink mb-(--space-2)">{n.title}</h3>
                       {n.body && <p className="text-sm text-ink-muted leading-relaxed line-clamp-3">{n.body}</p>}
-                      <p className="text-[11px] text-ink-faint mt-(--space-3)">
-                        {new Date(n.published_at).toLocaleDateString("ar-SA")}
-                      </p>
+                      <div className="flex items-center justify-between mt-(--space-3)">
+                        <p className="text-[11px] text-ink-faint">{hijriDate(n.published_at)}</p>
+                        {n.body && (
+                          <button type="button" onClick={() => setOpenNews(n)} className="text-[13px] font-bold text-brand hover:text-brand-hover">
+                            اقرأ الخبر كاملاً
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 );
@@ -263,6 +236,23 @@ export function HomeClient({ stats, content, news }: { stats: PublicStats; conte
             </div>
           </div>
         </section>
+      )}
+
+      {openNews && (
+        <Modal title={openNews.title} onClose={() => setOpenNews(null)} maxWidth="640px">
+          {openNews.image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={openNews.image_url}
+              alt={openNews.title}
+              className="w-full max-h-72 object-cover rounded-(--radius-lg) border-bold border-line-strong shadow-brutal-sm mb-(--space-4)"
+            />
+          )}
+          <p className="text-[12px] text-ink-faint mb-(--space-3)">
+            {openNews.category}، {hijriDate(openNews.published_at)}
+          </p>
+          <p className="text-[15px] leading-[28px] text-ink whitespace-pre-line">{openNews.body}</p>
+        </Modal>
       )}
 
       <footer className="border-t border-line py-(--space-8) px-(--space-4)">

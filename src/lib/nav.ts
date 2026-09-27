@@ -20,6 +20,8 @@ import {
 export interface NavItem {
   href: string;
   label: string;
+  /** اسم أقصر لمربعات قائمة «المزيد» في الجوال */
+  shortLabel?: string;
   icon: LucideIcon;
 }
 
@@ -34,7 +36,7 @@ export const STUDENTS_NAV: NavItem[] = [
   { href: "/admin/students", label: "الطلاب", icon: Users },
   { href: "/admin/circles", label: "الحلقات والمجموعات", icon: CircleDot },
   { href: "/admin/leaderboard", label: "المتصدرون", icon: Trophy },
-  { href: "/admin/achievements", label: "الإنجازات والأوسمة والعلامات", icon: Award },
+  { href: "/admin/achievements", label: "الإنجازات والأوسمة والعلامات", shortLabel: "الإنجازات والأوسمة", icon: Award },
 ];
 
 export const REPORTS_NAV: NavItem[] = [

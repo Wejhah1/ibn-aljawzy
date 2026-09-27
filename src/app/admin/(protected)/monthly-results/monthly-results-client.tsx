@@ -20,6 +20,7 @@ import {
 import { WhatsappExportModal } from "./whatsapp-export-modal";
 import { UploadCloud, CheckCircle2, Eye, EyeOff, AlertTriangle, CalendarDays, Pencil, Trash2, MessageCircle, Loader2 } from "lucide-react";
 import { LottieLoader } from "@/components/ui/lottie-loader";
+import { hijriDate } from "@/lib/date";
 
 interface Period {
   label: string;
@@ -136,7 +137,7 @@ export function MonthlyResultsClient({
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[800px] mx-auto">
-      <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-2)">النتائج الشهرية</h1>
+      <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink mb-(--space-2)">النتائج الشهرية</h1>
       <p className="text-sm text-ink-muted mb-(--space-6)">{seasonName}</p>
 
       {periods.length > 0 && (
@@ -150,7 +151,7 @@ export function MonthlyResultsClient({
                     {p.count} طالب · متوسط {p.avg}%
                     {p.examDate && (
                       <span className="inline-flex items-center gap-1 mr-2">
-                        <CalendarDays size={11} /> {new Date(p.examDate).toLocaleDateString("ar-SA")}
+                        <CalendarDays size={11} /> {hijriDate(p.examDate)}
                       </span>
                     )}
                   </p>

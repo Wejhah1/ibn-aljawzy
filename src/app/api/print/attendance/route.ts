@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { renderHtmlToPdf } from "@/lib/pdf/render";
 import { getProgramInfo } from "@/lib/settings";
+import { hijriFull } from "@/lib/date";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   present: { label: "حاضر", color: "#0e6b4f" },
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     .sort((a, b) => a.name.localeCompare(b.name, "ar"));
 
   const programInfo = await getProgramInfo(supabase);
-  const dateLabel = new Date(day.day_date).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const dateLabel = hijriFull(day.day_date);
 
   const counts = { present: 0, absent: 0, late: 0, excused: 0, unmarked: 0 };
   for (const s of students) {

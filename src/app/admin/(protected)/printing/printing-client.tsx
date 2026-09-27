@@ -10,6 +10,7 @@ import type { ProgramInfo } from "@/lib/settings";
 import Link from "next/link";
 import { saveCertificateConfigAction, saveCardConfigAction, searchStudentsForPrintAction } from "./actions";
 import { Save, Download, Search, Award, IdCard, LayoutGrid } from "lucide-react";
+import { hijriDate } from "@/lib/date";
 
 const SCRIPT_FONT_PREVIEW_SRC = "/fonts/TheYearOfHandicrafts-Regular.otf";
 const LOGO_PREVIEW_SRC = "/logo.svg";
@@ -32,7 +33,7 @@ export function PrintingClient({
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[1200px] mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-(--space-3) mb-(--space-6)">
-        <h1 className="text-[22px] leading-[30px] font-bold text-ink">الطباعة والشهادات</h1>
+        <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink">الطباعة والشهادات</h1>
         <Link href="/admin/printing/cards">
           <Button size="sm" variant="secondary">
             <LayoutGrid size={15} /> طباعة بطاقات الطلاب (8 في الورقة)
@@ -130,7 +131,7 @@ function CertificateDesigner({
           mosqueName: programInfo.mosque_name,
           seasonName,
           achievementLabel: "لتفوقه وإتقانه",
-          dateLabel: new Date().toLocaleDateString("ar-SA"),
+          dateLabel: hijriDate(new Date()),
         },
         config,
         SCRIPT_FONT_PREVIEW_SRC,

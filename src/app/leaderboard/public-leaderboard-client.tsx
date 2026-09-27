@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { BadgeStrip, type BadgeStripItem } from "@/components/badges/badge-strip";
 import type { ProgramInfo } from "@/lib/settings";
-import { Trophy, Medal, Users, CircleDot, ArrowRight, Play, Pause } from "lucide-react";
+import { Trophy, Medal, Users, CircleDot, ArrowRight, Play, Pause, CalendarCheck, Award } from "lucide-react";
 
 interface StudentEntry {
   studentId: string;
@@ -28,8 +28,8 @@ type TabKey = "points" | "attendance" | "achievements" | "groups" | "circles";
 
 const TABS: { key: TabKey; label: string; icon: typeof Trophy }[] = [
   { key: "points", label: "الأعلى نقاطاً", icon: Trophy },
-  { key: "attendance", label: "الأفضل حضوراً", icon: Trophy },
-  { key: "achievements", label: "الأكثر إنجازاً", icon: Trophy },
+  { key: "attendance", label: "الأفضل حضوراً", icon: CalendarCheck },
+  { key: "achievements", label: "الأكثر إنجازاً", icon: Award },
   { key: "groups", label: "أعلى المجموعات", icon: Users },
   { key: "circles", label: "أعلى الحلقات", icon: CircleDot },
 ];
@@ -98,6 +98,11 @@ export function PublicLeaderboardClient({
   const [tab, setTab] = useState<TabKey>("points");
   const [rotating, setRotating] = useState(true);
 
+  // التدوير التلقائي مفيد على شاشة العرض، لكنه يربك من يقرأ ترتيبه على الجوال
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 767px)").matches) setRotating(false);
+  }, []);
+
   useEffect(() => {
     if (!rotating) return;
     const interval = setInterval(() => {
@@ -147,7 +152,7 @@ export function PublicLeaderboardClient({
           </div>
         </div>
 
-        <div className="flex items-center gap-(--space-2) mb-(--space-6) justify-center flex-wrap">
+        <div className="flex items-center gap-(--space-2) mb-(--space-6) md:justify-center md:flex-wrap overflow-x-auto -mx-(--space-4) px-(--space-4) pb-1 md:mx-0 md:px-0">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -155,7 +160,7 @@ export function PublicLeaderboardClient({
                 setTab(t.key);
                 setRotating(false);
               }}
-              className={`h-10 px-(--space-3) rounded-(--radius-sm) border-bold text-[13px] font-bold transition-colors flex items-center gap-1.5 ${
+              className={`h-10 px-(--space-3) shrink-0 whitespace-nowrap rounded-(--radius-sm) border-bold text-[13px] font-bold transition-colors flex items-center gap-1.5 ${
                 tab === t.key
                   ? "bg-brand text-on-brand border-line-strong shadow-brutal-sm"
                   : "bg-surface-raised text-ink-muted border-line-strong hover:bg-surface-sunken"

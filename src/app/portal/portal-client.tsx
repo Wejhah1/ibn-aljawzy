@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { parentLogoutAction, sendParentNoteAction, deleteParentNoteAction } from "./actions";
 import { PushNotificationToggleCompact } from "@/components/push-notification-toggle";
-import { Trophy, CalendarCheck, Award, ShieldAlert, LogOut, ClipboardList, MessageSquare, Send, Trash2, Video, ExternalLink } from "lucide-react";
+import { GroupTag, SessionTag } from "@/components/ui/tags";
+import { hijriDateTime, hijriDay, hijriWeekday } from "@/lib/date";
+import { Trophy, LogOut, Send, Trash2, Video, ExternalLink } from "lucide-react";
 
 interface ParentNote {
   id: string;
@@ -29,23 +31,32 @@ interface StudentData {
   meetingUrl: string | null;
   totalPoints: number;
   attendance: { present: number; late: number; absent: number; excused: number };
-  achievements: { name: string }[];
-  badges: { name: string }[];
+  attendanceRate: number | null;
+  recentDays: { date: string; status: DayStatus }[];
+  achievements: { name: string; icon: string | null }[];
+  badges: { name: string; icon: string | null }[];
   monthlyResults: { periodLabel: string; percentage: number | null; statusText: string | null }[];
   notes: ParentNote[];
 }
 
-function ColorTag({ label, token }: { label: string; token: string | null }) {
-  const valid = token && /^group-[1-6]$/.test(token) ? token : null;
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-(--radius-xs) px-2 py-1 text-[12px] font-semibold"
-      style={valid ? { color: `var(--color-${valid}-fg)`, backgroundColor: `var(--color-${valid}-bg)` } : undefined}
-    >
-      {valid && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: `var(--color-${valid}-fg)` }} />}
-      {label}
-    </span>
-  );
+type DayStatus = "present" | "late" | "excused" | "absent" | null;
+
+const STATUS_TONES: { key: Exclude<DayStatus, null>; label: string; tone: string }[] = [
+  { key: "present", label: "حاضر", tone: "success" },
+  { key: "late", label: "متأخر", tone: "warning" },
+  { key: "excused", label: "بعذر", tone: "info" },
+  { key: "absent", label: "غائب", tone: "danger" },
+];
+
+function rateLabel(rate: number) {
+  if (rate >= 90) return { text: "ممتاز", tone: "success" as const };
+  if (rate >= 75) return { text: "جيد جداً", tone: "info" as const };
+  if (rate >= 60) return { text: "جيد", tone: "warning" as const };
+  return { text: "يحتاج متابعة", tone: "danger" as const };
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <CardTitle className="text-center mb-(--space-4)">{children}</CardTitle>;
 }
 
 export function PortalClient({ students, seasonName }: { students: StudentData[]; seasonName: string | null }) {
@@ -74,9 +85,9 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
         </div>
       </header>
 
-      <div className="max-w-[800px] mx-auto p-(--space-4) md:p-(--space-8)">
+      <div className="max-w-[800px] mx-auto p-(--space-4) md:p-(--space-8) flex flex-col gap-(--space-5)">
         {students.length > 1 && (
-          <div className="flex items-center gap-(--space-2) mb-(--space-6) overflow-x-auto pb-1">
+          <div className="flex items-center justify-center gap-(--space-2) overflow-x-auto pb-1">
             {students.map((s) => (
               <button
                 key={s.id}
@@ -101,13 +112,13 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
           <>
             {selected.meetingUrl && (
               <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                <Card className="mb-(--space-6) border-warning bg-warning-soft shadow-brutal-sm text-center">
+                <Card className="border-warning bg-warning-soft shadow-brutal-sm text-center">
                   <div className="flex items-center justify-center gap-2 text-warning mb-1">
                     <Video size={20} />
                     <CardTitle className="text-warning">الدراسة اليوم عن بعد</CardTitle>
                   </div>
                   <CardDescription>
-                    {selected.circleName ? `رابط ${selected.circleName}` : "رابط الحلقة"} — اضغط للدخول عبر Google Meet
+                    {selected.circleName ? `رابط ${selected.circleName}` : "رابط الحلقة"}، اضغط للدخول عبر Google Meet
                   </CardDescription>
                   <a
                     href={selected.meetingUrl}
@@ -121,86 +132,158 @@ export function PortalClient({ students, seasonName }: { students: StudentData[]
               </motion.div>
             )}
 
-            <Card className="mb-(--space-6) shadow-brutal-sm text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-3xl mx-auto mb-(--space-3)">
+            {/* بطاقة الطالب: الاسم ثم الرقم ثم الحلقة والمجموعة ثم النقاط */}
+            <Card className="flex flex-col items-center text-center gap-(--space-2) px-(--space-4) py-(--space-6)">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-brand-hover font-bold text-3xl mb-(--space-1)">
                 {selected.fullName.charAt(0)}
               </div>
-              <h1 className="text-[20px] font-bold text-ink">{selected.fullName}</h1>
-              <div className="flex items-center justify-center flex-wrap gap-(--space-2) mt-2">
-                <Badge tone="neutral">#{selected.code}</Badge>
-                {selected.circleName && <ColorTag label={selected.circleName} token={selected.circleColor} />}
-                {selected.groupName && <ColorTag label={selected.groupName} token={selected.groupColor} />}
-              </div>
-              {seasonName && <p className="text-[12px] text-ink-faint mt-1">{seasonName}</p>}
-              <div className="mt-(--space-4) inline-flex items-center gap-2 rounded-(--radius-sm) bg-brand text-on-brand px-(--space-4) py-(--space-2) border-bold border-line-strong shadow-brutal-sm">
+              <h1 className="text-[22px] leading-[30px] font-bold text-ink text-balance">{selected.fullName}</h1>
+              <p className="font-mono text-[13px] font-medium text-ink-muted">#{selected.code}</p>
+              {(selected.circleName || selected.groupName) && (
+                <div className="flex items-center justify-center flex-wrap gap-(--space-2)">
+                  {selected.circleName && <SessionTag name={selected.circleName} />}
+                  {selected.groupName && <GroupTag name={selected.groupName} token={selected.groupColor} />}
+                </div>
+              )}
+              {seasonName && <p className="text-[12px] text-ink-faint">{seasonName}</p>}
+              <div className="mt-(--space-3) inline-flex items-center gap-2 rounded-(--radius-sm) bg-brand text-on-brand px-(--space-5) py-(--space-2) border-bold border-line-strong shadow-brutal-sm">
                 <Trophy size={20} />
-                <span className="text-[28px] font-bold">{selected.totalPoints}</span>
+                <span className="text-[30px] leading-[38px] font-bold">{selected.totalPoints}</span>
                 <span className="text-sm font-semibold">نقطة</span>
               </div>
             </Card>
 
-            <Card className="mb-(--space-6)">
-              <CardTitle className="mb-(--space-4) flex items-center gap-2">
-                <CalendarCheck size={18} className="text-brand" /> الحضور هذا الموسم
-              </CardTitle>
-              <div className="grid grid-cols-4 gap-(--space-2)">
-                <StatBox label="حاضر" value={selected.attendance.present} tone="success" />
-                <StatBox label="متأخر" value={selected.attendance.late} tone="warning" />
-                <StatBox label="بعذر" value={selected.attendance.excused} tone="info" />
-                <StatBox label="غائب" value={selected.attendance.absent} tone="danger" />
-              </div>
-            </Card>
+            <AttendanceCard student={selected} />
 
-            <Card className="mb-(--space-6)">
-                <CardTitle className="mb-(--space-3) flex items-center gap-2">
-                  <Award size={18} className="text-accent" /> الإنجازات والأوسمة
-                </CardTitle>
-                {selected.achievements.length === 0 && selected.badges.length === 0 ? (
-                  <CardDescription>لا توجد إنجازات أو أوسمة حتى الآن.</CardDescription>
-                ) : (
-                <div className="flex flex-wrap gap-(--space-2)">
-                  {selected.achievements.map((a, i) => (
-                    <Badge key={`a-${i}`} tone="accent">
-                      <Award size={11} /> {a.name}
-                    </Badge>
-                  ))}
-                  {selected.badges.map((b, i) => (
-                    <Badge key={`b-${i}`} tone="accent">
-                      <ShieldAlert size={11} /> {b.name}
-                    </Badge>
-                  ))}
-                </div>
-                )}
-              </Card>
-
-            <Card className="mb-(--space-6)">
-                <CardTitle className="mb-(--space-3) flex items-center gap-2">
-                  <ClipboardList size={18} className="text-info" /> النتائج الشهرية
-                </CardTitle>
-                {selected.monthlyResults.length === 0 ? (
-                  <CardDescription>لا توجد نتائج شهرية حتى الآن.</CardDescription>
-                ) : (
-                <div className="space-y-(--space-2)">
-                  {selected.monthlyResults.map((m, i) => (
-                    <div key={i} className="flex items-center justify-between rounded-(--radius-sm) bg-surface-sunken px-(--space-3) py-(--space-2)">
-                      <span className="text-sm font-semibold text-ink">{m.periodLabel}</span>
-                      <span className="text-sm font-bold text-brand">{m.percentage !== null ? `${m.percentage}%` : m.statusText}</span>
+            <Card className="px-(--space-4) py-(--space-6)">
+              <SectionTitle>الإنجازات والأوسمة</SectionTitle>
+              {selected.achievements.length === 0 && selected.badges.length === 0 ? (
+                <CardDescription className="text-center">لا توجد إنجازات أو أوسمة حتى الآن.</CardDescription>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-(--space-4)">
+                  {[...selected.achievements, ...selected.badges].map((a, i) => (
+                    <div key={i} className="w-[76px] flex flex-col items-center gap-1.5 text-center">
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-soft border-bold border-accent-solid text-[26px]">
+                        {a.icon || "🏅"}
+                      </span>
+                      <span className="text-[12px] leading-[16px] font-semibold text-ink-muted">{a.name}</span>
                     </div>
                   ))}
                 </div>
-                )}
-              </Card>
+              )}
+            </Card>
 
-            <Card>
-              <CardTitle className="mb-(--space-3) flex items-center gap-2">
-                <MessageSquare size={18} className="text-brand" /> ملاحظة للإدارة
-              </CardTitle>
+            <Card className="px-(--space-4) py-(--space-6)">
+              <SectionTitle>النتائج الشهرية</SectionTitle>
+              {selected.monthlyResults.length === 0 ? (
+                <CardDescription className="text-center">لا توجد نتائج شهرية حتى الآن.</CardDescription>
+              ) : (
+                <div className="flex flex-col gap-(--space-3)">
+                  {selected.monthlyResults.map((m, i) => (
+                    <div key={i} className="rounded-(--radius-sm) bg-surface-sunken px-(--space-4) py-(--space-3) flex flex-col gap-(--space-2)">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-ink">{m.periodLabel}</span>
+                        <span className="text-sm font-bold text-brand">{m.percentage !== null ? `${m.percentage}%` : m.statusText}</span>
+                      </div>
+                      {m.percentage !== null && (
+                        <div className="h-1.5 rounded-full bg-line overflow-hidden">
+                          <div className="h-full rounded-full bg-brand" style={{ width: `${Math.min(100, Math.max(0, m.percentage))}%` }} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            <Card className="px-(--space-4) py-(--space-6)">
+              <SectionTitle>ملاحظة للإدارة</SectionTitle>
               <ParentNotesPanel key={selected.id} studentId={selected.id} notes={selected.notes} />
             </Card>
           </>
         )}
       </div>
     </main>
+  );
+}
+
+function AttendanceCard({ student }: { student: StudentData }) {
+  const rate = student.attendanceRate;
+  const label = rate !== null ? rateLabel(rate) : null;
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+
+  return (
+    <Card className="flex flex-col items-center text-center gap-(--space-4) px-(--space-4) py-(--space-6)">
+      <CardTitle>الحضور</CardTitle>
+      <div className="relative h-[124px] w-[124px]">
+        <svg viewBox="0 0 124 124" className="h-full w-full -rotate-90" aria-hidden>
+          <circle cx="62" cy="62" r={radius} fill="none" stroke="var(--color-neutral-soft)" strokeWidth="11" />
+          {rate !== null && (
+            <circle
+              cx="62"
+              cy="62"
+              r={radius}
+              fill="none"
+              stroke="var(--color-brand)"
+              strokeWidth="11"
+              strokeLinecap="round"
+              strokeDasharray={`${(rate / 100) * circumference} ${circumference}`}
+            />
+          )}
+        </svg>
+        <span className="absolute inset-0 flex items-center justify-center text-[28px] font-bold text-ink">
+          {rate !== null ? `${rate}%` : "—"}
+        </span>
+      </div>
+      {label ? <Badge tone={label.tone}>{label.text}</Badge> : <CardDescription>لم يُسجَّل حضور بعد.</CardDescription>}
+
+      {student.recentDays.length > 0 && (
+        <div className="flex flex-col items-center gap-(--space-3)">
+          <p className="text-[12px] font-semibold text-ink-muted">آخر {student.recentDays.length} يوماً دراسياً</p>
+          <div className="grid grid-cols-7 gap-(--space-2)" dir="rtl">
+            {student.recentDays.map((d, i) => {
+              const tone = STATUS_TONES.find((t) => t.key === d.status);
+              const isLast = i === student.recentDays.length - 1;
+              return (
+                <span
+                  key={d.date}
+                  title={`${hijriWeekday(d.date)}: ${tone?.label ?? "لم يُسجَّل"}`}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-bold ${
+                    tone ? "text-on-brand" : "bg-neutral-soft text-ink-faint"
+                  } ${isLast ? "outline-2 outline-offset-2 outline-line-strong" : ""}`}
+                  style={tone ? { backgroundColor: `var(--color-${tone.tone})` } : undefined}
+                >
+                  {hijriDay(d.date)}
+                </span>
+              );
+            })}
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-(--space-3) gap-y-1 text-[12px] text-ink-muted">
+            {STATUS_TONES.map((t) => (
+              <span key={t.key} className="inline-flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: `var(--color-${t.tone})` }} />
+                {t.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="w-full border-t border-line pt-(--space-4)">
+        <div className="grid grid-cols-4">
+          {STATUS_TONES.map((t) => (
+            <div key={t.key}>
+              <p className="text-[20px] leading-[28px] font-bold" style={{ color: `var(--color-${t.tone})` }}>
+                {student.attendance[t.key]}
+              </p>
+              <p className="text-[12px] font-semibold text-ink-muted">{t.label}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-ink-faint mt-(--space-2)">مجموع الموسم</p>
+      </div>
+    </Card>
   );
 }
 
@@ -230,7 +313,7 @@ function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: Pare
   return (
     <div>
       {localNotes.length > 0 && (
-        <div className="space-y-(--space-2) mb-(--space-4) max-h-[280px] overflow-y-auto">
+        <div className="space-y-(--space-3) mb-(--space-4) max-h-[320px] overflow-y-auto">
           {localNotes.map((n) => (
             <motion.div
               key={n.id}
@@ -256,7 +339,7 @@ function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: Pare
                   <span />
                 )}
                 <p className="text-[11px] text-ink-faint text-right">
-                  {n.sender === "admin" ? "الإدارة" : "أنت"} · {new Date(n.createdAt).toLocaleString("ar-SA")}
+                  {n.sender === "admin" ? "الإدارة" : "أنت"}، {hijriDateTime(n.createdAt)}
                 </p>
               </div>
             </motion.div>
@@ -275,20 +358,6 @@ function ParentNotesPanel({ studentId, notes }: { studentId: string; notes: Pare
           <Send size={14} /> إرسال
         </Button>
       </div>
-    </div>
-  );
-}
-
-function StatBox({ label, value, tone }: { label: string; value: number; tone: string }) {
-  return (
-    <div
-      className="rounded-(--radius-sm) border-bold border-line-strong px-(--space-2) py-(--space-3) text-center"
-      style={{ backgroundColor: `var(--color-${tone}-soft)` }}
-    >
-      <p className="text-[22px] font-bold" style={{ color: `var(--color-${tone})` }}>
-        {value}
-      </p>
-      <p className="text-[11px] font-semibold text-ink-muted">{label}</p>
     </div>
   );
 }

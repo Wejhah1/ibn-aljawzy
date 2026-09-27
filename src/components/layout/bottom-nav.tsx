@@ -86,14 +86,14 @@ export function BottomNav() {
                           prefetch={false}
                           onClick={() => setMoreOpen(false)}
                           className={cn(
-                            "flex flex-col items-center justify-center gap-1.5 rounded-(--radius-sm) border-bold px-(--space-2) py-(--space-3) text-center min-h-[76px]",
+                            "flex flex-col items-center justify-center gap-1.5 rounded-(--radius-md) px-(--space-2) py-(--space-3) text-center min-h-[76px]",
                             active
-                              ? "bg-brand text-on-brand border-line-strong shadow-brutal-sm"
-                              : "bg-surface border-line-strong text-ink-muted"
+                              ? "bg-brand-soft border-bold border-brand text-brand"
+                              : "bg-surface-raised border border-line text-ink"
                           )}
                         >
-                          <Icon size={20} />
-                          <span className="text-[11px] font-semibold leading-tight">{item.label}</span>
+                          <Icon size={22} />
+                          <span className="text-[11px] font-semibold leading-tight">{item.shortLabel ?? item.label}</span>
                         </Link>
                       );
                     })}

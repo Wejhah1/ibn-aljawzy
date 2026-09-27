@@ -77,7 +77,7 @@ export function AchievementsPageClient({
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[900px] mx-auto">
-      <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">الإنجازات والأوسمة والعلامات</h1>
+      <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">الإنجازات والأوسمة والعلامات</h1>
 
       <div className="flex items-center gap-(--space-2) mb-(--space-6)">
         <TabButton active={tab === "achievements"} onClick={() => setTab("achievements")} icon={Award} label="الإنجازات" />

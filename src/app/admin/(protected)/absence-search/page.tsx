@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { hijriFull } from "@/lib/date";
 
 const STATUS_LABEL: Record<string, { label: string; tone: "success" | "danger" | "warning" | "info" }> = {
   present: { label: "حاضر", tone: "success" },
@@ -63,7 +64,7 @@ export default async function AbsenceSearchPage({
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[700px] mx-auto">
-      <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">بحث الغياب</h1>
+      <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">بحث الغياب</h1>
 
       <form method="get" className="mb-(--space-6)">
         <Card className="flex gap-(--space-3)">
@@ -119,7 +120,7 @@ export default async function AbsenceSearchPage({
                 <Card key={i} className="flex items-center justify-between py-(--space-3)">
                   <div>
                     <p className="text-sm font-semibold text-ink">
-                      {new Date(r.day_date).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                      {hijriFull(r.day_date)}
                     </p>
                     <p className="text-[12px] text-ink-muted">{r.season_name}</p>
                   </div>

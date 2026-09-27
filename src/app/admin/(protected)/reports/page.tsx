@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ReportsClient } from "./reports-client";
+import { hijriShort } from "@/lib/date";
 
 export default async function ReportsPage() {
   const supabase = await createClient();
@@ -30,7 +31,7 @@ export default async function ReportsPage() {
   const attendanceTrend = (programDays ?? []).map((d) => {
     const dayRecords = (attendance ?? []).filter((a) => a.program_day_id === d.id);
     return {
-      date: new Date(d.day_date).toLocaleDateString("ar-SA", { day: "numeric", month: "numeric" }),
+      date: hijriShort(d.day_date),
       حاضر: dayRecords.filter((r) => r.status === "present").length,
       متأخر: dayRecords.filter((r) => r.status === "late").length,
       غائب: dayRecords.filter((r) => r.status === "absent").length,

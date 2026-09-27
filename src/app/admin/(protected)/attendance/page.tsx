@@ -6,9 +6,9 @@ import { AttendanceClient } from "./attendance-client";
 export default async function AttendancePage({
   searchParams,
 }: {
-  searchParams: Promise<{ day?: string; circle?: string; group?: string }>;
+  searchParams: Promise<{ day?: string; circle?: string; group?: string; end?: string }>;
 }) {
-  const { day, circle = "", group = "" } = await searchParams;
+  const { day, circle = "", group = "", end } = await searchParams;
   const supabase = await createClient();
 
   const { data: currentSeason } = await supabase
@@ -43,7 +43,7 @@ export default async function AttendancePage({
   }
 
   const { data: circles } = await supabase.from("circles").select("id, name").order("name");
-  const { data: groups } = await supabase.from("groups").select("id, name").order("name");
+  const { data: groups } = await supabase.from("groups").select("id, name, color_token").order("name");
 
   const { data: enrollments } = await supabase
     .from("student_season_enrollments")
@@ -85,6 +85,7 @@ export default async function AttendancePage({
         groupId: e.group_id,
         circleName: c?.name ?? null,
         groupName: g?.name ?? null,
+        groupColor: g?.color_token ?? null,
         status: (attendanceMap[s!.id] ?? null) as "present" | "absent" | "late" | "excused" | null,
       };
     })
@@ -96,6 +97,8 @@ export default async function AttendancePage({
       seasonId={currentSeason.id}
       programDays={programDays ?? []}
       selectedDay={selectedDay ?? null}
+      todayIso={todayIso}
+      openSummary={end === "1"}
       circles={circles ?? []}
       groups={groups ?? []}
       selectedCircle={circle}

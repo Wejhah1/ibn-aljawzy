@@ -7,6 +7,7 @@ import { Input, Label } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { getProgramDaysAction, toggleHolidayAction, markHolidayRangeAction, type ProgramDay } from "./actions";
 import { CalendarOff, CalendarCheck, Loader2 } from "lucide-react";
+import { hijriWeekday } from "@/lib/date";
 
 export function HolidayManagerModal({
   seasonId,
@@ -113,7 +114,7 @@ export function HolidayManagerModal({
               >
                 <div className="flex items-center gap-(--space-2)">
                   <span className="text-sm font-semibold text-ink">
-                    {new Date(d.day_date).toLocaleDateString("ar-SA", { weekday: "short", day: "numeric", month: "short" })}
+                    {hijriWeekday(d.day_date)}
                   </span>
                   {d.is_holiday && (
                     <Badge tone="danger">

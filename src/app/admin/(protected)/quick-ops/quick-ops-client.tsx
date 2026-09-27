@@ -20,7 +20,7 @@ import {
   type QuickCardData,
   type QuickBadgeOption,
 } from "./actions";
-import { ScanLine, Search, CheckCircle2, XCircle, Clock, FileWarning, Plus, Minus, Users, MessageCircle, Award, Send } from "lucide-react";
+import { ScanLine, Search, CheckCircle2, XCircle, Clock, FileWarning, Plus, Minus, Users, MessageCircle, Award, Send, ArrowRight } from "lucide-react";
 
 const POINT_AMOUNTS = [1, 5, 10, 25];
 
@@ -56,7 +56,7 @@ export function QuickOpsClient() {
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[700px] mx-auto pb-24">
-      <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">العمليات السريعة</h1>
+      <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink mb-(--space-6)">العمليات السريعة</h1>
 
       <div className="flex gap-(--space-3) mb-(--space-4)">
         <div className="relative flex-1">
@@ -167,8 +167,8 @@ function StudentQuickCard({ studentId, onBack }: { studentId: string; onBack: ()
 
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[700px] mx-auto pb-24">
-      <button onClick={onBack} className="text-[13px] font-semibold text-ink-muted hover:text-ink mb-(--space-4)">
-        ← عودة للبحث
+      <button onClick={onBack} className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink-muted hover:text-ink mb-(--space-4)">
+        <ArrowRight size={14} /> عودة للبحث
       </button>
 
       <Card className="mb-(--space-4) shadow-brutal-sm text-center">

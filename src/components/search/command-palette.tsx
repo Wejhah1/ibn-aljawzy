@@ -7,6 +7,12 @@ import { globalSearchStudentsAction, type GlobalSearchStudent } from "@/app/admi
 import { PRIMARY_NAV, STUDENTS_NAV, REPORTS_NAV, ADMIN_NAV } from "@/lib/nav";
 
 const ALL_NAV = [...PRIMARY_NAV, ...STUDENTS_NAV, ...REPORTS_NAV, ...ADMIN_NAV];
+const OPEN_EVENT = "open-command-palette";
+
+// يفتح البحث السريع من أي زر (مثل زر البحث في شريط الجوال) بدل الاعتماد على Ctrl+K وحده.
+export function openCommandPalette() {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -23,8 +29,13 @@ export function CommandPalette() {
       }
       if (e.key === "Escape") setOpen(false);
     };
+    const openHandler = () => setOpen(true);
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener(OPEN_EVENT, openHandler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener(OPEN_EVENT, openHandler);
+    };
   }, []);
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import { buildCertificateHtml } from "@/lib/print/templates";
 import { getScriptFontDataUri, getLogoDataUri } from "@/lib/print/fonts";
 import { getCertificateConfig } from "@/lib/print/config";
 import { getProgramInfo } from "@/lib/settings";
+import { hijriDate } from "@/lib/date";
 
 export async function GET(request: NextRequest) {
   const studentId = request.nextUrl.searchParams.get("studentId");
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
       mosqueName: programInfo.mosque_name,
       seasonName: currentSeason?.name ?? "",
       achievementLabel,
-      dateLabel: new Date().toLocaleDateString("ar-SA"),
+      dateLabel: hijriDate(new Date()),
     },
     config,
     scriptFont,

@@ -39,6 +39,7 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
+import { hijriDate, hijriDateTime } from "@/lib/date";
 
 const ID_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: "national_id", label: "هوية وطنية" },
@@ -351,8 +352,8 @@ export function StudentProfileClient({
               {dropoutPeriods.map((d, i) => (
                 <div key={i} className="flex items-center justify-between text-sm">
                   <span className="text-ink">
-                    {new Date(d.dropped_at).toLocaleDateString("ar-SA")}
-                    {d.returned_at ? ` → ${new Date(d.returned_at).toLocaleDateString("ar-SA")}` : " (لم يعد بعد)"}
+                    {hijriDate(d.dropped_at)}
+                    {d.returned_at ? ` → ${hijriDate(d.returned_at)}` : " (لم يعد بعد)"}
                   </span>
                   {d.reason && <span className="text-ink-muted">{d.reason}</span>}
                 </div>
@@ -398,7 +399,7 @@ function ParentNotesThread({ studentId, notes: initialNotes }: { studentId: stri
             <p className="text-sm text-ink">{n.message}</p>
             <div className="flex items-center justify-between gap-(--space-2) mt-1">
               <p className="text-[11px] text-ink-faint">
-                {n.sender === "admin" ? "الإدارة" : "ولي الأمر"} · {new Date(n.created_at).toLocaleString("ar-SA")}
+                {n.sender === "admin" ? "الإدارة" : "ولي الأمر"} · {hijriDateTime(n.created_at)}
               </p>
               {n.sender === "admin" && (
                 <button
@@ -482,7 +483,7 @@ function PointsLog({ transactions }: { transactions: PointTransaction[] }) {
                   {t.reason || SOURCE_LABEL[t.source] || t.source}
                 </p>
                 <p className="text-[11px] text-ink-faint">
-                  {new Date(t.created_at).toLocaleString("ar-SA")}
+                  {hijriDateTime(t.created_at)}
                   {profile?.full_name ? ` · ${profile.full_name}` : ""}
                   {t.source !== "manual" ? ` · ${SOURCE_LABEL[t.source] ?? t.source}` : ""}
                 </p>

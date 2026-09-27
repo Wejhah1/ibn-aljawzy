@@ -13,6 +13,7 @@ import {
   type FormState,
 } from "./actions";
 import { Save, Plus, Trash2, Eye, EyeOff, Image as ImageIcon } from "lucide-react";
+import { hijriDate } from "@/lib/date";
 
 interface NewsPost {
   id: string;
@@ -35,7 +36,7 @@ export function ContentClient({
 }) {
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[900px] mx-auto">
-      <h1 className="text-[22px] leading-[30px] font-bold text-ink mb-(--space-2)">محتوى الصفحة الرئيسية</h1>
+      <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink mb-(--space-2)">محتوى الصفحة الرئيسية</h1>
       <p className="text-sm text-ink-muted mb-(--space-6)">
         عدّل نص الصفحة الرئيسية العامة، الشعار، وانشر الأخبار والصور التي تظهر للزوار.
       </p>
@@ -120,7 +121,7 @@ function NewsSection({ initial }: { initial: NewsPost[] }) {
                 <Badge tone="neutral">{n.category}</Badge>
               </div>
               {n.body && <p className="text-[12px] text-ink-muted mt-1 line-clamp-2">{n.body}</p>}
-              <p className="text-[11px] text-ink-faint mt-1">{new Date(n.published_at).toLocaleDateString("ar-SA")}</p>
+              <p className="text-[11px] text-ink-faint mt-1">{hijriDate(n.published_at)}</p>
             </div>
             <div className="flex items-center gap-(--space-1) shrink-0">
               <button

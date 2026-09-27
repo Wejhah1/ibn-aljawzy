@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { getPeriodResultsForExportAction, type CircleResultsGroup } from "./actions";
 import { Download, X } from "lucide-react";
 import { LottieLoader } from "@/components/ui/lottie-loader";
+import { hijriDate } from "@/lib/date";
 
 const BRAND = "#0e6b4f";
 const BRAND_HOVER = "#0b5640";
@@ -29,7 +30,7 @@ function percentageColor(pct: number) {
 function formatDate(dateStr: string | null) {
   if (!dateStr) return "";
   try {
-    return new Date(dateStr).toLocaleDateString("ar-SA", { year: "numeric", month: "long", day: "numeric" });
+    return hijriDate(dateStr);
   } catch {
     return dateStr;
   }

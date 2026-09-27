@@ -74,7 +74,7 @@ export function CirclesPageClient({
   return (
     <main className="p-(--space-4) md:p-(--space-8) max-w-[1000px] mx-auto">
       <div className="mb-(--space-8)">
-        <h1 className="text-[22px] leading-[30px] font-bold text-ink">الحلقات والمجموعات</h1>
+        <h1 className="max-md:hidden text-[22px] leading-[30px] font-bold text-ink">الحلقات والمجموعات</h1>
         <p className="text-sm text-ink-muted mt-1">
           الحلقات والمجموعات تصنيفان مستقلان — أضِف كلاً منهما بشكل منفصل، ثم اختر لكل طالب حلقته ومجموعته دون ارتباط بينهما.
         </p>

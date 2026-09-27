@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bell, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getUnreadParentNotesAction, markNotificationReadAction, type UnreadParentNote } from "./actions";
+import { hijriDateTime } from "@/lib/date";
 
 export function NotificationBell() {
   const [notes, setNotes] = useState<UnreadParentNote[]>([]);
@@ -107,7 +108,7 @@ export function NotificationBell() {
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-bold text-ink truncate">{n.studentName}</p>
                     <p className="text-[12px] text-ink-muted line-clamp-2">{n.message}</p>
-                    <p className="text-[11px] text-ink-faint mt-1">{new Date(n.createdAt).toLocaleString("ar-SA")}</p>
+                    <p className="text-[11px] text-ink-faint mt-1">{hijriDateTime(n.createdAt)}</p>
                   </div>
                 </button>
               ))}

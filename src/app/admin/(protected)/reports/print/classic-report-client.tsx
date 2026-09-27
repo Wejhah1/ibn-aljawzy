@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { ProgramInfo } from "@/lib/settings";
 import type { SortKey } from "./page";
 import { Printer } from "lucide-react";
+import { hijriFull } from "@/lib/date";
 
 interface ReportRow {
   studentId: string;
@@ -85,7 +86,7 @@ export function ClassicReportClient({
   attendanceBuckets: AttendanceBucket[];
 }) {
   const fmt = (d: string) =>
-    new Date(d).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "numeric", year: "numeric" });
+    hijriFull(d);
 
   return (
     <main className="p-(--space-4) md:p-(--space-8)">
